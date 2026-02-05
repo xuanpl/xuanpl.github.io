@@ -21,11 +21,11 @@
         html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); overflow: hidden; }
         body { font-family: -apple-system, system-ui; color: var(--text); padding-bottom: env(safe-area-inset-bottom); }
         
-        /* 页面容器：强制全屏 */
+        /* 页面容器 */
         .page { position: fixed; top: 0; left: 0; right: 0; bottom: 0; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top); }
         .page-hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
         
-        /* 首页布局保持 */
+        /* 首页布局 */
         .home-header { padding: 40px 25px 5px; display: flex; justify-content: space-between; align-items: flex-start; }
         .home-header h1 { font-size: 22px; font-weight: 200; margin: 0; letter-spacing: 1px; }
         .settings-btn { background: none; border: none; padding: 5px; cursor: pointer; }
@@ -55,13 +55,13 @@
         .search-i { width: 100%; padding: 12px 18px; border-radius: 14px; border: none; background: var(--mood-bg); color: var(--text); font-size: 14px; }
         .walk-btn { width: 100%; margin-top: 15px; background: var(--primary); color: var(--bg); border: none; padding: 14px; border-radius: 14px; font-size: 13px; font-weight: 600; }
 
-        /* 编辑页面：顶部条 */
+        /* 编辑/查看页面 */
         .toolbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; position: sticky; top:0; background: var(--bg); z-index: 20; }
         .btn-pill { font-size: 13px; font-weight: 600; padding: 8px 22px; border-radius: 16px; border: none; background: var(--mood-bg); color: var(--primary); min-width: 80px; text-align: center; }
         .btn-save { background: var(--primary); color: var(--bg); }
         .btn-del { color: var(--danger); font-size: 12px; font-weight: bold; background: none; border: none; margin-right: 15px; }
         
-        .reading-container { padding: 20px 25px 180px; max-width: 650px; margin: 0 auto; }
+        .reading-container { padding: 20px 25px 200px; max-width: 650px; margin: 0 auto; }
         #title-v { font-size: 28px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
         .meta-v { font-size: 11px; color: var(--sub); margin-bottom: 20px; border-left: 3px solid var(--accent); padding-left: 10px; }
         .text-v { font-size: 17px; line-height: 1.9; color: var(--sub); white-space: pre-wrap; }
@@ -72,15 +72,16 @@
 
         .mood-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); margin-bottom: 15px; }
         
-        /* 智能吸底工具栏：通过 JS 动态控制 bottom 值 */
+        /* 智能吸底工具栏 */
         .edit-tools { 
             position: fixed; left: 0; width: 100%; 
             padding: 10px 15px; 
             background: rgba(248, 249, 250, 0.95); 
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid var(--mood-bg); z-index: 100; 
+            border-top: 1px solid var(--mood-bg); z-index: 150; 
             display: none; gap: 6px; justify-content: center;
             bottom: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            transition: bottom 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         @media (prefers-color-scheme: dark) { .edit-tools { background: rgba(18, 18, 18, 0.95); } }
         .tool-btn { padding: 8px 10px; font-size: 11px; border-radius: 10px; background: var(--card); border: 1px solid var(--mood-bg); color: var(--sub); font-weight: 600; flex: 1; text-align: center; }
@@ -167,7 +168,7 @@
     <div class="toolbar">
         <button class="btn-pill" onclick="closePage()">返回</button>
         <span id="d-date-title" style="font-size:11px; opacity:0.3; font-weight:700;"></span>
-        <div id="v-tools"><button class="btn-del" onclick="doDel()">删除</button> <button class="btn-pill btn-save" onclick="enterEdit()">编辑</button></div>
+        <div id="v-tools"><button class="btn-del" onclick="doDel()">删除</button> <button class="btn-pill btn-save" id="edit-btn" onclick="enterEdit()">编辑</button></div>
         <div id="e-tools" style="display:none"><button class="btn-pill btn-save" onclick="save(true)">保存</button></div>
     </div>
     <div class="reading-container">
@@ -298,12 +299,14 @@
 
     function enterEdit() {
         isEditState = true; const d = dataMap.get(curKey);
+        // iOS 关键：强制同步聚焦，避开 Safari 对异步弹键盘的限制
+        document.getElementById('e-content').focus();
+        
         document.getElementById('v-box').style.display='none'; document.getElementById('e-box').style.display='block';
         document.getElementById('v-tools').style.display='none'; document.getElementById('e-tools').style.display='block';
         document.getElementById('float-tools').style.display='flex';
         document.getElementById('e-title').value = d?d.title:''; document.getElementById('e-content').value = d?d.content:'';
         activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay(); updateWC();
-        setTimeout(() => document.getElementById('e-content').focus(), 150);
     }
 
     function openMoodModal() { document.getElementById('mood-modal').style.display = 'flex'; updateMoodTags(); }
@@ -375,27 +378,25 @@
         const old = document.getElementById('old-pwd').value, nw = document.getElementById('new-pwd').value;
         if(btoa(old) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(nw)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("旧密码错误");
     }
-    async function clearAllData() { if(confirm("确定永久清空所有记录吗？")) { db.transaction("notes", "readwrite").objectStore("notes").clear().onsuccess = () => { sync(); alert("已重置"); location.reload(); }; } }
+    async function clearAllData() { if(confirm("确定永久清空所有灵感吗？此操作无法撤销。")) { db.transaction("notes", "readwrite").objectStore("notes").clear().onsuccess = () => { sync(); alert("已重置"); location.reload(); }; } }
+    async function doDel() { if(confirm("确定删除此篇灵感吗？")) { const tx = db.transaction("notes", "readwrite"); tx.objectStore("notes").delete(curKey).onsuccess = () => { sync(); closePage(); }; } }
     
     const editor = document.getElementById('e-content');
     editor.addEventListener('compositionstart', () => isComposing = true);
     editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); });
     editor.addEventListener('input', () => { updateWC(); clearTimeout(autoSaveTimer); autoSaveTimer=setTimeout(()=>isEditState&&save(false), 3000); });
     
-    // 键盘吸附逻辑
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', () => {
             const tools = document.getElementById('float-tools');
             const hint = document.getElementById('save-hint');
             if (isEditState) {
                 const offset = window.innerHeight - window.visualViewport.height;
-                if (offset > 50) { // 键盘弹出
-                    tools.style.bottom = `${offset}px`;
-                    tools.style.paddingBottom = '10px';
+                if (offset > 50) {
+                    tools.style.bottom = `${offset}px`; tools.style.paddingBottom = '10px';
                     hint.style.bottom = `${offset + 50}px`;
-                } else { // 键盘收起
-                    tools.style.bottom = '0px';
-                    tools.style.paddingBottom = 'calc(10px + env(safe-area-inset-bottom))';
+                } else {
+                    tools.style.bottom = '0px'; tools.style.paddingBottom = 'calc(10px + env(safe-area-inset-bottom))';
                     hint.style.bottom = '120px';
                 }
             }
@@ -403,13 +404,11 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            lastHiddenTime = Date.now();
-        } else {
+        if (document.hidden) lastHiddenTime = Date.now();
+        else {
             if (lastHiddenTime && (Date.now() - lastHiddenTime > 300000)) {
                 document.getElementById('auth-layer').style.display = 'flex';
-                document.getElementById('pwd-i').value = '';
-                document.getElementById('float-tools').style.display = 'none';
+                document.getElementById('pwd-i').value = ''; document.getElementById('float-tools').style.display = 'none';
             }
             if (isEditState) editor.focus();
         }
