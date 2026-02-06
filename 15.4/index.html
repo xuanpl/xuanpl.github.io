@@ -74,15 +74,23 @@
         
         /* 智能吸底工具栏 */
         .edit-tools { 
-            position: fixed; left: 0; width: 100%; 
-            padding: 10px 15px; 
-            background: rgba(248, 249, 250, 0.95); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid var(--mood-bg); z-index: 150; 
-            display: none; gap: 6px; justify-content: center;
-            bottom: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom));
-            transition: bottom 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
+			position: sticky; 
+			top: 0; 
+			left: 0; 
+			width: 100%; 
+			padding: 10px 15px; 
+			background: var(--bg); /* 使用背景色遮盖下方滚过的文字 */
+			border-bottom: 1px solid var(--mood-bg); 
+			z-index: 100; 
+			display: none; /* 初始隐藏 */
+			gap: 8px; 
+			justify-content: center;
+		}
+		.tool-btn { 
+			padding: 7px 10px; font-size: 11px; border-radius: 8px; 
+			background: var(--card); border: 1px solid var(--mood-bg); 
+			color: var(--sub); font-weight: 600; flex: 1; text-align: center; 
+		}
         @media (prefers-color-scheme: dark) { .edit-tools { background: rgba(18, 18, 18, 0.95); } }
         .tool-btn { padding: 8px 10px; font-size: 11px; border-radius: 10px; background: var(--card); border: 1px solid var(--mood-bg); color: var(--sub); font-weight: 600; flex: 1; text-align: center; }
 
@@ -192,12 +200,18 @@
     <div id="save-hint" style="position:fixed; bottom:120px; right:25px; font-size:10px; color:var(--sub); font-weight: bold; z-index:150;"></div>
 </div>
 
-<div class="edit-tools" id="float-tools">
-    <button class="tool-btn" onclick="wrapText('**')">加粗</button>
-    <button class="tool-btn" onclick="wrapText('__')">下划线</button>
-    <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
-    <button class="tool-btn" onclick="wrapText('> ')">引用</button>
-    <button class="tool-btn" onclick="wrapText('- ')">列表</button>
+<div id="e-box" style="display:none">
+    <div class="edit-tools" id="float-tools">
+        <button class="tool-btn" onclick="wrapText('**')">加粗</button>
+        <button class="tool-btn" onclick="wrapText('__')">下划线</button>
+        <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
+        <button class="tool-btn" onclick="wrapText('> ')">引用</button>
+        <button class="tool-btn" onclick="wrapText('- ')">列表</button>
+    </div>
+
+    <div class="mood-trigger" id="mood-trigger-btn" onclick="openMoodModal()" style="margin-top:15px;">选择心情...</div>
+    <input type="text" id="e-title" placeholder="给今天安个标题...">
+    <textarea id="e-content" placeholder="心情、随笔..."></textarea>
 </div>
 
 <script>
@@ -304,10 +318,16 @@
         document.getElementById('title-v').innerText=d.title || "无标题";
         document.getElementById('meta-v').innerText=`${d.mood ? d.mood.replace(/,/g, ' ') : ''} ${d.mood ? '·' : ''} ${d.words} 字`;
         document.getElementById('content-v').innerHTML = renderMD(d.content);
+		document.getElementById('float-tools').style.display = 'none';
     }
 
     function enterEdit() {
         isEditState = true; const d = dataMap.get(curKey);
+		// 关键：进入编辑模式时，强制显示工具栏
+		document.getElementById('float-tools').style.display = 'flex'; 
+		
+		document.getElementById('v-box').style.display='none';
+		document.getElementById('e-box').style.display='block'
         // iOS 关键：强制同步聚焦，避开 Safari 对异步弹键盘的限制
         document.getElementById('e-content').focus();
         
@@ -404,23 +424,6 @@
     editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); });
     editor.addEventListener('input', () => { updateWC(); clearTimeout(autoSaveTimer); autoSaveTimer=setTimeout(()=>isEditState&&save(false), 3000); });
     
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', () => {
-            const tools = document.getElementById('float-tools');
-            const hint = document.getElementById('save-hint');
-            if (isEditState) {
-                const offset = window.innerHeight - window.visualViewport.height;
-                if (offset > 50) {
-                    tools.style.bottom = `${offset}px`; tools.style.paddingBottom = '10px';
-                    hint.style.bottom = `${offset + 50}px`;
-                } else {
-                    tools.style.bottom = '0px'; tools.style.paddingBottom = 'calc(10px + env(safe-area-inset-bottom))';
-                    hint.style.bottom = '120px';
-                }
-            }
-        });
-    }
-
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) lastHiddenTime = Date.now();
         else {
