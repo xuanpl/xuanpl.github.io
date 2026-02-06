@@ -94,6 +94,15 @@
         
         #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:300; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         #pwd-i { padding:14px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:200px; }
+		
+		/* 热力图色阶定义：确保 6 种心情颜色全覆盖 */
+        .f-energy.lv-1 { background: rgba(var(--energy), 0.2); } .f-energy.lv-2 { background: rgba(var(--energy), 0.5); } .f-energy.lv-3 { background: rgba(var(--energy), 1.0); }
+        .f-healing.lv-1 { background: rgba(var(--healing), 0.2); } .f-healing.lv-2 { background: rgba(var(--healing), 0.5); } .f-healing.lv-3 { background: rgba(var(--healing), 1.0); }
+        .f-thinking.lv-1 { background: rgba(var(--thinking), 0.2); } .f-thinking.lv-2 { background: rgba(var(--thinking), 0.5); } .f-thinking.lv-3 { background: rgba(var(--thinking), 1.0); }
+        .f-release.lv-1 { background: rgba(var(--release), 0.2); } .f-release.lv-2 { background: rgba(var(--release), 0.5); } .f-release.lv-3 { background: rgba(var(--release), 1.0); }
+        .f-melancholy.lv-1 { background: rgba(var(--melancholy), 0.2); } .f-melancholy.lv-2 { background: rgba(var(--melancholy), 0.5); } .f-melancholy.lv-3 { background: rgba(var(--melancholy), 1.0); }
+        .f-fear.lv-1 { background: rgba(var(--fear), 0.2); } .f-fear.lv-2 { background: rgba(var(--fear), 0.5); } .f-fear.lv-3 { background: rgba(var(--fear), 1.0); }
+        .f-custom.lv-1 { background: rgba(var(--custom), 0.2); } .f-custom.lv-2 { background: rgba(var(--custom), 0.5); } .f-custom.lv-3 { background: rgba(var(--custom), 1.0); }
     </style>
 </head>
 <body>
@@ -284,7 +293,7 @@
                 .replace(/~~(.*?)~~/g, '<del>$1</del>')
                 .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
                 .replace(/^- (.*$)/gm, '<li>$1</li>')
-                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
                 .replace(/\n/g, '<br>');
     }
 
@@ -378,7 +387,16 @@
         const old = document.getElementById('old-pwd').value, nw = document.getElementById('new-pwd').value;
         if(btoa(old) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(nw)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("旧密码错误");
     }
-    async function clearAllData() { if(confirm("确定永久清空所有灵感吗？此操作无法撤销。")) { db.transaction("notes", "readwrite").objectStore("notes").clear().onsuccess = () => { sync(); alert("已重置"); location.reload(); }; } }
+	async function clearAllData() {
+		if(confirm("确定永久清空所有记录吗？此操作无法撤销。")) {
+			const tx = db.transaction("notes", "readwrite");
+			tx.objectStore("notes").clear().onsuccess = () => {
+				sync(); // 刷新统计数据
+				document.getElementById('settings-modal').style.display='none'; // 只关闭弹窗，不重载页面
+				alert("已清空所有本地记录");
+			};
+		}
+	}
     async function doDel() { if(confirm("确定删除此篇灵感吗？")) { const tx = db.transaction("notes", "readwrite"); tx.objectStore("notes").delete(curKey).onsuccess = () => { sync(); closePage(); }; } }
     
     const editor = document.getElementById('e-content');
