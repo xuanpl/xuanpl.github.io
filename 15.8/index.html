@@ -637,26 +637,26 @@
 		autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
 	});
 
-    // 【修正版】增量滚动逻辑 (Delta Scroll)
-	// 解决光标被输入法遮挡，且防止页面乱跳
-	function autoResizeTextarea() {
-		const el = document.getElementById('e-content');
-		
-		// 1. 先记录旧的高度 (Old Height)
-		const oldHeight = el.scrollHeight;
+    // 【修正版】增量滚动逻辑 (Target: #d-page)
+    // 解决光标被遮挡的核心：滚动正确的容器
+    function autoResizeTextarea() {
+        const el = document.getElementById('e-content');
+        const page = document.getElementById('d-page'); // 找到真正能滚动的容器
+        
+        // 1. 记录旧高度
+        const oldHeight = el.scrollHeight;
 
-		// 2. 重置高度让它重新计算
-		el.style.height = 'auto'; 
-		const newHeight = el.scrollHeight;
-		el.style.height = newHeight + 'px';
+        // 2. 重置并重新计算
+        el.style.height = 'auto'; 
+        const newHeight = el.scrollHeight;
+        el.style.height = newHeight + 'px';
 
-		// 3. 【关键】计算高度差，手动滚动窗口
-		// 如果变高了 (例如换行了)，就让窗口也跟着往下滚同样的距离
-		const diff = newHeight - oldHeight;
-		if (diff > 0) {
-			window.scrollBy({ top: diff, behavior: 'smooth' });
-		}
-	}
+        // 3. 滚动容器 (d-page) 而不是窗口 (window)
+        const diff = newHeight - oldHeight;
+        if (diff > 0) {
+            page.scrollBy({ top: diff, behavior: 'smooth' });
+        }
+    }
     // 隐私保护：切后台5分钟自动锁屏
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) lastHiddenTime = Date.now();
@@ -668,65 +668,46 @@
             if (isEditState) setTimeout(()=>editor.focus(), 100);
         }
     });
-	
+	//修复了滚动对象错误的问题 (Scroll Target Fix)
 	if (window.visualViewport) {
         const toolbar = document.querySelector('.edit-tools');
         let lastVisualHeight = window.visualViewport.height; 
 
         function adjustToolbarPosition() {
-            // 如果工具栏不存在，或者不在编辑状态，就不工作
+            // 必须确保工具栏存在且处于编辑模式
             if (!toolbar || !isEditState) return;
 
             const layoutHeight = window.innerHeight;
             const visualHeight = window.visualViewport.height;
+            const page = document.getElementById('d-page'); // 关键：获取滚动容器
             
-            // 1. 计算键盘高度（布局高度 - 可见高度）
-            // Math.max 确保不出现负数
+            // 1. 计算被遮挡的高度 (兼容 iOS PWA 和 Safari)
+            // 在部分 iOS 上，layoutHeight 不会变，visualHeight 会变小 -> diff > 0
+            // 在部分 Android 上，layoutHeight 会变小 -> diff = 0
             const diff = Math.max(0, layoutHeight - visualHeight);
 
-            // 2. 抬起工具栏
-            // 只有当键盘弹起时(diff > 0)，bottom 才会变成正数，把工具栏顶上去
+            // 2. 强制设置工具栏底部距离
+            // 如果键盘弹起，工具栏会被抬高 diff 像素
             toolbar.style.bottom = `${diff}px`;
 
-            // 3. 【防遮挡核心】键盘刚弹起时，强制页面上滚
-            // 判断条件：视口变矮了 (说明键盘出来了) 且 光标在输入框里
+            // 3. 【防遮挡核心】滚动页面内容
+            // 如果键盘刚弹起 (视口变矮了) 且当前光标在输入框里
             if (visualHeight < lastVisualHeight && document.activeElement.id === 'e-content') {
                 setTimeout(() => {
-                    // 9999 代表尽可能往下滚，让光标露出来
-                    // 配合 padding-bottom: 200px，内容会被推到键盘上方
-                    window.scrollBy({ top: 9999, behavior: 'smooth' });
-                }, 300); // 延迟300ms等待键盘动画结束
+                    // 滚动 #d-page 容器，把内容推上去
+                    // 配合 padding-bottom: 200px，这会让光标露出来
+                    page.scrollBy({ top: 9999, behavior: 'smooth' });
+                }, 300); // 等待键盘动画
             }
             
-            // 更新高度记录，供下次对比
+            // 更新高度记录
             lastVisualHeight = visualHeight;
         }
 
-        // 监听视口变化（键盘弹起/收缩会触发 resize）
+        // 监听视口变化
         window.visualViewport.addEventListener('resize', adjustToolbarPosition);
-        // 部分 iOS 滚动时也需要重新计算
         window.visualViewport.addEventListener('scroll', adjustToolbarPosition);
     }
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 </script>
 </body>
 </html>
