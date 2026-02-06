@@ -182,6 +182,25 @@
         /* 锁屏界面 */
         #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:300; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         #pwd-i { padding:14px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:200px; }
+		
+		/* 7. 去掉拖动柄 */
+		#e-content {
+			/* 1. 禁止手动拖动大小 (去掉右下角的那个点) */
+			resize: none; 
+			
+			/* 2. 隐藏内部滚动条 (内容多了也不出滚动条，靠高度撑开) */
+			overflow-y: hidden; 
+			
+			/* 保持原有样式 */
+			width: 100%; 
+			border: none; 
+			background: none; 
+			font-size: 17px; 
+			line-height: 1.9; 
+			min-height: 60vh; 
+			outline: none; 
+			color: var(--text);
+		}
     </style>
 </head>
 <body>
@@ -472,11 +491,14 @@
         document.getElementById('e-tools').style.display='block';
         
         document.getElementById('e-title').value = d?d.title:''; 
-        document.getElementById('e-content').value = d?d.content:'';
+        document.getElementById('e-content').value = d ? d.content : '';
         
         activeMoods = d && d.mood ? d.mood.split(',') : []; 
         updateMoodDisplay(); 
         updateWC();
+		
+		// 【新增】进入编辑模式时，根据已有内容撑开高度
+		autoResizeTextarea();
         
         // 延迟聚焦，适配 iOS
         setTimeout(() => document.getElementById('e-content').focus(), 100);
@@ -607,10 +629,19 @@
     // 自动保存逻辑
     editor.addEventListener('input', () => { 
         updateWC(); 
+		// 【新增】每次打字都重新计算高度
+		autoResizeTextarea();
         clearTimeout(autoSaveTimer); 
         autoSaveTimer=setTimeout(()=>isEditState&&save(false), 3000); 
     });
-    
+    // 【新增功能】自动调整输入框高度
+	function autoResizeTextarea() {
+		const el = document.getElementById('e-content');
+		// 第一步：先重置高度，为了准确计算缩小后的 scrollHeight
+		el.style.height = 'auto'; 
+		// 第二步：设置为实际内容的高度
+		el.style.height = el.scrollHeight + 'px';
+	}
     // 隐私保护：切后台5分钟自动锁屏
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) lastHiddenTime = Date.now();
