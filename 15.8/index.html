@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>拾绪Pro · 灵感日记</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -621,26 +621,32 @@
         } 
     }
     
-    // 9. 事件监听
-    const editor = document.getElementById('e-content');
-    // 监听输入法状态，防止字数乱跳
-    editor.addEventListener('compositionstart', () => isComposing = true);
-    editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); });
-    // 自动保存逻辑
-    editor.addEventListener('input', () => { 
-        updateWC(); 
-		// 【新增】每次打字都重新计算高度
-		autoResizeTextarea();
-        clearTimeout(autoSaveTimer); 
-        autoSaveTimer=setTimeout(()=>isEditState&&save(false), 3000); 
-    });
-    // 【新增功能】自动调整输入框高度
+	// 9. 【修改后】底部的事件监听
+	const editor = document.getElementById('e-content');
+	// 监听输入法状态，防止字数乱跳
+	editor.addEventListener('compositionstart', () => isComposing = true);
+	editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); autoResizeTextarea(); });
+	// 自动保存逻辑
+	editor.addEventListener('input', () => { 
+		updateWC(); 
+    
+    // 每次输入都触发高度调整和防遮挡检查
+		autoResizeTextarea(); 
+
+		clearTimeout(autoSaveTimer); 
+		autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
+	});
+
+    // 【修改后】自动增高 + 自动防遮挡函数
 	function autoResizeTextarea() {
 		const el = document.getElementById('e-content');
-		// 第一步：先重置高度，为了准确计算缩小后的 scrollHeight
+		
+		// 1. 重置高度以重新计算
 		el.style.height = 'auto'; 
-		// 第二步：设置为实际内容的高度
 		el.style.height = el.scrollHeight + 'px';
+		// 【重要】删除了原来的 scrollIntoView 代码
+		// 因为我们已经加了 meta 标签，现在让浏览器自己去处理滚动，
+		// JS 越干预，反而越容易出现“鬼畜”跳动。
 	}
     // 隐私保护：切后台5分钟自动锁屏
     document.addEventListener('visibilitychange', () => {
