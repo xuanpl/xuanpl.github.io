@@ -637,16 +637,25 @@
 		autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
 	});
 
-    // 【修改后】自动增高 + 自动防遮挡函数
+    // 【修正版】增量滚动逻辑 (Delta Scroll)
+	// 解决光标被输入法遮挡，且防止页面乱跳
 	function autoResizeTextarea() {
 		const el = document.getElementById('e-content');
 		
-		// 1. 重置高度以重新计算
+		// 1. 先记录旧的高度 (Old Height)
+		const oldHeight = el.scrollHeight;
+
+		// 2. 重置高度让它重新计算
 		el.style.height = 'auto'; 
-		el.style.height = el.scrollHeight + 'px';
-		// 【重要】删除了原来的 scrollIntoView 代码
-		// 因为我们已经加了 meta 标签，现在让浏览器自己去处理滚动，
-		// JS 越干预，反而越容易出现“鬼畜”跳动。
+		const newHeight = el.scrollHeight;
+		el.style.height = newHeight + 'px';
+
+		// 3. 【关键】计算高度差，手动滚动窗口
+		// 如果变高了 (例如换行了)，就让窗口也跟着往下滚同样的距离
+		const diff = newHeight - oldHeight;
+		if (diff > 0) {
+			window.scrollBy({ top: diff, behavior: 'smooth' });
+		}
 	}
     // 隐私保护：切后台5分钟自动锁屏
     document.addEventListener('visibilitychange', () => {
@@ -659,6 +668,65 @@
             if (isEditState) setTimeout(()=>editor.focus(), 100);
         }
     });
+	
+	if (window.visualViewport) {
+        const toolbar = document.querySelector('.edit-tools');
+        let lastVisualHeight = window.visualViewport.height; 
+
+        function adjustToolbarPosition() {
+            // 如果工具栏不存在，或者不在编辑状态，就不工作
+            if (!toolbar || !isEditState) return;
+
+            const layoutHeight = window.innerHeight;
+            const visualHeight = window.visualViewport.height;
+            
+            // 1. 计算键盘高度（布局高度 - 可见高度）
+            // Math.max 确保不出现负数
+            const diff = Math.max(0, layoutHeight - visualHeight);
+
+            // 2. 抬起工具栏
+            // 只有当键盘弹起时(diff > 0)，bottom 才会变成正数，把工具栏顶上去
+            toolbar.style.bottom = `${diff}px`;
+
+            // 3. 【防遮挡核心】键盘刚弹起时，强制页面上滚
+            // 判断条件：视口变矮了 (说明键盘出来了) 且 光标在输入框里
+            if (visualHeight < lastVisualHeight && document.activeElement.id === 'e-content') {
+                setTimeout(() => {
+                    // 9999 代表尽可能往下滚，让光标露出来
+                    // 配合 padding-bottom: 200px，内容会被推到键盘上方
+                    window.scrollBy({ top: 9999, behavior: 'smooth' });
+                }, 300); // 延迟300ms等待键盘动画结束
+            }
+            
+            // 更新高度记录，供下次对比
+            lastVisualHeight = visualHeight;
+        }
+
+        // 监听视口变化（键盘弹起/收缩会触发 resize）
+        window.visualViewport.addEventListener('resize', adjustToolbarPosition);
+        // 部分 iOS 滚动时也需要重新计算
+        window.visualViewport.addEventListener('scroll', adjustToolbarPosition);
+    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 </script>
 </body>
 </html>
