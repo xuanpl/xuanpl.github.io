@@ -10,33 +10,16 @@
 
     <style>
         /* =========================================
-           1. 全局变量定义：轻松换肤 
+           1. 全局变量定义 
            ========================================= */
         :root { 
-            --primary: #2c3e50;         /* 主色调：深蓝 */
-            --accent: #d4af37;          /* 强调色：金 */
-            --bg: #f8f9fa;              /* 背景色：浅灰 */
-            --card: #ffffff;            /* 卡片背景：白 */
-            --text: #2c3e50;            /* 文字颜色 */
-            --danger: #e74c3c;          /* 警告/删除色 */
-            --sub: #525c68;             /* 次要文字色 */
-            --mood-bg: #e9ecef;         /* 浅色块背景 */
-            
-            /* 心情颜色定义 */
-            --energy: 243, 156, 18;     /* 能量/快乐 */
-            --healing: 39, 174, 96;     /* 治愈/平静 */
-            --thinking: 41, 128, 185;   /* 思考/疑惑 */
-            --release: 231, 76, 60;     /* 释放/愤怒 */
-            --melancholy: 52, 73, 94;   /* 忧郁/低落 */
-            --fear: 26, 26, 26;         /* 恐惧 */
-            --custom: 142, 68, 173;     /* 自定义 */
+            --primary: #2c3e50; --accent: #d4af37; --bg: #f8f9fa; --card: #ffffff; --text: #2c3e50; 
+            --danger: #e74c3c; --sub: #525c68; --mood-bg: #e9ecef;
+            --energy: 243, 156, 18; --healing: 39, 174, 96; --thinking: 41, 128, 185;
+            --release: 231, 76, 60; --melancholy: 52, 73, 94; --fear: 26, 26, 26; --custom: 142, 68, 173;
         }
-
         @media (prefers-color-scheme: dark) {
-            :root { 
-                --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; 
-                --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c; 
-            }
+            :root { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c; }
         }
 
         /* 2. 基础重置 */
@@ -44,40 +27,41 @@
         html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); overflow: hidden; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); padding-bottom: env(safe-area-inset-bottom); }
         
-        /* 3. 页面切换动画容器 */
+        /* 3. 页面容器 (首页用) */
         .page { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             background: var(--bg); 
             z-index: 10; 
             overflow-y: auto; 
             padding-top: env(safe-area-inset-top); 
         }
         
-        /* 【关键修改 1】针对日记详情页(#d-page)的 Flexbox 视口流重构 
-           覆盖默认的 .page 样式，禁止整体滚动，改为 Flex 垂直布局
+        /* 【关键重构】日记详情页 (#d-page) 
+           使用 Flex 布局，高度由 CSS 自动管理，禁止 JS 插手
+           z-index: 100 确保盖住首页，background 确保不透明
         */
         #d-page {
             display: flex;
-            flex-direction: column;
-            height: 100%; /* JS 会动态将其改为 visualViewport 的高度 */
-            overflow: hidden; /* 禁止页面级滚动，只允许容器内滚动 */
+            flex-direction: column; /* 垂直排列：顶栏 -> 内容 -> 底栏 */
+            height: 100%; 
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: var(--bg); /* 防止漏光 */
+            z-index: 100;          /* 确保在最上层 */
+            overflow: hidden;      /* 禁止页面整体滚动 */
             padding-top: env(safe-area-inset-top);
         }
 
-        .page-hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
+        .page-hidden { transform: translateX(100%); pointer-events: none; }
         
-        /* 4. 首页组件样式 */
+        /* 4. 首页组件样式 (保持不变) */
         .home-header { padding: 40px 25px 5px; display: flex; justify-content: space-between; align-items: flex-start; }
         .home-header h1 { font-size: 22px; font-weight: 200; margin: 0; letter-spacing: 1px; }
         .settings-btn { background: none; border: none; padding: 5px; cursor: pointer; }
         .settings-btn svg { width: 20px; height: 20px; fill: var(--sub); }
-        
         .mini-stats { display: flex; gap: 15px; margin: 0 25px 8px; color: var(--sub); }
         .stat-val { font-size: 16px; font-weight: 300; margin-top: 1px; color: var(--text); }
         .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; }
-
-        /* 日历样式 */
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); box-shadow: 0 5px 25px rgba(0,0,0,0.03); padding-bottom: 8px; }
         .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
         .nav-group { display: flex; align-items: center; gap: 12px; }
@@ -90,12 +74,8 @@
         .day.recorded { background: var(--mood-bg); }
         .day.is-today { background: var(--primary) !important; color: var(--bg); }
         .day.recorded::after { content: ''; position: absolute; bottom: 5px; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
-
-        /* 通用卡片容器 */
         .section-box { margin: 8px 15px; padding: 15px 18px; background: var(--card); border-radius: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
         .box-header { font-size: 11px; font-weight: 700; margin-bottom: 12px; color: var(--sub); display: flex; justify-content: space-between; }
-        
-        /* 热力图 */
         .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
         .growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); }
         .f-energy.lv-1 { background: rgba(var(--energy), 0.2); } .f-energy.lv-2 { background: rgba(var(--energy), 0.5); } .f-energy.lv-3 { background: rgba(var(--energy), 1.0); }
@@ -105,39 +85,34 @@
         .f-melancholy.lv-1 { background: rgba(var(--melancholy), 0.2); } .f-melancholy.lv-2 { background: rgba(var(--melancholy), 0.5); } .f-melancholy.lv-3 { background: rgba(var(--melancholy), 1.0); }
         .f-fear.lv-1 { background: rgba(var(--fear), 0.2); } .f-fear.lv-2 { background: rgba(var(--fear), 0.5); } .f-fear.lv-3 { background: rgba(var(--fear), 1.0); }
         .f-custom.lv-1 { background: rgba(var(--custom), 0.2); } .f-custom.lv-2 { background: rgba(var(--custom), 0.5); } .f-custom.lv-3 { background: rgba(var(--custom), 1.0); }
-
         .search-i { width: 100%; padding: 12px 18px; border-radius: 14px; border: none; background: var(--mood-bg); color: var(--text); font-size: 14px; }
         .walk-btn { width: 100%; margin-top: 15px; background: var(--primary); color: var(--bg); border: none; padding: 14px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
-        /* 5. 编辑/查看页面样式 */
+        /* 5. 编辑页面组件 */
         .toolbar { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 15px 20px; 
-            /* 注意：取消 sticky，因为现在是 Flex 子元素 */
             background: var(--bg); 
             z-index: 20; 
-            flex-shrink: 0; /* 防止被压缩 */
+            flex-shrink: 0; /* 禁止被压缩 */
         }
         .btn-pill { font-size: 13px; font-weight: 600; padding: 8px 22px; border-radius: 16px; border: none; background: var(--mood-bg); color: var(--primary); min-width: 80px; text-align: center; cursor: pointer; }
         .btn-save { background: var(--primary); color: var(--bg); }
         .btn-del { color: var(--danger); font-size: 12px; font-weight: bold; background: none; border: none; margin-right: 15px; cursor: pointer; }
         
-        /* 【关键修改 2】内容容器 
-           设置为 Flex 增长项，自动占满中间区域，并负责滚动
-        */
+        /* 中间滚动区：自动填满剩余空间 */
         .reading-container { 
-            flex-grow: 1;           /* 自动占满 toolbar 和 工具栏 之间的所有空间 */
-            overflow-y: auto;       /* 内容超长时，在容器内部滚动 */
-            -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
-            
-            padding: 20px 25px 20px; /* 底部不再需要防遮挡的大 padding */
+            flex-grow: 1;           
+            overflow-y: auto;       /* 只在这里滚动 */
+            -webkit-overflow-scrolling: touch; 
+            padding: 20px 25px 20px; 
             width: 100%; 
             max-width: 650px; 
             margin: 0 auto; 
             position: relative; 
         }
         
-        /* 阅读模式排版 */
+        /* 详情排版 */
         #title-v { font-size: 28px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
         .meta-v { font-size: 11px; color: var(--sub); margin-bottom: 20px; border-left: 3px solid var(--accent); padding-left: 10px; }
         .text-v { font-size: 17px; line-height: 1.9; color: var(--sub); white-space: pre-wrap; word-wrap: break-word; }
@@ -149,61 +124,50 @@
 
         .mood-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); margin-bottom: 15px; cursor: pointer; }
         
-        /* 【关键修改 3】底部工具栏
-           不再使用 fixed，改为 flex 布局的一部分 (Relative)
-        */
+        /* 6. iOS 风格底部工具栏 */
         .edit-tools { 
-            /* 布局属性 */
-            position: relative; 
-            flex-shrink: 0;         /* 严禁被压缩 */
-            bottom: auto; left: auto; right: auto; /* 重置旧属性 */
-            
-            /* 样式属性 */
+            position: relative; /* 回归普通文档流 */
+            flex-shrink: 0;     /* 禁止压缩 */
             width: 100%; 
-            background: var(--bg); 
-            border-top: 1px solid var(--mood-bg); 
-            border-bottom: none; 
-            z-index: 100; 
+            background: #f0f2f5; /* 仿 iOS 键盘顶栏色 */
+            border-top: 1px solid rgba(0,0,0,0.1); 
+            z-index: 200; 
             
-            /* 内部内容排版 */
             display: flex; 
-            gap: 6px; 
-            padding: 10px 15px; 
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 适配 Home 条 */
-            flex-wrap: nowrap;
-            overflow-x: auto;
+            align-items: center;
+            justify-content: space-between; /* 两端对齐 */
+            gap: 10px; 
+            padding: 8px 15px; 
+            /* 适配 iPhone 底部黑条：env(safe-area) */
+            padding-bottom: calc(8px + env(safe-area-inset-bottom)); 
+        }
+        @media (prefers-color-scheme: dark) { .edit-tools { background: #2c2c2c; border-top: 1px solid rgba(255,255,255,0.1); } }
+
+        /* 格式按钮组 */
+        .format-group { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
+        .tool-btn { 
+            padding: 8px 12px; font-size: 14px; border-radius: 8px; 
+            background: var(--card); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            color: var(--text); font-weight: 500; min-width: 44px; text-align: center; white-space: nowrap; cursor: pointer;
         }
 
-        .tool-btn { 
-            padding: 10px 12px; font-size: 13px; border-radius: 10px; 
-            background: var(--card); border: 1px solid var(--mood-bg); 
-            color: var(--sub); font-weight: 600; flex: 1; text-align: center; white-space: nowrap; 
+        /* 键盘收起按钮 (iOS 风格) */
+        .btn-done {
+            font-size: 14px; font-weight: 600; color: #007aff; /* iOS 蓝 */
+            background: none; border: none; padding: 5px 10px; cursor: pointer;
         }
-        
-        /* 6. 弹窗与模态框 */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 200; display: none; align-items: flex-end; }
+
+        /* 弹窗与其他 */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
         .modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 30px 20px; max-height: 80vh; overflow-y: auto; }
         .mood-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; justify-content: center; }
         .mood-tag { padding: 9px 15px; background: var(--mood-bg); border-radius: 15px; font-size: 12px; color: var(--sub); border: 1px solid transparent; cursor: pointer; }
         .mood-tag.active { border-color: var(--accent); color: var(--accent); font-weight: 700; background: var(--card); }
         
-        /* 锁屏界面 */
-        #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:300; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:400; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         #pwd-i { padding:14px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:200px; }
         
-        /* 7. 去掉拖动柄 */
-        #e-content {
-            resize: none; 
-            overflow-y: hidden; 
-            width: 100%; 
-            border: none; 
-            background: none; 
-            font-size: 17px; 
-            line-height: 1.9; 
-            min-height: 60vh; 
-            outline: none; 
-            color: var(--text);
-        }
+        #e-content { resize: none; overflow-y: hidden; width: 100%; border: none; background: none; font-size: 17px; line-height: 1.9; min-height: 60vh; outline: none; color: var(--text); }
     </style>
 </head>
 <body>
@@ -291,12 +255,21 @@
     <div class="toolbar">
         <button class="btn-pill" onclick="closePage()">返回</button>
         <span id="d-date-title" style="font-size:11px; opacity:0.3; font-weight:700;"></span>
-        <div id="v-tools"><button class="btn-del" onclick="doDel()">删除</button> <button class="btn-pill btn-save" id="edit-btn" onclick="enterEdit()">编辑</button></div>
-        <div id="e-tools" style="display:none"><button class="btn-pill btn-save" onclick="save(true)">完成</button></div>
+        <div id="v-tools">
+            <button class="btn-del" onclick="doDel()">删除</button> 
+            <button class="btn-pill btn-save" id="edit-btn" onclick="enterEdit()">编辑</button>
+        </div>
+        <div id="e-tools" style="display:none">
+            <button class="btn-pill btn-save" onclick="save(true)">保存</button>
+        </div>
     </div>
 
     <div class="reading-container" id="scroll-container">
-        <div id="v-box"><h2 id="title-v"></h2><div class="meta-v" id="meta-v"></div><div class="text-v" id="content-v"></div></div>
+        <div id="v-box">
+            <h2 id="title-v"></h2>
+            <div class="meta-v" id="meta-v"></div>
+            <div class="text-v" id="content-v"></div>
+        </div>
         
         <div id="e-box" style="display:none">
             <div class="mood-trigger" id="mood-trigger-btn" onclick="openMoodModal()">选择心情...</div>
@@ -307,11 +280,14 @@
     </div>
     
     <div class="edit-tools" id="float-tools" style="display:none;">
-        <button class="tool-btn" onclick="wrapText('**')">加粗</button>
-        <button class="tool-btn" onclick="wrapText('__')">下划线</button>
-        <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
-        <button class="tool-btn" onclick="wrapText('> ')">引用</button>
-        <button class="tool-btn" onclick="wrapText('- ')">列表</button>
+        <div class="format-group">
+            <button class="tool-btn" onclick="wrapText('**')">B 加粗</button>
+            <button class="tool-btn" onclick="wrapText('__')">U 下划</button>
+            <button class="tool-btn" onclick="wrapText('~~')">S 删除</button>
+            <button class="tool-btn" onclick="wrapText('> ')">” 引用</button>
+            <button class="tool-btn" onclick="wrapText('- ')">≡ 列表</button>
+        </div>
+        <button class="btn-done" onclick="document.getElementById('e-content').blur()">完成</button>
     </div>
     
     <div id="save-hint" style="position:fixed; bottom:120px; right:25px; font-size:10px; color:var(--sub); font-weight: bold; z-index:150;"></div>
@@ -323,7 +299,6 @@
     let isEditState = false, activeMoods = [], autoSaveTimer = null, isComposing = false, lastHiddenTime = 0;
     const PWD_KEY = 'ShiXuPro_Permanent_PWD';
     
-    // 心情颜色映射配置
     const moodFamilies = {
         '💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy',
         '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing',
@@ -331,12 +306,12 @@
         '🌑 害怕': 'f-fear', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'
     };
 
-    // 2. 核心启动与验证
+    // 2. 核心启动
     function checkAuth() {
         const v = document.getElementById('pwd-i').value, s = localStorage.getItem(PWD_KEY);
         if(!s) { 
             if(v.length < 1) return alert("设置初始密码"); 
-            localStorage.setItem(PWD_KEY, btoa(v)); // 注意：base64 仅为基础混淆，非强加密
+            localStorage.setItem(PWD_KEY, btoa(v)); 
             start(); 
         }
         else if(btoa(v) === s) { start(); lastHiddenTime = 0; } 
@@ -345,7 +320,6 @@
 
     function start() {
         document.getElementById('auth-layer').style.display='none';
-        // 连接 IndexedDB 数据库
         const req = indexedDB.open("ShiXuPro_Official_DB", 1);
         req.onupgradeneeded = (e) => { 
             const dbRef = e.target.result;
@@ -354,13 +328,13 @@
         req.onsuccess = (e) => { db = e.target.result; sync(); };
     }
 
-    // 3. 数据同步与渲染
+    // 3. 数据同步
     async function sync() {
         const tx = db.transaction("notes", "readonly");
         const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = (e) => r(e.target.result));
         
         dataMap.clear(); let tw = 0, mc = 0, recordedDates = new Set();
-        const prefix = curMonth.toLocaleDateString().split('/').slice(0,2).join('/'); // 获取当前年/月前缀
+        const prefix = curMonth.toLocaleDateString().split('/').slice(0,2).join('/');
         
         all.forEach(n => { 
             dataMap.set(n.date, n); 
@@ -369,7 +343,6 @@
             if(n.date.startsWith(prefix)) mc++; 
         });
 
-        // 更新顶部统计数据
         document.getElementById('s-total').innerText = all.length;
         document.getElementById('s-month').innerText = mc;
         document.getElementById('s-words').innerText = tw.toLocaleString();
@@ -379,7 +352,6 @@
         renderGrowthGrid(all);
     }
 
-    // 渲染热力图
     function renderGrowthGrid(all) {
         const grid = document.getElementById('growth-grid'); grid.innerHTML = '';
         all.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(n => {
@@ -391,7 +363,6 @@
         });
     }
 
-    // 渲染日历
     function renderCal() {
         const g = document.getElementById('cal-g'); g.innerHTML = '';
         const y = curMonth.getFullYear(), m = curMonth.getMonth();
@@ -399,7 +370,7 @@
         
         const first = new Date(y, m, 1).getDay();
         const days = new Date(y, m+1, 0).getDate();
-        const offset = (first === 0 ? 6 : first - 1); // 周一为起始
+        const offset = (first === 0 ? 6 : first - 1); 
         
         for(let i=0; i<offset; i++) g.innerHTML += '<div></div>';
         for(let d=1; d<=days; d++) {
@@ -417,13 +388,12 @@
         }
     }
 
-    // 4. 搜索功能
     function filterIndex() {
         const q = document.getElementById('search-input').value.toLowerCase(), list = document.getElementById('index-list');
         list.innerHTML = ''; if(!q) return;
         Array.from(dataMap.values())
             .filter(n => (n.title+n.content).toLowerCase().includes(q))
-            .slice(0, 10) // 限制显示前10条，优化性能
+            .slice(0, 10) 
             .forEach(n => {
                 const item = document.createElement('div'); 
                 item.style = "padding:12px; border-bottom:1px solid var(--mood-bg); display:flex; justify-content:space-between; font-size:14px; font-weight:600; cursor:pointer;";
@@ -433,7 +403,6 @@
             });
     }
 
-    // 5. 笔记操作逻辑
     function openNote(k) {
         curKey = k; 
         document.getElementById('d-date-title').innerText = k.replace(/\//g, ' . ');
@@ -442,21 +411,16 @@
         document.getElementById('d-page').classList.remove('page-hidden');
     }
 
-    // 优化后的 Markdown 渲染
     function renderMD(t) {
         if (!t) return '';
         let html = t
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") // XSS防护
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") 
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/__(.*?)__/g, '<u>$1</u>')
             .replace(/~~(.*?)~~/g, '<del>$1</del>')
             .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>');
-            
-        // 列表处理
         html = html.replace(/^\- (.*$)/gm, '<li>$1</li>');
         html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
-        
-        // 换行处理
         return html.replace(/\n/g, '<br>');
     }
 
@@ -466,6 +430,7 @@
         document.getElementById('e-box').style.display='none';
         document.getElementById('v-tools').style.display='block'; 
         document.getElementById('e-tools').style.display='none';
+        document.getElementById('float-tools').style.display='none';
         
         document.getElementById('title-v').innerText = d.title || "无标题";
         document.getElementById('meta-v').innerText = `${d.mood ? d.mood.replace(/,/g, ' ') : ''} ${d.mood ? '·' : ''} ${d.words} 字`;
@@ -481,21 +446,20 @@
         document.getElementById('v-tools').style.display='none'; 
         document.getElementById('e-tools').style.display='block';
         
+        // 显示底部工具栏
+        document.getElementById('float-tools').style.display='flex';
+        
         document.getElementById('e-title').value = d?d.title:''; 
         document.getElementById('e-content').value = d ? d.content : '';
         
         activeMoods = d && d.mood ? d.mood.split(',') : []; 
         updateMoodDisplay(); 
         updateWC();
-		
-		// 【新增】进入编辑模式时，根据已有内容撑开高度
-		autoResizeTextarea();
+        autoResizeTextarea();
         
-        // 延迟聚焦，适配 iOS
         setTimeout(() => document.getElementById('e-content').focus(), 100);
     }
 
-    // 6. 心情与保存逻辑
     function openMoodModal() { document.getElementById('mood-modal').style.display = 'flex'; updateMoodTags(); }
     function closeMoodModal() { document.getElementById('mood-modal').style.display = 'none'; }
     function updateMoodTags() { 
@@ -537,18 +501,15 @@
         };
     }
 
-    // 7. 工具栏辅助函数
     function wrapText(sym) {
         const el = document.getElementById('e-content');
         const start = el.selectionStart, end = el.selectionEnd, txt = el.value;
         
         if (sym === '- ' || sym === '> ') {
-            // 列表和引用处理
             const newline = start !== 0 && txt[start-1] !== '\n' ? '\n' : '';
             el.value = txt.slice(0, start) + newline + sym + txt.slice(start);
             el.selectionStart = el.selectionEnd = start + newline.length + sym.length;
         } else {
-            // 包裹型处理 (加粗/删除线)
             const selected = txt.slice(start, end);
             if (selected.length > 0) {
                 el.value = txt.slice(0, start) + sym + selected + sym + txt.slice(end);
@@ -565,13 +526,11 @@
         document.getElementById('wc-d').innerText = document.getElementById('e-content').value.length;
     }
 
-    // 8. 其他辅助功能
     function moveMonth(s) { curMonth.setMonth(curMonth.getMonth()+s); renderCal(); }
     function goToday() { curMonth = new Date(); renderCal(); }
     function closePage() { document.getElementById('d-page').classList.add('page-hidden'); }
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
     
-    // 数据导入导出
     function exportJSON() { 
         db.transaction("notes", "readonly").objectStore("notes").getAll().onsuccess = (e) => { 
             const b = new Blob([JSON.stringify(e.target.result)], {type:"application/json"});
@@ -612,43 +571,25 @@
         } 
     }
     
-	// 9. 【修改后】底部的事件监听
-	const editor = document.getElementById('e-content');
-	// 监听输入法状态，防止字数乱跳
-	editor.addEventListener('compositionstart', () => isComposing = true);
-	editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); autoResizeTextarea(); });
-	// 自动保存逻辑
-	editor.addEventListener('input', () => { 
-		updateWC(); 
-    
-    // 每次输入都触发高度调整和防遮挡检查
-		autoResizeTextarea(); 
+    // 事件监听
+    const editor = document.getElementById('e-content');
+    editor.addEventListener('compositionstart', () => isComposing = true);
+    editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); autoResizeTextarea(); });
+    editor.addEventListener('input', () => { 
+        updateWC(); 
+        autoResizeTextarea(); 
+        clearTimeout(autoSaveTimer); 
+        autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
+    });
 
-		clearTimeout(autoSaveTimer); 
-		autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
-	});
-
-    // 【修正版】增量滚动逻辑 (Target: #d-page)
-    // 解决光标被遮挡的核心：滚动正确的容器
+    // 自动增高 (无需 JS 滚动)
     function autoResizeTextarea() {
         const el = document.getElementById('e-content');
-        const page = document.getElementById('d-page'); // 找到真正能滚动的容器
-        
-        // 1. 记录旧高度
-        const oldHeight = el.scrollHeight;
-
-        // 2. 重置并重新计算
         el.style.height = 'auto'; 
-        const newHeight = el.scrollHeight;
-        el.style.height = newHeight + 'px';
-
-        // 3. 滚动容器 (d-page) 而不是窗口 (window)
-        const diff = newHeight - oldHeight;
-        if (diff > 0) {
-            page.scrollBy({ top: diff, behavior: 'smooth' });
-        }
+        el.style.height = el.scrollHeight + 'px';
     }
-    // 隐私保护：切后台5分钟自动锁屏
+
+    // 隐私保护
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) lastHiddenTime = Date.now();
         else {
@@ -659,41 +600,7 @@
             if (isEditState) setTimeout(()=>editor.focus(), 100);
         }
     });
-	//修复了滚动对象错误的问题 (Scroll Target Fix)
-	if (window.visualViewport) {
-        function resizePage() {
-            const page = document.getElementById('d-page');
-            if (!page) return;
-            
-            // 1. 强制页面高度等于可视视口高度
-            // 这样页面底部就会刚好卡在键盘上方
-            page.style.height = window.visualViewport.height + 'px';
-            
-            // 2. 键盘弹起时，确保光标在视野内
-            if (isEditState && document.activeElement.id === 'e-content') {
-                setTimeout(() => {
-                    // 只有当光标被遮挡时才需要滚动
-                    // 这里我们简单地让光标进入视野
-                    document.activeElement.scrollIntoView({block: "nearest", behavior: "smooth"});
-                }, 100);
-            }
-        }
 
-        // 监听视口变化（键盘弹起/收缩）
-        window.visualViewport.addEventListener('resize', resizePage);
-        window.visualViewport.addEventListener('scroll', resizePage);
-        
-        // 初始化一次
-        resizePage();
-    }
-    
-    // 还要修正一下 autoResizeTextarea，现在不需要手动滚动页面了
-    // 因为 Flex 容器会自动处理
-    function autoResizeTextarea() {
-        const el = document.getElementById('e-content');
-        el.style.height = 'auto'; 
-        el.style.height = el.scrollHeight + 'px';
-    }
 </script>
 </body>
 </html>
