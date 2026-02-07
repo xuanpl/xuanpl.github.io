@@ -15,7 +15,16 @@
         :root { 
             --primary: #2c3e50; --accent: #d4af37; --bg: #f8f9fa; --card: #ffffff; --text: #2c3e50; 
             --danger: #e74c3c; --sub: #525c68; --mood-bg: #e9ecef;
-            --nav-height: 56px; 
+            --nav-height: 56px;
+            
+            /* ★ 必须是RGB三原色数字，不能是Hex代码，否则下方的 rgba() 会失效 ★ */
+            --energy: 243, 156, 18; 
+            --healing: 39, 174, 96; 
+            --thinking: 41, 128, 185;
+            --release: 231, 76, 60; 
+            --melancholy: 52, 73, 94; 
+            --fear: 26, 26, 26; 
+            --custom: 142, 68, 173;
         }
         @media (prefers-color-scheme: dark) {
             :root { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c; }
@@ -134,13 +143,13 @@
         .box-header { font-size: 11px; font-weight: 700; margin-bottom: 12px; color: var(--sub); display: flex; justify-content: space-between; }
         .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
         .growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); }
-        .f-energy.lv-1 { background: rgba(var(--energy), 0.2); } .f-energy.lv-2 { background: rgba(var(--energy), 0.5); } .f-energy.lv-3 { background: rgba(var(--energy), 1.0); }
-        .f-healing.lv-1 { background: rgba(var(--healing), 0.2); } .f-healing.lv-2 { background: rgba(var(--healing), 0.5); } .f-healing.lv-3 { background: rgba(var(--healing), 1.0); }
-        .f-thinking.lv-1 { background: rgba(var(--thinking), 0.2); } .f-thinking.lv-2 { background: rgba(var(--thinking), 0.5); } .f-thinking.lv-3 { background: rgba(var(--thinking), 1.0); }
-        .f-release.lv-1 { background: rgba(var(--release), 0.2); } .f-release.lv-2 { background: rgba(var(--release), 0.5); } .f-release.lv-3 { background: rgba(var(--release), 1.0); }
-        .f-melancholy.lv-1 { background: rgba(var(--melancholy), 0.2); } .f-melancholy.lv-2 { background: rgba(var(--melancholy), 0.5); } .f-melancholy.lv-3 { background: rgba(var(--melancholy), 1.0); }
-        .f-fear.lv-1 { background: rgba(var(--fear), 0.2); } .f-fear.lv-2 { background: rgba(var(--fear), 0.5); } .f-fear.lv-3 { background: rgba(var(--fear), 1.0); }
-        .f-custom.lv-1 { background: rgba(var(--custom), 0.2); } .f-custom.lv-2 { background: rgba(var(--custom), 0.5); } .f-custom.lv-3 { background: rgba(var(--custom), 1.0); }
+        .f-energy.lv-1 { background: rgba(var(--energy), 0.3); } .f-energy.lv-2 { background: rgba(var(--energy), 0.6); } .f-energy.lv-3 { background: rgba(var(--energy), 1.0); }
+        .f-healing.lv-1 { background: rgba(var(--healing), 0.3); } .f-healing.lv-2 { background: rgba(var(--healing), 0.6); } .f-healing.lv-3 { background: rgba(var(--healing), 1.0); }
+        .f-thinking.lv-1 { background: rgba(var(--thinking), 0.3); } .f-thinking.lv-2 { background: rgba(var(--thinking), 0.6); } .f-thinking.lv-3 { background: rgba(var(--thinking), 1.0); }
+        .f-release.lv-1 { background: rgba(var(--release), 0.3); } .f-release.lv-2 { background: rgba(var(--release), 0.6); } .f-release.lv-3 { background: rgba(var(--release), 1.0); }
+        .f-melancholy.lv-1 { background: rgba(var(--melancholy), 0.3); } .f-melancholy.lv-2 { background: rgba(var(--melancholy), 0.6); } .f-melancholy.lv-3 { background: rgba(var(--melancholy), 1.0); }
+        .f-fear.lv-1 { background: rgba(var(--fear), 0.3); } .f-fear.lv-2 { background: rgba(var(--fear), 0.6); } .f-fear.lv-3 { background: rgba(var(--fear), 1.0); }
+        .f-custom.lv-1 { background: rgba(var(--custom), 0.3); } .f-custom.lv-2 { background: rgba(var(--custom), 0.6); } .f-custom.lv-3 { background: rgba(var(--custom), 1.0); }
         .search-i { width: 100%; padding: 12px 18px; border-radius: 14px; border: none; background: var(--mood-bg); color: var(--text); font-size: 14px; }
         .walk-btn { width: 100%; margin-top: 15px; background: var(--primary); color: var(--bg); border: none; padding: 14px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
@@ -164,21 +173,29 @@
         #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:400; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         #pwd-i { padding:14px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:200px; }
         
-        /* 编辑框样式 */
-        #e-content { 
-            resize: none; 
-            overflow-y: hidden; /* 自动增高，不出现内部滚动条 */
+        /* 新版编辑器样式 */
+        .editor-box { 
             width: 100%; 
-            border: none; 
-            background: none; 
-            font-size: 17px; 
-            line-height: 1.9; 
             min-height: 60vh; 
             outline: none; 
+            border: none;
+            font-size: 17px; 
+            line-height: 1.9; 
             color: var(--text);
-            /* ★ 关键缓冲：底部预留超大空间，确保中文输入时光标不被顶到底部 ★ */
-            padding-bottom: 50vh; 
+            padding-bottom: 50vh; /* 依然保留底部缓冲 */
+            white-space: pre-wrap; /* 关键：保留换行符 */
+            word-break: break-word;
         }
+
+        /* 模拟 Placeholder */
+        .editor-box:empty:before {
+            content: attr(placeholder);
+            color: var(--sub);
+            opacity: 0.6;
+            pointer-events: none;
+            display: block; /* 确保占位符独占一行 */
+        }
+		
     </style>
 </head>
 <body>
@@ -286,7 +303,7 @@
         <div id="e-box" style="display:none">
             <div class="mood-trigger" id="mood-trigger-btn" onclick="openMoodModal()">选择心情...</div>
             <input type="text" id="e-title" placeholder="给今天安个标题..." style="width:100%; border:none; background:none; font-size:24px; font-weight:600; margin-bottom:15px; outline:none; color:var(--text);">
-            <textarea id="e-content" placeholder="写点什么..." style="width:100%; border:none; background:none; font-size:17px; line-height:1.9; min-height:60vh; outline:none; color:var(--text);"></textarea>
+            <div id="e-content" contenteditable="true" class="editor-box" placeholder="写点什么..."></div>
             <div id="wc-d-box" style="font-size:10px; color:var(--sub); margin-top:10px; font-weight:700;">字数：<span id="wc-d">0</span></div>
         </div>
     </div>
@@ -490,12 +507,11 @@
         document.getElementById('e-tools').style.display='block';
         
         document.getElementById('e-title').value = d?d.title:''; 
-        document.getElementById('e-content').value = d ? d.content : '';
+        document.getElementById('e-content').innerText = d ? d.content : '';
         
         activeMoods = d && d.mood ? d.mood.split(',') : []; 
         updateMoodDisplay(); 
-        updateWC();
-        autoResizeTextarea();
+        updateWC();  
         
         setTimeout(() => document.getElementById('e-content').focus(), 100);
     }
@@ -529,7 +545,7 @@
     }
 
     function save(manual) {
-        const c = document.getElementById('e-content').value;
+        const c = document.getElementById('e-content').innerText;
         const d = { date: curKey, title: document.getElementById('e-title').value, content: c, mood: activeMoods.join(','), words: c.length };
         db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => { 
             sync(); 
@@ -543,7 +559,7 @@
 
     function updateWC() {
         if (isComposing) return;
-        document.getElementById('wc-d').innerText = document.getElementById('e-content').value.length;
+        document.getElementById('wc-d').innerText = document.getElementById('e-content').innerText.length;
     }
 
     function moveMonth(s) { curMonth.setMonth(curMonth.getMonth()+s); renderCal(); updateStats(); }
@@ -594,20 +610,12 @@
     
     // 事件监听
     const editor = document.getElementById('e-content');
-    editor.addEventListener('compositionstart', () => isComposing = true);
-    editor.addEventListener('compositionend', () => { isComposing = false; updateWC(); autoResizeTextarea(); });
+    // 只需要监听输入事件来更新字数和自动保存
     editor.addEventListener('input', () => { 
         updateWC(); 
-        autoResizeTextarea(); 
         clearTimeout(autoSaveTimer); 
         autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
     });
-
-    function autoResizeTextarea() {
-        const el = document.getElementById('e-content');
-        el.style.height = 'auto'; 
-        el.style.height = el.scrollHeight + 'px';
-    }
 
     // 隐私保护
     document.addEventListener('visibilitychange', () => {
