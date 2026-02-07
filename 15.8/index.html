@@ -38,15 +38,14 @@
         }
         
         /* ★ 关键修复：日记详情页布局 (#d-page) ★
-           1. position: absolute -> 允许被 Meta 标签挤压高度
-           2. display: flex -> 垂直弹性布局，底部工具栏自动跟随
-           3. z-index: 100 + background -> 彻底盖住首页，防止漏光
+           改为 absolute，当 Meta 标签生效挤压 body 时，
+           absolute 的容器会跟随 body 变矮，从而把底部的 flex 元素（工具栏）顶上来
         */
         #d-page {
             display: flex;
             flex-direction: column;
             height: 100%; 
-            position: absolute; /* 改为 absolute 以便更好地响应视口变化 */
+            position: absolute; 
             top: 0; left: 0; width: 100%;
             background: var(--bg); 
             z-index: 100;          
@@ -56,7 +55,7 @@
 
         .page-hidden { transform: translateX(100%); pointer-events: none; }
         
-        /* 4. 首页组件样式 (保持原样) */
+        /* 4. 首页组件样式 */
         .home-header { padding: 40px 25px 5px; display: flex; justify-content: space-between; align-items: flex-start; }
         .home-header h1 { font-size: 22px; font-weight: 200; margin: 0; letter-spacing: 1px; }
         .settings-btn { background: none; border: none; padding: 5px; cursor: pointer; }
@@ -64,11 +63,34 @@
         .mini-stats { display: flex; gap: 15px; margin: 0 25px 8px; color: var(--sub); }
         .stat-val { font-size: 16px; font-weight: 300; margin-top: 1px; color: var(--text); }
         .stat-label { font-size: 9px; text-transform: uppercase; opacity: 0.6; }
+        
+        /* 日历区域 */
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); box-shadow: 0 5px 25px rgba(0,0,0,0.03); padding-bottom: 8px; }
         .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
-        .nav-group { display: flex; align-items: center; gap: 12px; }
-        .today-btn { font-size: 10px; color: var(--accent); font-weight: 600; background: var(--mood-bg); padding: 5px 14px; border-radius: 20px; cursor: pointer; }
-        .cal-btn { background: var(--mood-bg); border: none; width: 34px; height: 34px; border-radius: 50%; color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        /* ★ UI升级方案 A：一体化胶囊日历控制器 ★ */
+        .cal-nav-pod { 
+            display: flex; 
+            background: var(--mood-bg); 
+            border-radius: 18px; 
+            padding: 3px; 
+            gap: 2px;
+        }
+        .cal-btn-unified { 
+            background: transparent; 
+            border: none; 
+            padding: 6px 14px; 
+            border-radius: 15px; 
+            color: var(--text); 
+            font-size: 12px; 
+            font-weight: 600; 
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .cal-btn-unified:active { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .cal-btn-unified.today { color: var(--accent); }
+
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; gap: 1px; }
         .day { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; margin: 1px; position: relative; cursor: pointer; }
         .day span:first-child { font-size: 16px; font-weight: 600; }
@@ -76,6 +98,7 @@
         .day.recorded { background: var(--mood-bg); }
         .day.is-today { background: var(--primary) !important; color: var(--bg); }
         .day.recorded::after { content: ''; position: absolute; bottom: 5px; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
+        
         .section-box { margin: 8px 15px; padding: 15px 18px; background: var(--card); border-radius: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
         .box-header { font-size: 11px; font-weight: 700; margin-bottom: 12px; color: var(--sub); display: flex; justify-content: space-between; }
         .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -96,19 +119,16 @@
             padding: 15px 20px; 
             background: var(--bg); 
             z-index: 20; 
-            flex-shrink: 0; 
+            flex-shrink: 0; /* 禁止被压缩 */
         }
         .btn-pill { font-size: 13px; font-weight: 600; padding: 8px 22px; border-radius: 16px; border: none; background: var(--mood-bg); color: var(--primary); min-width: 80px; text-align: center; cursor: pointer; }
         .btn-save { background: var(--primary); color: var(--bg); }
         .btn-del { color: var(--danger); font-size: 12px; font-weight: bold; background: none; border: none; margin-right: 15px; cursor: pointer; }
         
-        /* ★ 关键修复：滚动区域 ★
-           flex-grow: 1 -> 自动占满 顶部 和 底部工具栏 之间的剩余空间
-           当键盘弹起，页面高度变小，这个区域会自动变矮，光标自然就露出来了
-        */
+        /* 中间内容区 (Flex Grow) */
         .reading-container { 
             flex-grow: 1;           
-            overflow-y: auto;       
+            overflow-y: auto;       /* 只在这里滚动 */
             -webkit-overflow-scrolling: touch; 
             padding: 20px 25px 20px; 
             width: 100%; 
@@ -127,33 +147,29 @@
         .text-v ul { padding-left: 20px; }
         .mood-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); margin-bottom: 15px; cursor: pointer; }
         
-        /* ★ 样式还原：工具栏样式回归 15.8.html 的设计 ★
-           但保留 Flex 结构 (relative, flex-shrink: 0)
-        */
+        /* ★ 底部工具栏 (Flex 布局 + 白色胶囊样式还原) ★ */
         .edit-tools { 
-            position: relative; /* 它是 flex 布局的一部分，不要用 fixed */
-            flex-shrink: 0;     /* 严禁被压缩，键盘弹起时它会被顶上去 */
-            
-            /* 还原您喜欢的样式 */
+            position: relative; 
+            flex-shrink: 0;     /* 严禁被压缩 */
             width: 100%; 
             background: var(--bg); 
             border-top: 1px solid var(--mood-bg); 
             z-index: 200; 
             
             display: flex; 
-            gap: 6px; 
+            align-items: center;
+            justify-content: space-between; 
+            gap: 10px; 
             padding: 10px 15px; 
-            /* 适配 iPhone 底部黑条 */
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
-            
-            flex-wrap: nowrap;
-            overflow-x: auto;
         }
 
-        /* 还原您喜欢的胶囊按钮样式 */
+        .format-group { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
+        
+        /* 还原：白色胶囊按钮样式 */
         .tool-btn { 
-            padding: 10px 12px; 
-            font-size: 13px; 
+            padding: 9px 12px; 
+            font-size: 12px; 
             border-radius: 10px; 
             background: var(--card); 
             border: 1px solid var(--mood-bg); 
@@ -163,6 +179,13 @@
             text-align: center; 
             white-space: nowrap; 
             cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        /* 键盘收起按钮 */
+        .btn-done {
+            font-size: 13px; font-weight: 600; color: var(--primary);
+            background: var(--mood-bg); border: none; padding: 9px 16px; border-radius: 10px; cursor: pointer;
         }
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
@@ -238,10 +261,10 @@
     <div class="cal-section">
         <div class="cal-ctrl">
             <div id="cal-m-label" style="font-weight:600; font-size:16px;"></div>
-            <div class="nav-group">
-                <button class="cal-btn" onclick="moveMonth(-1)">◀</button>
-                <div class="today-btn" onclick="goToday()">今天</div>
-                <button class="cal-btn" onclick="moveMonth(1)">▶</button>
+            <div class="cal-nav-pod">
+                <button class="cal-btn-unified" onclick="moveMonth(-1)">◀</button>
+                <div class="cal-btn-unified today" onclick="goToday()">今天</div>
+                <button class="cal-btn-unified" onclick="moveMonth(1)">▶</button>
             </div>
         </div>
         <div class="cal-grid" id="cal-g"></div>
@@ -267,7 +290,7 @@
             <button class="btn-pill btn-save" id="edit-btn" onclick="enterEdit()">编辑</button>
         </div>
         <div id="e-tools" style="display:none">
-            <button class="btn-pill btn-save" onclick="save(true)">完成</button>
+            <button class="btn-pill btn-save" onclick="save(true)">保存</button>
         </div>
     </div>
 
@@ -287,11 +310,14 @@
     </div>
     
     <div class="edit-tools" id="float-tools" style="display:none;">
-        <button class="tool-btn" onclick="wrapText('**')">加粗</button>
-        <button class="tool-btn" onclick="wrapText('__')">下划线</button>
-        <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
-        <button class="tool-btn" onclick="wrapText('> ')">引用</button>
-        <button class="tool-btn" onclick="wrapText('- ')">列表</button>
+        <div class="format-group">
+            <button class="tool-btn" onclick="wrapText('**')">加粗</button>
+            <button class="tool-btn" onclick="wrapText('__')">下划线</button>
+            <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
+            <button class="tool-btn" onclick="wrapText('> ')">引用</button>
+            <button class="tool-btn" onclick="wrapText('- ')">列表</button>
+        </div>
+        <button class="btn-done" onclick="document.getElementById('e-content').blur()">完成</button>
     </div>
     
     <div id="save-hint" style="position:fixed; bottom:120px; right:25px; font-size:10px; color:var(--sub); font-weight: bold; z-index:150;"></div>
@@ -324,6 +350,7 @@
 
     function start() {
         document.getElementById('auth-layer').style.display='none';
+        // Pro版使用 Official_DB 以保留用户数据
         const req = indexedDB.open("ShiXuPro_Official_DB", 1);
         req.onupgradeneeded = (e) => { 
             const dbRef = e.target.result;
@@ -332,28 +359,39 @@
         req.onsuccess = (e) => { db = e.target.result; sync(); };
     }
 
-    // 3. 数据同步
+    // 3. 数据同步与渲染
     async function sync() {
         const tx = db.transaction("notes", "readonly");
         const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = (e) => r(e.target.result));
         
-        dataMap.clear(); let tw = 0, mc = 0, recordedDates = new Set();
-        const prefix = curMonth.toLocaleDateString().split('/').slice(0,2).join('/');
+        dataMap.clear(); 
+        let tw = 0, recordedDates = new Set();
         
         all.forEach(n => { 
             dataMap.set(n.date, n); 
             tw += (n.words || 0); 
             recordedDates.add(n.date); 
-            if(n.date.startsWith(prefix)) mc++; 
         });
 
+        // 全局统计
         document.getElementById('s-total').innerText = all.length;
-        document.getElementById('s-month').innerText = mc;
         document.getElementById('s-words').innerText = tw.toLocaleString();
         document.getElementById('days-count').innerText = `${recordedDates.size} Days`;
         
+        // 渲染日历并更新月度统计
         renderCal(); 
+        updateStats(); // 新增：分离出的统计函数
         renderGrowthGrid(all);
+    }
+
+    // ★ 新增：独立统计函数，用于切换月份时更新 Month 数据
+    function updateStats() {
+        const prefix = curMonth.toLocaleDateString().split('/').slice(0,2).join('/'); 
+        let mc = 0;
+        dataMap.forEach(n => {
+            if(n.date.startsWith(prefix)) mc++;
+        });
+        document.getElementById('s-month').innerText = mc;
     }
 
     function renderGrowthGrid(all) {
@@ -530,8 +568,19 @@
         document.getElementById('wc-d').innerText = document.getElementById('e-content').value.length;
     }
 
-    function moveMonth(s) { curMonth.setMonth(curMonth.getMonth()+s); renderCal(); }
-    function goToday() { curMonth = new Date(); renderCal(); }
+    // 修复：切换月份时同步更新统计
+    function moveMonth(s) { 
+        curMonth.setMonth(curMonth.getMonth()+s); 
+        renderCal(); 
+        updateStats(); // 关键调用
+    }
+    
+    function goToday() { 
+        curMonth = new Date(); 
+        renderCal(); 
+        updateStats(); 
+    }
+    
     function closePage() { document.getElementById('d-page').classList.add('page-hidden'); }
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
     
@@ -539,7 +588,10 @@
         db.transaction("notes", "readonly").objectStore("notes").getAll().onsuccess = (e) => { 
             const b = new Blob([JSON.stringify(e.target.result)], {type:"application/json"});
             const a = document.createElement("a"); 
-            a.href=URL.createObjectURL(b); a.download=`ShiXu_Backup.json`; a.click(); 
+            a.href=URL.createObjectURL(b); 
+            // Pro版备份文件名
+            a.download=`ShiXu_Pro_Backup_${new Date().toISOString().slice(0,10)}.json`; 
+            a.click(); 
         }; 
     }
     
@@ -586,7 +638,7 @@
         autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
     });
 
-    // 自动增高 (无需 JS 滚动)
+    // 自动增高 (无需 JS 滚动，靠 Flex 自动处理)
     function autoResizeTextarea() {
         const el = document.getElementById('e-content');
         el.style.height = 'auto'; 
