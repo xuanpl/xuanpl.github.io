@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>拾绪Pro · 灵感日记</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,8 +25,8 @@
         /* 2. 基础重置 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); overflow: hidden; }
-        /* 强制禁止左右滑动 */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); padding-bottom: env(safe-area-inset-bottom); overflow-x: hidden; touch-action: none; }
+        /* 禁止左右滑动 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); padding-bottom: env(safe-area-inset-bottom); overflow-x: hidden; }
         
         /* 3. 页面容器 */
         .page { 
@@ -38,22 +38,21 @@
             padding-top: env(safe-area-inset-top); 
         }
         
-        /* ★ 修复日历左滑穿帮问题 ★ */
         .page-hidden { 
             transform: translateX(100%); 
             pointer-events: none; 
-            visibility: hidden; /* 关键：彻底隐藏，防止手势误触 */
+            visibility: hidden; /* 防止左滑穿帮 */
         }
         
-        /* ★ 日记详情页布局 (#d-page) ★
-           使用 fixed 定位，高度将由 JS 动态计算
+        /* ★ 核心布局：三明治结构 ★
+           使用 absolute + 100dvh，确保在键盘弹起时，容器物理高度自动缩小。
+           配合 interactive-widget，底部工具栏会被自动挤上来。
         */
         #d-page {
             display: flex;
             flex-direction: column;
-            /* 默认高度 100%，JS 会覆盖它 */
-            height: 100%; 
-            position: fixed; 
+            height: 100dvh; /* 关键：使用动态视口高度 */
+            position: absolute; 
             top: 0; left: 0; width: 100%;
             background: var(--bg); 
             z-index: 100;          
@@ -73,7 +72,7 @@
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); box-shadow: 0 5px 25px rgba(0,0,0,0.03); padding-bottom: 8px; }
         .cal-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
         
-        /* 方案 A：一体化胶囊日历控制器 */
+        /* 一体化胶囊日历控制器 */
         .cal-nav-pod { display: flex; background: var(--mood-bg); border-radius: 18px; padding: 3px; gap: 2px; }
         .cal-btn-unified { background: transparent; border: none; padding: 6px 14px; border-radius: 15px; color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
         .cal-btn-unified:active { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -102,18 +101,34 @@
         .walk-btn { width: 100%; margin-top: 15px; background: var(--primary); color: var(--bg); border: none; padding: 14px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
         /* 5. 编辑页面组件 */
+        
+        /* ★ 顶部工具栏 (可隐藏) ★ */
         .toolbar { 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 15px 20px; 
             background: var(--bg); 
             z-index: 20; 
             flex-shrink: 0; 
+            transition: all 0.2s ease-out; /* 平滑过渡 */
         }
+        
+        /* 专注模式：隐藏顶部导航 */
+        .toolbar.focus-hidden {
+            height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
         .btn-pill { font-size: 13px; font-weight: 600; padding: 8px 22px; border-radius: 16px; border: none; background: var(--mood-bg); color: var(--primary); min-width: 80px; text-align: center; cursor: pointer; }
         .btn-save { background: var(--primary); color: var(--bg); }
         .btn-del { color: var(--danger); font-size: 12px; font-weight: bold; background: none; border: none; margin-right: 15px; cursor: pointer; }
         
-        /* 中间内容区 */
+        /* ★ 中间内容区 ★ 
+           flex-grow: 1 自动占满空间。
+           overflow-y: auto 确保内容多时自己滚动，不撑开父容器 
+        */
         .reading-container { 
             flex-grow: 1;           
             overflow-y: auto;       
@@ -135,7 +150,7 @@
         .text-v ul { padding-left: 20px; }
         .mood-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); margin-bottom: 15px; cursor: pointer; }
         
-        /* 底部工具栏 */
+        /* ★ 底部工具栏 ★ */
         .edit-tools { 
             position: relative; 
             flex-shrink: 0;    
@@ -145,14 +160,13 @@
             z-index: 200; 
             display: flex; 
             align-items: center;
-            justify-content: space-between; 
+            justify-content: center; /* 居中排列 */
             gap: 10px; 
             padding: 10px 15px; 
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
         }
 
-        .format-group { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
-        
+        /* 还原：白色胶囊按钮样式 */
         .tool-btn { 
             padding: 9px 12px; 
             font-size: 12px; 
@@ -166,12 +180,6 @@
             white-space: nowrap; 
             cursor: pointer;
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-        }
-
-        /* 键盘收起按钮 */
-        .btn-done {
-            font-size: 13px; font-weight: 600; color: var(--primary);
-            background: var(--mood-bg); border: none; padding: 9px 16px; border-radius: 10px; cursor: pointer;
         }
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
@@ -268,7 +276,7 @@
 </div>
 
 <div id="d-page" class="page page-hidden">
-    <div class="toolbar">
+    <div class="toolbar" id="top-toolbar">
         <button class="btn-pill" onclick="closePage()">返回</button>
         <span id="d-date-title" style="font-size:11px; opacity:0.3; font-weight:700;"></span>
         <div id="v-tools">
@@ -295,14 +303,11 @@
     </div>
     
     <div class="edit-tools" id="float-tools" style="display:none;">
-        <div class="format-group">
-            <button class="tool-btn" onclick="wrapText('**')">加粗</button>
-            <button class="tool-btn" onclick="wrapText('__')">下划线</button>
-            <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
-            <button class="tool-btn" onclick="wrapText('> ')">引用</button>
-            <button class="tool-btn" onclick="wrapText('- ')">列表</button>
-        </div>
-        <button class="btn-done" onclick="document.getElementById('e-content').blur()">完成</button>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="wrapText('**')">加粗</button>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="wrapText('__')">下划线</button>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="wrapText('~~')">删除线</button>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="wrapText('> ')">引用</button>
+        <button class="tool-btn" onmousedown="event.preventDefault()" onclick="wrapText('- ')">列表</button>
     </div>
     
     <div id="save-hint" style="position:fixed; bottom:120px; right:25px; font-size:10px; color:var(--sub); font-weight: bold; z-index:150;"></div>
@@ -550,13 +555,7 @@
     function moveMonth(s) { curMonth.setMonth(curMonth.getMonth()+s); renderCal(); updateStats(); }
     function goToday() { curMonth = new Date(); renderCal(); updateStats(); }
     
-    // ★ 关键修复：关闭时隐藏 visibility，防止左滑穿帮
-    function closePage() { 
-        const p = document.getElementById('d-page');
-        p.classList.add('page-hidden');
-        // 等动画结束后彻底隐藏，这里简化处理，CSS已加 visibility: hidden
-    }
-    
+    function closePage() { document.getElementById('d-page').classList.add('page-hidden'); }
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
     
     function exportJSON() { 
@@ -618,34 +617,20 @@
         el.style.height = el.scrollHeight + 'px';
     }
 
-    // ★ JS 核心逻辑：全手动视口控制 ★
-    if (window.visualViewport) {
-        const viewport = window.visualViewport;
-        const dPage = document.getElementById('d-page');
-        
-        function resizeHandler() {
-            if (!dPage || dPage.classList.contains('page-hidden')) return;
-            
-            // 1. 强制页面高度 = 可视高度
-            // 这样 flex-bottom 的工具栏会自动上来
-            dPage.style.height = viewport.height + 'px';
-            
-            // 2. 永远保持页面顶部对齐，防止被顶飞
-            window.scrollTo(0, 0);
-
-            // 3. 智能滚动：如果光标被遮挡，就滚一滚
-            if (document.activeElement === editor) {
-                // 简单粗暴：直接利用浏览器原生行为或稍微辅助一下
-                 setTimeout(() => {
-                    const rect = editor.getBoundingClientRect();
-                    // 这里可以加入更复杂的判断，但通常 shrinking container 已经足够
-                }, 100);
-            }
+    // ★ 专注模式逻辑：输入时隐藏顶部导航 ★
+    const topToolbar = document.getElementById('top-toolbar');
+    
+    // 当输入框获得焦点（开始输入）
+    editor.addEventListener('focus', () => {
+        if(isEditState) {
+            topToolbar.classList.add('focus-hidden');
         }
-        
-        viewport.addEventListener('resize', resizeHandler);
-        viewport.addEventListener('scroll', resizeHandler);
-    }
+    });
+
+    // 当输入框失去焦点（收起键盘/点击外部）
+    editor.addEventListener('blur', () => {
+        topToolbar.classList.remove('focus-hidden');
+    });
 
     // 隐私保护
     document.addEventListener('visibilitychange', () => {
