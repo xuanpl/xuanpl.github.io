@@ -37,24 +37,26 @@
             padding-top: env(safe-area-inset-top); 
         }
         
-        /* 【关键重构】日记详情页 (#d-page) 
-           使用 Flex 布局，高度由 CSS 自动管理，禁止 JS 插手
-           z-index: 100 确保盖住首页，background 确保不透明
+        /* ★ 关键修复：日记详情页布局 (#d-page) ★
+           1. position: absolute -> 允许被 Meta 标签挤压高度
+           2. display: flex -> 垂直弹性布局，底部工具栏自动跟随
+           3. z-index: 100 + background -> 彻底盖住首页，防止漏光
         */
         #d-page {
             display: flex;
-            flex-direction: column; /* 垂直排列：顶栏 -> 内容 -> 底栏 */
+            flex-direction: column;
             height: 100%; 
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: var(--bg); /* 防止漏光 */
-            z-index: 100;          /* 确保在最上层 */
-            overflow: hidden;      /* 禁止页面整体滚动 */
+            position: absolute; /* 改为 absolute 以便更好地响应视口变化 */
+            top: 0; left: 0; width: 100%;
+            background: var(--bg); 
+            z-index: 100;          
+            overflow: hidden;      
             padding-top: env(safe-area-inset-top);
         }
 
         .page-hidden { transform: translateX(100%); pointer-events: none; }
         
-        /* 4. 首页组件样式 (保持不变) */
+        /* 4. 首页组件样式 (保持原样) */
         .home-header { padding: 40px 25px 5px; display: flex; justify-content: space-between; align-items: flex-start; }
         .home-header h1 { font-size: 22px; font-weight: 200; margin: 0; letter-spacing: 1px; }
         .settings-btn { background: none; border: none; padding: 5px; cursor: pointer; }
@@ -94,16 +96,19 @@
             padding: 15px 20px; 
             background: var(--bg); 
             z-index: 20; 
-            flex-shrink: 0; /* 禁止被压缩 */
+            flex-shrink: 0; 
         }
         .btn-pill { font-size: 13px; font-weight: 600; padding: 8px 22px; border-radius: 16px; border: none; background: var(--mood-bg); color: var(--primary); min-width: 80px; text-align: center; cursor: pointer; }
         .btn-save { background: var(--primary); color: var(--bg); }
         .btn-del { color: var(--danger); font-size: 12px; font-weight: bold; background: none; border: none; margin-right: 15px; cursor: pointer; }
         
-        /* 中间滚动区：自动填满剩余空间 */
+        /* ★ 关键修复：滚动区域 ★
+           flex-grow: 1 -> 自动占满 顶部 和 底部工具栏 之间的剩余空间
+           当键盘弹起，页面高度变小，这个区域会自动变矮，光标自然就露出来了
+        */
         .reading-container { 
             flex-grow: 1;           
-            overflow-y: auto;       /* 只在这里滚动 */
+            overflow-y: auto;       
             -webkit-overflow-scrolling: touch; 
             padding: 20px 25px 20px; 
             width: 100%; 
@@ -112,7 +117,6 @@
             position: relative; 
         }
         
-        /* 详情排版 */
         #title-v { font-size: 28px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; }
         .meta-v { font-size: 11px; color: var(--sub); margin-bottom: 20px; border-left: 3px solid var(--accent); padding-left: 10px; }
         .text-v { font-size: 17px; line-height: 1.9; color: var(--sub); white-space: pre-wrap; word-wrap: break-word; }
@@ -121,43 +125,46 @@
         .text-v blockquote { border-left: 4px solid var(--mood-bg); margin: 15px 0; padding: 10px 15px; background: rgba(0,0,0,0.02); color: var(--sub); font-style: italic; }
         .text-v del { color: var(--sub); opacity: 0.6; }
         .text-v ul { padding-left: 20px; }
-
         .mood-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); margin-bottom: 15px; cursor: pointer; }
         
-        /* 6. iOS 风格底部工具栏 */
+        /* ★ 样式还原：工具栏样式回归 15.8.html 的设计 ★
+           但保留 Flex 结构 (relative, flex-shrink: 0)
+        */
         .edit-tools { 
-            position: relative; /* 回归普通文档流 */
-            flex-shrink: 0;     /* 禁止压缩 */
+            position: relative; /* 它是 flex 布局的一部分，不要用 fixed */
+            flex-shrink: 0;     /* 严禁被压缩，键盘弹起时它会被顶上去 */
+            
+            /* 还原您喜欢的样式 */
             width: 100%; 
-            background: #f0f2f5; /* 仿 iOS 键盘顶栏色 */
-            border-top: 1px solid rgba(0,0,0,0.1); 
+            background: var(--bg); 
+            border-top: 1px solid var(--mood-bg); 
             z-index: 200; 
             
             display: flex; 
-            align-items: center;
-            justify-content: space-between; /* 两端对齐 */
-            gap: 10px; 
-            padding: 8px 15px; 
-            /* 适配 iPhone 底部黑条：env(safe-area) */
-            padding-bottom: calc(8px + env(safe-area-inset-bottom)); 
+            gap: 6px; 
+            padding: 10px 15px; 
+            /* 适配 iPhone 底部黑条 */
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+            
+            flex-wrap: nowrap;
+            overflow-x: auto;
         }
-        @media (prefers-color-scheme: dark) { .edit-tools { background: #2c2c2c; border-top: 1px solid rgba(255,255,255,0.1); } }
 
-        /* 格式按钮组 */
-        .format-group { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
+        /* 还原您喜欢的胶囊按钮样式 */
         .tool-btn { 
-            padding: 8px 12px; font-size: 14px; border-radius: 8px; 
-            background: var(--card); border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            color: var(--text); font-weight: 500; min-width: 44px; text-align: center; white-space: nowrap; cursor: pointer;
+            padding: 10px 12px; 
+            font-size: 13px; 
+            border-radius: 10px; 
+            background: var(--card); 
+            border: 1px solid var(--mood-bg); 
+            color: var(--sub); 
+            font-weight: 600; 
+            flex: 1; 
+            text-align: center; 
+            white-space: nowrap; 
+            cursor: pointer;
         }
 
-        /* 键盘收起按钮 (iOS 风格) */
-        .btn-done {
-            font-size: 14px; font-weight: 600; color: #007aff; /* iOS 蓝 */
-            background: none; border: none; padding: 5px 10px; cursor: pointer;
-        }
-
-        /* 弹窗与其他 */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
         .modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 30px 20px; max-height: 80vh; overflow-y: auto; }
         .mood-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; justify-content: center; }
@@ -260,7 +267,7 @@
             <button class="btn-pill btn-save" id="edit-btn" onclick="enterEdit()">编辑</button>
         </div>
         <div id="e-tools" style="display:none">
-            <button class="btn-pill btn-save" onclick="save(true)">保存</button>
+            <button class="btn-pill btn-save" onclick="save(true)">完成</button>
         </div>
     </div>
 
@@ -280,14 +287,11 @@
     </div>
     
     <div class="edit-tools" id="float-tools" style="display:none;">
-        <div class="format-group">
-            <button class="tool-btn" onclick="wrapText('**')">B 加粗</button>
-            <button class="tool-btn" onclick="wrapText('__')">U 下划</button>
-            <button class="tool-btn" onclick="wrapText('~~')">S 删除</button>
-            <button class="tool-btn" onclick="wrapText('> ')">” 引用</button>
-            <button class="tool-btn" onclick="wrapText('- ')">≡ 列表</button>
-        </div>
-        <button class="btn-done" onclick="document.getElementById('e-content').blur()">完成</button>
+        <button class="tool-btn" onclick="wrapText('**')">加粗</button>
+        <button class="tool-btn" onclick="wrapText('__')">下划线</button>
+        <button class="tool-btn" onclick="wrapText('~~')">删除线</button>
+        <button class="tool-btn" onclick="wrapText('> ')">引用</button>
+        <button class="tool-btn" onclick="wrapText('- ')">列表</button>
     </div>
     
     <div id="save-hint" style="position:fixed; bottom:120px; right:25px; font-size:10px; color:var(--sub); font-weight: bold; z-index:150;"></div>
