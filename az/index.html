@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>拾绪Pro · 灵感日记</title>
-    <link rel="manifest" href='data:application/manifest+json;utf8,{"name":"拾绪","short_name":"拾绪","display":"standalone","start_url":".","background_color":"#f8f9fa","theme_color":"#f8f9fa","icons":[{"src":"https://ui-avatars.com/api/?name=%E6%8B%BE&background=2c3e50&color=fff&length=1&size=192&rounded=true&bold=true","sizes":"192x192","type":"image/png"}]}'>
-    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=%%E6%8B%BE%E7%BB%AA&background=2c3e50&color=fff&length=2&size=192&rounded=true&bold=true">
-    <meta name="theme-color" content="#f8f9fa">
+    <title>拾绪 · 灵感日记</title>
+	<link rel="manifest" href='data:application/manifest+json;utf8,{"name":"拾绪","short_name":"拾绪","display":"standalone","start_url":".","background_color":"#f8f9fa","theme_color":"#f8f9fa","icons":[{"src":"https://ui-avatars.com/api/?name=%E6%8B%BE&background=2c3e50&color=fff&length=1&size=192&rounded=true&bold=true","sizes":"192x192","type":"image/png"}]}'>
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=%E6%8B%BE&background=2c3e50&color=fff&length=1&size=192&rounded=true&bold=true">
+	<meta name="theme-color" content="#f8f9fa">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
@@ -230,7 +230,7 @@
 <body>
 
 <div id="auth-layer">
-    <h2 style="font-weight:200; letter-spacing:10px; margin-bottom: 30px;">拾绪Pro</h2>
+    <h2 style="font-weight:200; letter-spacing:10px; margin-bottom: 30px;">拾绪</h2>
     <input type="password" id="pwd-i" placeholder="Password" autocomplete="off">
     <button class="btn-pill btn-save" onclick="checkAuth()">解锁</button>
 </div>
@@ -275,7 +275,7 @@
 
 <div id="h-page" class="page">
     <div class="home-header">
-        <h1>拾绪Pro · 灵感日记</h1>
+        <h1>拾绪 · 灵感日记</h1>
         <button class="settings-btn icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'">
             <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.50,0.38,1.03,0.70,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
         </button>
@@ -348,7 +348,7 @@
     // 1. 全局变量
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
     let isEditState = false, activeMoods = [], autoSaveTimer = null, isComposing = false, lastHiddenTime = 0;
-    const PWD_KEY = 'ShiXuPro_Permanent_PWD';
+    const PWD_KEY = 'ShiXu_Permanent_PWD';
     
     const moodFamilies = {
         '💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy',
@@ -371,7 +371,7 @@
 
     function start() {
         document.getElementById('auth-layer').style.display='none';
-        const req = indexedDB.open("ShiXuPro_Official_DB", 1);
+        const req = indexedDB.open("ShiXu_Official_DB", 1);
         req.onupgradeneeded = (e) => { 
             const dbRef = e.target.result;
             if(!dbRef.objectStoreNames.contains("notes")) dbRef.createObjectStore("notes", {keyPath: "date"}); 
@@ -604,7 +604,7 @@
             const b = new Blob([JSON.stringify(e.target.result)], {type:"application/json"});
             const a = document.createElement("a"); 
             a.href=URL.createObjectURL(b); 
-            a.download=`ShiXu_Pro_Backup_${new Date().toISOString().slice(0,10)}.json`; 
+            a.download=`ShiXu_Backup_${new Date().toISOString().slice(0,10)}.json`; 
             a.click(); 
         }; 
     }
