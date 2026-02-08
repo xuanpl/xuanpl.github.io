@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>拾绪 · 灵感日记</title>
-	<link rel="manifest" href='data:application/manifest+json;utf8,{"name":"拾绪","short_name":"拾绪","display":"standalone","start_url":".","background_color":"#f8f9fa","theme_color":"#f8f9fa","icons":[{"src":"https://ui-avatars.com/api/?name=%E6%8B%BE&background=2c3e50&color=fff&length=1&size=192&rounded=true&bold=true","sizes":"192x192","type":"image/png"}]}'>
-    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=%E6%8B%BE&background=2c3e50&color=fff&length=1&size=192&rounded=true&bold=true">
 	<meta name="theme-color" content="#f8f9fa">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -226,6 +224,45 @@
             transform: scale(0.95);
         }
     </style>
+	<script>
+        (function() {
+            // 定义图标配置 (深蓝背景+白色“拾”字)
+            const iconUrl = "https://ui-avatars.com/api/?name=%E6%8B%BE&background=2c3e50&color=fff&length=1&size=192&rounded=true&bold=true";
+            
+            // 定义 Manifest 对象
+            const manifest = {
+                "name": "拾绪",
+                "short_name": "拾绪",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#f8f9fa",
+                "theme_color": "#f8f9fa",
+                "orientation": "portrait",
+                "icons": [{
+                    "src": iconUrl,
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }]
+            };
+            
+            // 将 JSON 转为 URL 编码字符串，避免 HTML 解析错误
+            const stringManifest = JSON.stringify(manifest);
+            const blob = new Blob([stringManifest], {type: 'application/manifest+json'});
+            const manifestURL = URL.createObjectURL(blob);
+            
+            // 创建并插入 link 标签
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+            
+            // 同时注入 Apple Touch Icon
+            const appleLink = document.createElement('link');
+            appleLink.rel = 'apple-touch-icon';
+            appleLink.href = iconUrl;
+            document.head.appendChild(appleLink);
+        })();
+    </script>
 </head>
 <body>
 
