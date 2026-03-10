@@ -1,0 +1,15 @@
+{
+  "name": "拾绪 Pro · 灵感日记",
+  "short_name": "拾绪Pro",
+  "start_url": "index.html", 
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#2c3e50",
+  "icons": [
+    {
+      "src": "shixu.png", 
+      "sizes": "512x512",
+      "type": "image/png" 
+    }
+  ]
+}
