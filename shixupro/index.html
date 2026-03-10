@@ -29,7 +29,6 @@
         .static-nav { position: relative; width: 100%; min-height: var(--nav-height); background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); padding-bottom: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
         .cal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
-        .cal-ctrl { display: flex; background: none; padding: 3px; border-radius: 18px; gap: 2px; }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; gap: 1px; }
         .day { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; position: relative; }
         .day span:first-child { font-size: 18px; font-weight: 600; }
@@ -43,7 +42,6 @@
         .icon-btn svg { width: 22px; height: 22px; fill: var(--sub); }
         .editor-box { width: 100%; min-height: 50vh; font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; outline: none; padding-bottom: 20vh; }
         .editor-box:empty:before { content: attr(placeholder); color: var(--sub); opacity: 0.5; }
-        .box-header { font-size: 11px; font-weight: 700; margin: 0 0 12px; color: var(--sub); display: flex; justify-content: space-between; }
         .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
         .growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); transition: 0.3s; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
@@ -57,11 +55,10 @@
 		.mood-tag.active[class*="f-thinking"] { background: rgb(var(--thinking)) !important; }
 		.mood-tag.active[class*="f-melancholy"] { background: rgb(var(--melancholy)) !important; }
 		.mood-tag.active[class*="f-release"] { background: rgb(var(--release)) !important; }
-        /* 图片展示辅助样式 */
-        .img-item-v { width: calc(50% - 4px); height: 120px; object-fit: cover; border-radius: 12px; cursor: pointer; transition: opacity 0.2s; }
-        .img-item-v:active { opacity: 0.7; }
+        /* 图片样式 */
+        .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; }
         .pre-img-wrap { position: relative; width: 64px; height: 64px; }
-        .pre-img-del { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 18px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .pre-img-del { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -90,9 +87,9 @@
         <div class="cal-header">
             <div id="cal-m-label" style="font-weight: 600; font-size: 18px;"></div>
             <div class="cal-ctrl">
-                <button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(-1)">◀</button>
-                <button style="background:rgba(0,0,0,0.03); color: var(--accent); border:none; padding: 5px 12px; font-size:16px; border-radius:15px; cursor:pointer;" onclick="goToday()">今天</button>
-                <button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(1)">▶</button>
+                <button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px;" onclick="moveMonth(-1)">◀</button>
+                <button style="background:rgba(0,0,0,0.03); color: var(--accent); border:none; padding: 5px 12px; font-size:16px; border-radius:15px;" onclick="goToday()">今天</button>
+                <button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px;" onclick="moveMonth(1)">▶</button>
             </div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; color: var(--sub); margin-bottom: 8px; font-weight: bold;"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
@@ -121,11 +118,6 @@
         </div>
         <div id="e-tools" style="display: none;"><button class="btn-pill btn-save" onclick="save(true)">完成</button></div>
     </div>
-	<div style="width: 100%; padding: 8px 20px; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; gap: 10px;">
-		<button style="flex:1; padding:7px 0; font-size:13px; font-weight:700; color:var(--sub); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" onclick="insertMD('**')">B</button>
-		<button style="flex:1; padding:7px 0; font-size:13px; font-weight:700; color:var(--sub); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" onclick="insertMD('__')">U</button>
-		<button style="flex:1; padding:7px 0; font-size:13px; font-weight:700; color:var(--sub); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" onclick="insertMD('~~')">S</button>
-	</div>
     <div style="max-width: 650px; margin: 0 auto; padding: 20px 25px;">
         <div id="v-box">
             <div id="img-list-v" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
@@ -189,7 +181,7 @@
     }
 
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
-    let isEditState = false, activeMoods = [], currentImages = [], autoSaveTimer = null, debounceTimer = null;
+    let isEditState = false, activeMoods = [], currentImages = [], autoSaveTimer = null;
     const PWD_KEY = 'ShiXu_PWD';
     const DB_NAME = 'ShiXu_DB';
     const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
@@ -223,21 +215,17 @@
         let tw = 0, mc = 0, yc = 0;
         const viewYear = curMonth.getFullYear(); 
         const cmPrefix = `${viewYear}/${curMonth.getMonth()+1}/`;
-        
         all.forEach(n => {
             dataMap.set(n.date, n);
             tw += (n.words || 0);
             if(n.date.startsWith(cmPrefix)) mc++;
-            const noteYear = parseInt(n.date.split('/')[0]);
-            if(noteYear === viewYear) yc++;
+            if(parseInt(n.date.split('/')[0]) === viewYear) yc++;
         });
-
         document.getElementById('s-total').innerText = all.length;
         document.getElementById('s-words').innerText = tw.toLocaleString();
         document.getElementById('s-month').innerText = mc;
         document.getElementById('days-count').innerText = `${yc} 天`;
         document.getElementById('growth-title').innerText = `${viewYear}年 灵感足迹`;
-        
         renderCal();
         renderGrowth(all, viewYear);
     }
@@ -250,7 +238,6 @@
         const days = new Date(y, m+1, 0).getDate();
         const offset = (first === 0 ? 6 : first - 1); 
         for(let i=0; i<offset; i++) g.innerHTML += '<div></div>';
-        
         for(let d=1; d<=days; d++) {
             const dateObj = new Date(y, m, d);
             const k = `${y}/${m+1}/${d}`;
@@ -275,7 +262,6 @@
         const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
         const p = k.split('/');
         document.getElementById('d-date-title').innerText = `${p[0]} . ${p[1]} . ${p[2]}`;
-        
         dp.style.display = 'block';
         requestAnimationFrame(() => {
             dp.classList.add('active');
@@ -287,10 +273,7 @@
     function closePage() {
         const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
         hp.style.display = 'block';
-        requestAnimationFrame(() => {
-            dp.classList.remove('active');
-            setTimeout(() => { dp.style.display = 'none'; sync(); }, 300);
-        });
+        requestAnimationFrame(() => { dp.classList.remove('active'); setTimeout(() => { dp.style.display = 'none'; sync(); }, 300); });
     }
 
     function renderGrowth(all, year) {
@@ -303,7 +286,6 @@
                const family = moods.length > 0 ? (moodFamilies[moods[0]] || 'f-custom') : 'f-custom';
                const lv = n.words > 300 ? 'lv-3' : (n.words > 100 ? 'lv-2' : 'lv-1');
                cell.className = `growth-cell ${family} ${lv}`;
-               
                const cssVarStr = moodFamilies[moods[0]] ? `--${moodFamilies[moods[0]].split('-')[1]}` : '--custom';
                const rgbValue = getComputedStyle(document.documentElement).getPropertyValue(cssVarStr).trim();
                cell.style.backgroundColor = `rgba(${rgbValue}, ${lv==='lv-3'?1:lv==='lv-2'?0.6:0.3})`;
@@ -329,26 +311,19 @@
         document.getElementById('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
         
         // 渲染图片
-        const vImgList = document.getElementById('img-list-v');
-        vImgList.innerHTML = '';
+        const vImgList = document.getElementById('img-list-v'); vImgList.innerHTML = '';
         if(d.imgs && d.imgs.length) {
-            for(const name of d.imgs) {
-                try {
-                    const file = await readOPFS(name);
-                    const url = URL.createObjectURL(file);
-                    vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="window.open('${url}')">`;
-                } catch(e) { console.warn("Missing file", name); }
+            for(const item of d.imgs) {
+                const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
+                if(url) vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="window.open('${url}')">`;
             }
         }
-        
         document.getElementById('content-v').innerHTML = renderMD(d.content);
     }
 
     const editor = document.getElementById('e-content');
     editor.addEventListener('input', () => {
-        const text = editor.innerText.trim();
-        if (text === "") editor.innerHTML = ""; 
-        document.getElementById('wc-d').innerText = getWordCount(text);
+        document.getElementById('wc-d').innerText = getWordCount(editor.innerText.trim());
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
     });
@@ -359,15 +334,7 @@
 	
     function save(manual) {
         const c = editor.innerText;
-        // 核心修改：保存当前图片列表
-        const d = { 
-            date: curKey, 
-            title: document.getElementById('e-title').value, 
-            content: c, 
-            mood: activeMoods.join(','), 
-            words: getWordCount(c),
-            imgs: currentImages 
-        };
+        const d = { date: curKey, title: document.getElementById('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
         db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
             if(manual) showView(d);
             const hint = document.getElementById('save-hint');
@@ -377,16 +344,13 @@
     }
 
     function filterIndex() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            const q = document.getElementById('search-input').value.toLowerCase(), list = document.getElementById('index-list');
-            list.innerHTML = ''; if(!q) return;
-            Array.from(dataMap.values()).filter(n=>(n.title+n.content).toLowerCase().includes(q)).slice(0,5).forEach(n=>{
-                const div = document.createElement('div'); div.style="padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600;";
-                div.innerHTML = `<span>${n.title||'无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.date}</span>`;
-                div.onclick = () => openNote(n.date); list.appendChild(div);
-            });
-        }, 300);
+        const q = document.getElementById('search-input').value.toLowerCase(), list = document.getElementById('index-list');
+        list.innerHTML = ''; if(!q) return;
+        Array.from(dataMap.values()).filter(n=>(n.title+n.content).toLowerCase().includes(q)).slice(0,5).forEach(n=>{
+            const div = document.createElement('div'); div.style="padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600;";
+            div.innerHTML = `<span>${n.title||'无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.date}</span>`;
+            div.onclick = () => openNote(n.date); list.appendChild(div);
+        });
     }
 
     function renderMoodModal() {
@@ -394,32 +358,18 @@
         [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
             const family = moodFamilies[m] || 'f-custom';
 			const el = document.createElement('div');
-			el.className = `mood-tag ${family} ${activeMoods.includes(m) ? 'active' : ''}`
+			el.className = `mood-tag ${family} ${activeMoods.includes(m) ? 'active' : ''}`;
             el.innerText = m; el.onclick = () => {
                 if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m);
                 updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input'));
             }; container.appendChild(el);
         });
     }
-    function moveMonth(n) { curMonth.setMonth(curMonth.getMonth()+n); sync(); }
-    function goToday() { curMonth = new Date(); sync(); }
-    function openMoodModal() { renderMoodModal(); document.getElementById('mood-modal').style.display='flex'; }
-    function updateMoodDisplay() { document.getElementById('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
-    function showPwdModal() { document.getElementById('pwd-modal').style.display='flex'; document.getElementById('settings-modal').style.display='none'; }
-    function updatePassword() { const oldV = document.getElementById('old-pwd').value, newV = document.getElementById('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("错误"); }
-    function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
-    function exportJSON() { db.transaction("notes").objectStore("notes").getAll().onsuccess = e => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(e.target.result)], {type:'application/json'})); a.download = `ShiXu_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }; }
-    function importJSON(f) { const r = new FileReader(); r.onload=e=>{JSON.parse(e.target.result).forEach(n=>db.transaction("notes","readwrite").objectStore("notes").put(n)); sync(); alert("成功");}; r.readAsText(f.files[0]); }
-    function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
-    
-    // 核心修改：删除时同步清理图片文件
+
     async function doDel() { 
         if(confirm("删除？")) {
             const d = dataMap.get(curKey);
-            if(d && d.imgs) {
-                const root = await navigator.storage.getDirectory();
-                for(const name of d.imgs) { try { await root.removeEntry(name); } catch(e){} }
-            }
+            if(d && d.imgs) { for(const item of d.imgs) { if(!item.startsWith('data:')) await delOPFS(item); } }
             db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>closePage(); 
         }
     }
@@ -430,138 +380,106 @@
         document.getElementById('v-tools').style.display='none'; document.getElementById('e-tools').style.display='block';
         document.getElementById('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
         activeMoods = d && d.mood ? d.mood.split(',') : []; 
-        
-        // 核心修改：加载图片列表
         currentImages = d && d.imgs ? [...d.imgs] : [];
-        renderImgPreviewE();
-        
-        updateMoodDisplay(); 
+        renderImgPreviewE(); updateMoodDisplay(); 
         document.getElementById('wc-d').innerText = getWordCount(editor.innerText);
     }
 
     function addTransientMood() { const v = document.getElementById('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); document.getElementById('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input')); } }
+    function moveMonth(n) { curMonth.setMonth(curMonth.getMonth()+n); sync(); }
+    function goToday() { curMonth = new Date(); sync(); }
+    function openMoodModal() { renderMoodModal(); document.getElementById('mood-modal').style.display='flex'; }
+    function updateMoodDisplay() { document.getElementById('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
+    function showPwdModal() { document.getElementById('pwd-modal').style.display='flex'; document.getElementById('settings-modal').style.display='none'; }
+    function updatePassword() { const oldV = document.getElementById('old-pwd').value, newV = document.getElementById('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("错误"); }
+    function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
+    function exportJSON() { db.transaction("notes").objectStore("notes").getAll().onsuccess = e => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(e.target.result)], {type:'application/json'})); a.download = `ShiXu_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }; }
+    function importJSON(f) { const r = new FileReader(); r.onload=e=>{JSON.parse(e.target.result).forEach(n=>db.transaction("notes","readwrite").objectStore("notes").put(n)); sync(); alert("成功");}; r.readAsText(f.files[0]); }
+    function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
 
-	function insertMD(sym) {
-		editor.focus(); 
-		const sel = window.getSelection(); 
-		if(!sel.rangeCount) return;
-		const range = sel.getRangeAt(0);
-		const txt = range.toString();
-		const ins = sym.endsWith(' ') ? sym + txt : sym + txt + sym;
-		const node = document.createTextNode(ins);
-		range.deleteContents();
-		range.insertNode(node);
-		const newR = document.createRange();
-		if(!txt && !sym.endsWith(' ')) newR.setStart(node, sym.length); 
-		else newR.setStartAfter(node);
-		sel.removeAllRanges();
-		sel.addRange(newR);
-		editor.dispatchEvent(new Event('input')); 
-	}
-
-    / --- 新增图片处理模块逻辑 --- /
-    
-    async function compressToWebP(file) {
-		return new Promise((resolve, reject) => { // 增加 reject
-			const reader = new FileReader();
-			reader.readAsDataURL(file);
-			reader.onload = e => {
-				const img = new Image();
-				img.src = e.target.result;
-				img.onload = () => {
-					const canvas = document.createElement('canvas');
-					let w = img.width, h = img.height;
-					if(w > 1200) { h *= 1200 / w; w = 1200; }
-					canvas.width = w; canvas.height = h;
-					canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-					canvas.toBlob(b => resolve(b), 'image/webp', 0.8);
-				};
-				// 增加：如果图片加载失败，立即报错不再等待
-				img.onerror = () => reject(new Error("图片加载失败"));
-			};
-			reader.onerror = () => reject(new Error("文件读取失败"));
-		});
-	}
-
-    async function writeOPFS(name, blob) {
-		const root = await navigator.storage.getDirectory();
-		const handle = await root.getFileHandle(name, { create: true });
-		
-		// 检查是否存在 createWritable 方法
-		if (handle.createWritable) {
-			const writable = await handle.createWritable();
-			await writable.write(blob);
-			await writable.close();
-		} else {
-			// 备用方案：使用 AccessHandle (适配部分移动端 Safari)
-			const accessHandle = await handle.createSyncAccessHandle();
-			const buffer = await blob.arrayBuffer();
-			accessHandle.write(new Uint8Array(buffer));
-			accessHandle.close();
-		}
-	}
-
-    async function readOPFS(name) {
-        const root = await navigator.storage.getDirectory();
-        const handle = await root.getFileHandle(name);
-        return await handle.getFile();
-    }
+    / --- 架构师级：图片兼容存储模块 --- /
 
     async function handleImgUpload(input) {
-		if(!input.files.length) return;
-		const hint = document.getElementById('save-hint');
-		hint.innerText = "处理图片中...";
-		
-		try {
-			// 增加检查：环境是否支持 OPFS
-			if (!navigator.storage || !navigator.storage.getDirectory) {
-				throw new Error("当前环境不支持文件存储，请检查是否使用了 HTTPS 访问");
-			}
+        if(!input.files.length) return;
+        const hint = document.getElementById('save-hint'); hint.innerText = "处理图片中...";
+        try {
+            for (const file of input.files) {
+                const blob = await compressImg(file);
+                try {
+                    // 尝试 OPFS 存储
+                    const name = `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp`;
+                    await writeOPFS(name, blob);
+                    currentImages.push(name);
+                } catch(e) {
+                    // 降级：如果 OPFS 失败，转 Base64 存入 IDB
+                    const reader = new FileReader();
+                    const dataUrl = await new Promise(r => { reader.onload=()=>r(reader.result); reader.readAsDataURL(blob); });
+                    currentImages.push(dataUrl);
+                }
+            }
+            renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
+            hint.innerText = "已处理图片";
+        } catch(e) { alert("处理失败: " + e.message); }
+        finally { input.value = ''; setTimeout(() => { hint.innerText = ""; }, 2000); }
+    }
 
-			for (const file of input.files) {
-				const name = `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp`;
-				const blob = await compressToWebP(file);
-				await writeOPFS(name, blob);
-				currentImages.push(name);
-			}
-			renderImgPreviewE();
-			editor.dispatchEvent(new Event('input'));
-			hint.innerText = "处理完成";
-		} catch (error) {
-			console.error("图片处理出错:", error);
-			alert("图片处理失败: " + error.message);
-			hint.innerText = "处理失败"; // 发生错误时重置状态
-		} finally {
-			input.value = ''; // 清空选择器，允许重复上传同一张图
-			setTimeout(() => { if(hint.innerText.includes("处理")) hint.innerText = ""; }, 2000);
-		}
-	}
+    async function compressImg(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = e => {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if(w > 1200) { h *= 1200 / w; w = 1200; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(b => resolve(b), 'image/webp', 0.8);
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    }
+
+    async function writeOPFS(name, blob) {
+        const root = await navigator.storage.getDirectory();
+        const handle = await root.getFileHandle(name, { create: true });
+        if(!handle.createWritable) throw new Error("Main thread write unsupported"); 
+        const writable = await handle.createWritable();
+        await writable.write(blob); await writable.close();
+    }
+
+    async function readOPFSSafe(name) {
+        try {
+            const root = await navigator.storage.getDirectory();
+            const handle = await root.getFileHandle(name);
+            return URL.createObjectURL(await handle.getFile());
+        } catch(e) { return null; }
+    }
+
+    async function delOPFS(name) {
+        try { const root = await navigator.storage.getDirectory(); await root.removeEntry(name); } catch(e){}
+    }
 
     async function renderImgPreviewE() {
-        const box = document.getElementById('img-list-e');
-        box.innerHTML = '';
+        const box = document.getElementById('img-list-e'); box.innerHTML = '';
         for(let i=0; i<currentImages.length; i++) {
-            const name = currentImages[i];
-            const wrap = document.createElement('div');
-            wrap.className = 'pre-img-wrap';
-            
-            try {
-                const file = await readOPFS(name);
-                const url = URL.createObjectURL(file);
+            const item = currentImages[i];
+            const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
+            if(url) {
+                const wrap = document.createElement('div'); wrap.className = 'pre-img-wrap';
                 wrap.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
                                  <div class="pre-img-del" onclick="removeImg(${i})">×</div>`;
                 box.appendChild(wrap);
-            } catch(e) { console.error("Preview failed", name); }
+            }
         }
     }
 
     async function removeImg(index) {
-        const name = currentImages[index];
-        const root = await navigator.storage.getDirectory();
-        try { await root.removeEntry(name); } catch(e){}
-        currentImages.splice(index, 1);
-        renderImgPreviewE();
-        editor.dispatchEvent(new Event('input'));
+        const item = currentImages[index];
+        if(!item.startsWith('data:')) await delOPFS(item);
+        currentImages.splice(index, 1); renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
     }
 </script>
 </body>
