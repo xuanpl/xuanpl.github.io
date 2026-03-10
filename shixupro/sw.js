@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shixu-pro'; // 提升版本号
+const CACHE_NAME = 'shixu-pro-v1'; // 提升版本号
 
 self.addEventListener('install', e => {
   self.skipWaiting();

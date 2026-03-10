@@ -56,7 +56,8 @@
 		.mood-tag.active[class*="f-melancholy"] { background: rgb(var(--melancholy)) !important; }
 		.mood-tag.active[class*="f-release"] { background: rgb(var(--release)) !important; }
         /* 图片样式 */
-        .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; }
+        .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+		.img-item-v:active {transform: scale(0.96); box-shadow: inset 0 0 10px rgba(0,0,0,0.2); opacity: 0.9; }
         .pre-img-wrap { position: relative; width: 64px; height: 64px; }
         .pre-img-del { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 18px; font-weight: bold; }
     </style>
@@ -315,7 +316,7 @@
         if(d.imgs && d.imgs.length) {
             for(const item of d.imgs) {
                 const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
-                if(url) vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="window.open('${url}')">`;
+                if(url) vImgList.innerHTML += <img src="${url}" class="img-item-v" onclick="this.classList.toggle('full')">;
             }
         }
         document.getElementById('content-v').innerHTML = renderMD(d.content);
