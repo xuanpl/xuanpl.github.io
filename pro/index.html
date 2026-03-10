@@ -58,7 +58,12 @@
 		.mood-tag.active[class*="f-release"] { background: rgb(var(--release)) !important; }
         .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; cursor: pointer; transition: transform 0.2s; }
 		.img-item-v:active { transform: scale(0.96); opacity: 0.9; }
-        .img-item-v.full { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 2000; object-fit: contain; background: rgba(0,0,0,0.95); border-radius: 0; margin: 0; }
+        
+        /* 增强：Pro 图片查看器样式 */
+        #img-viewer { position: fixed; inset: 0; background: black; z-index: 2500; display: none; touch-action: none; align-items: center; justify-content: center; overflow: hidden; }
+        #viewer-img { max-width: 100%; max-height: 100%; transition: transform 0.1s ease-out; transform-origin: center center; }
+        .viewer-close { position: absolute; top: 40px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; z-index: 2600; }
+
         .pre-img-wrap { position: relative; width: 64px; height: 64px; }
         .pre-img-del { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 18px; font-weight: bold; }
         #progress-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
@@ -75,6 +80,11 @@
         if (isDark) document.body.classList.add('dark');
     })();
 </script>
+
+<div id="img-viewer" onclick="closeViewer()">
+    <div class="viewer-close">×</div>
+    <img id="viewer-img" onclick="event.stopPropagation()">
+</div>
 
 <div id="progress-modal">
     <div id="progress-text" style="font-size: 16px; font-weight: 600;">正在准备数据...</div>
@@ -173,8 +183,8 @@
             </select>
         </div>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份数据 (含图片)</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复数据 (从文件)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份全量灵感 (含图片)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复全量灵感 (从文件)</button>
         <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️ 清空本地记录</button>
         <input type="file" id="file-i" style="display:none" onchange="importJSON(this)">
     </div>
@@ -202,7 +212,6 @@
         navigator.serviceWorker.register('sw.js').then(reg => {
             reg.onupdatefound = () => {
                 const worker = reg.installing;
-                // 修复：之前这里错误的写成了 navigator.worker
                 worker.onstatechange = () => { if (worker.state === 'installed' && navigator.serviceWorker.controller) location.reload(); };
             };
         });
@@ -251,7 +260,7 @@
         document.getElementById('auth-layer').style.display = 'none';
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
-        req.onsuccess = e => { db = e.target.result; sync(); };
+        req.onsuccess = e => { db = e.target.result; sync(); initViewer(); };
     }
 
     async function sync() {
@@ -351,7 +360,7 @@
         if(d.imgs && d.imgs.length) {
             for(const item of d.imgs) {
                 const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
-                if(url) vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="this.classList.toggle('full')">`;
+                if(url) vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="openViewer('${url}')">`;
             }
         }
         document.getElementById('content-v').innerHTML = renderMD(d.content);
@@ -425,12 +434,23 @@
     function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
 
-    /* --- 修复版备份与导入逻辑 --- */
+    /* --- 核心修复：Pro 级导入与手势查看逻辑 --- */
 
     function updateProgress(text, pct) {
-        document.getElementById('progress-modal').style.display = 'flex';
+        const modal = document.getElementById('progress-modal');
+        modal.style.display = 'flex';
         document.getElementById('progress-text').innerText = text;
         document.getElementById('progress-bar-fill').style.width = pct + '%';
+    }
+
+    // 强力 Base64 转 Blob 逻辑
+    function b64ToBlob(b64) {
+        const parts = b64.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const uInt8Array = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; ++i) uInt8Array[i] = raw.charCodeAt(i);
+        return new Blob([uInt8Array], {type: contentType});
     }
 
     async function exportJSON() {
@@ -438,7 +458,7 @@
             const notes = await new Promise(r => db.transaction("notes").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
             const total = notes.length;
             for(let i=0; i<total; i++) {
-                updateProgress(`打包图片 (${i+1}/${total})`, ((i+1)/total)*100);
+                updateProgress(`正在打包 (${i+1}/${total})`, ((i+1)/total)*100);
                 if(notes[i].imgs && notes[i].imgs.length) {
                     const b64s = [];
                     for(let name of notes[i].imgs) {
@@ -463,45 +483,110 @@
         rd.onload = async e => {
             try {
                 const data = JSON.parse(e.target.result);
-                if (!Array.isArray(data)) throw new Error("无效的备份文件格式");
-                
                 const total = data.length;
                 for(let i=0; i<total; i++) {
-                    updateProgress(`恢复记录 (${i+1}/${total})`, ((i+1)/total)*100);
+                    updateProgress(`正在恢复 (${i+1}/${total})`, ((i+1)/total)*100);
                     let n = data[i];
                     if(n.imgs && n.imgs.length) {
                         const newNames = [];
                         for(let b64 of n.imgs) {
                             try {
                                 if(b64.startsWith('data:image')) {
-                                    const res = await fetch(b64); const blob = await res.blob();
-                                    // 修复：加入循环计数器确保文件名唯一
+                                    // 使用二进制转换替代 fetch
+                                    const blob = b64ToBlob(b64);
                                     const name = `img_${Date.now()}_${i}_${Math.random().toString(36).slice(-4)}.webp`;
-                                    await writeOPFS(name, blob); newNames.push(name);
+                                    await writeOPFS(name, blob);
+                                    newNames.push(name);
                                 } else { newNames.push(b64); }
-                            } catch(imgErr) { console.error("图片还原失败", imgErr); }
+                            } catch(imgErr) { console.error("图片恢复失败", imgErr); }
                         }
                         n.imgs = newNames;
                     }
-                    // 核心：使用 Promise 包裹写入操作确保顺序
-                    await new Promise((resolve, reject) => {
+                    // 严格异步顺序写入，防止文件句柄冲突
+                    await new Promise((resolve) => {
                         const tx = db.transaction("notes", "readwrite");
                         tx.objectStore("notes").put(n);
                         tx.oncomplete = () => resolve();
-                        tx.onerror = () => reject(new Error("数据库写入失败"));
                     });
                 }
-                sync(); alert("全量数据恢复完成");
-            } catch(ex) { 
-                console.error(ex);
-                alert("导入失败: " + ex.message); 
-            }
+                sync(); alert("恢复成功！");
+            } catch(ex) { alert("导入失败: " + ex.message); }
             finally { document.getElementById('progress-modal').style.display = 'none'; }
         };
         rd.readAsText(f.files[0]);
     }
 
-    /* --- 图片与系统文件工具 --- */
+    /* --- Pro 图片查看器逻辑 (支持双指缩放) --- */
+    let viewerScale = 1, viewerStartDist = 0;
+    function openViewer(url) {
+        const v = document.getElementById('img-viewer'), img = document.getElementById('viewer-img');
+        img.src = url; img.style.transform = `scale(1)`; viewerScale = 1;
+        v.style.display = 'flex';
+    }
+    function closeViewer() { document.getElementById('img-viewer').style.display = 'none'; }
+
+    function initViewer() {
+        const img = document.getElementById('viewer-img');
+        img.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                viewerStartDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            }
+        });
+        img.addEventListener('touchmove', e => {
+            if (e.touches.length === 2) {
+                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                const factor = dist / viewerStartDist;
+                viewerScale = Math.min(Math.max(1, viewerScale * factor), 4); // 限制缩放倍数 1-4
+                img.style.transform = `scale(${viewerScale})`;
+                viewerStartDist = dist;
+            }
+        });
+    }
+
+    /* --- 底层存储 API --- */
+    async function writeOPFS(n, b) {
+        const r = await navigator.storage.getDirectory();
+        const h = await r.getFileHandle(n, { create: true });
+        const w = await h.createWritable(); await w.write(b); await w.close();
+    }
+    async function readOPFS(n) {
+        const r = await navigator.storage.getDirectory();
+        return await (await r.getFileHandle(n)).getFile();
+    }
+    async function readOPFSSafe(n) {
+        try { return URL.createObjectURL(await readOPFS(n)); } catch(e) { return null; }
+    }
+    async function delOPFS(n) {
+        try { const r = await navigator.storage.getDirectory(); await r.removeEntry(n); } catch(e){}
+    }
+    async function renderImgPreviewE() {
+        const box = document.getElementById('img-list-e'); box.innerHTML = '';
+        for(let i=0; i<currentImages.length; i++) {
+            const url = currentImages[i].startsWith('data:') ? currentImages[i] : await readOPFSSafe(currentImages[i]);
+            if(url) {
+                const wrap = document.createElement('div'); wrap.className = 'pre-img-wrap';
+                wrap.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div class="pre-img-del" onclick="removeImg(${i})">×</div>`;
+                box.appendChild(wrap);
+            }
+        }
+    }
+    async function removeImg(idx) {
+        const itm = currentImages[idx]; if(!itm.startsWith('data:')) await delOPFS(itm);
+        currentImages.splice(idx, 1); renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
+    }
+    async function handleImgUpload(input) {
+        if(!input.files.length) return;
+        const hint = document.getElementById('save-hint'); hint.innerText = "处理中...";
+        try {
+            for (const file of input.files) {
+                const blob = await compressImg(file);
+                const name = `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp`;
+                try { await writeOPFS(name, blob); currentImages.push(name); } 
+                catch(e) { const b64 = await new Promise(r => { const rd = new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(blob); }); currentImages.push(b64); }
+            }
+            renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
+        } finally { hint.innerText = ""; input.value = ''; }
+    }
     async function compressImg(file) {
         return new Promise((resolve, reject) => {
             const rd = new FileReader(); rd.readAsDataURL(file);
@@ -516,61 +601,6 @@
                 img.onerror = reject;
             };
         });
-    }
-
-    async function handleImgUpload(input) {
-        if(!input.files.length) return;
-        const hint = document.getElementById('save-hint'); hint.innerText = "处理中...";
-        try {
-            for (const file of input.files) {
-                const blob = await compressImg(file);
-                try {
-                    const name = `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp`;
-                    await writeOPFS(name, blob); currentImages.push(name);
-                } catch(e) {
-                    const rd = new FileReader(); const b64 = await new Promise(r => { rd.onload=()=>r(rd.result); rd.readAsDataURL(blob); });
-                    currentImages.push(b64);
-                }
-            }
-            renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
-        } finally { hint.innerText = ""; input.value = ''; }
-    }
-
-    async function writeOPFS(n, b) {
-        const r = await navigator.storage.getDirectory();
-        const h = await r.getFileHandle(n, { create: true });
-        const w = await h.createWritable(); await w.write(b); await w.close();
-    }
-
-    async function readOPFS(n) {
-        const r = await navigator.storage.getDirectory();
-        return await (await r.getFileHandle(n)).getFile();
-    }
-
-    async function readOPFSSafe(n) {
-        try { return URL.createObjectURL(await readOPFS(n)); } catch(e) { return null; }
-    }
-
-    async function delOPFS(n) {
-        try { const r = await navigator.storage.getDirectory(); await r.removeEntry(n); } catch(e){}
-    }
-
-    async function renderImgPreviewE() {
-        const box = document.getElementById('img-list-e'); box.innerHTML = '';
-        for(let i=0; i<currentImages.length; i++) {
-            const url = currentImages[i].startsWith('data:') ? currentImages[i] : await readOPFSSafe(currentImages[i]);
-            if(url) {
-                const wrap = document.createElement('div'); wrap.className = 'pre-img-wrap';
-                wrap.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div class="pre-img-del" onclick="removeImg(${i})">×</div>`;
-                box.appendChild(wrap);
-            }
-        }
-    }
-
-    async function removeImg(idx) {
-        const itm = currentImages[idx];
-        if(!itm.startsWith('data:')) await delOPFS(itm);
-        currentImages.splice(idx, 1); renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
     }
 </script>
 </body>
