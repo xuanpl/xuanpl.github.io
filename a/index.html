@@ -73,9 +73,9 @@
 		}
 		.mood-tag.active[class*="f-energy"] { background: rgb(var(--energy)) !important; }
 		.mood-tag.active[class*="f-healing"] { background: rgb(var(--healing)) !important; }
-		.mood-tag.active[class*="f-thinking"] { background: rgb(var(--f-thinking)) !important; }
-		.mood-tag.active[class*=" f-melancholy"] { background: rgb(var(--f-melancholy)) !important; }
-		.mood-tag.active[class*="f-release"] { background: rgb(var(--f-release)) !important; }
+		.mood-tag.active[class*="f-thinking"] { background: rgb(var(--thinking)) !important; }
+		.mood-tag.active[class*="f-melancholy"] { background: rgb(var(--melancholy)) !important; }
+		.mood-tag.active[class*="f-release"] { background: rgb(var(--release)) !important; }
     </style>
 </head>
 <body>
@@ -350,9 +350,13 @@
         if (text === "") editor.innerHTML = ""; 
         document.getElementById('wc-d').innerText = getWordCount(text);
         clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
+        autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
     });
-
+	document.getElementById('e-title').addEventListener('input', () => {
+		clearTimeout(autoSaveTimer);
+		autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
+	});
+	
     function save(manual) {
         const c = editor.innerText;
         const d = { date: curKey, title: document.getElementById('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c) };
@@ -386,7 +390,7 @@
 			el.className = `mood-tag ${family} ${activeMoods.includes(m) ? 'active' : ''}`
             el.innerText = m; el.onclick = () => {
                 if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m);
-                updateMoodDisplay(); renderMoodModal(); save(false);
+                updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input'));
             }; container.appendChild(el);
         });
     }
@@ -445,5 +449,4 @@
 	}
 </script>
 </body>
-
 </html>
