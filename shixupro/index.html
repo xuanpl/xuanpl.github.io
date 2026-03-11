@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>拾绪 · 灵感日记</title>
+    <title>拾绪 Pro · 灵感日记</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="shixu.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
     <style>
         :root { 
@@ -18,8 +19,8 @@
             --energy: 255, 183, 77; --healing: 165, 190, 154; --thinking: 144, 164, 174;
             --release: 229, 115, 115; --melancholy: 121, 134, 203; --fear: 121, 134, 203; --custom: 207, 216, 220;
         }
-        @media (prefers-color-scheme: dark) {
-            :root { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c; }
+        body.dark {
+            --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
@@ -42,6 +43,7 @@
         .icon-btn svg { width: 22px; height: 22px; fill: var(--sub); }
         .editor-box { width: 100%; min-height: 50vh; font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; outline: none; padding-bottom: 20vh; }
         .editor-box:empty:before { content: attr(placeholder); color: var(--sub); opacity: 0.5; }
+        .box-header { font-size: 11px; font-weight: 700; margin: 0 0 12px; color: var(--sub); display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
         .growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); transition: 0.3s; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
@@ -55,24 +57,51 @@
 		.mood-tag.active[class*="f-thinking"] { background: rgb(var(--thinking)) !important; }
 		.mood-tag.active[class*="f-melancholy"] { background: rgb(var(--melancholy)) !important; }
 		.mood-tag.active[class*="f-release"] { background: rgb(var(--release)) !important; }
-        /* 图片样式 */
-        .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-		.img-item-v:active {transform: scale(0.96); box-shadow: inset 0 0 10px rgba(0,0,0,0.2); opacity: 0.9; }
+        .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; cursor: pointer; transition: transform 0.2s; }
+		.img-item-v:active { transform: scale(0.96); opacity: 0.9; }
+        
+        /* 增强：Pro 图片查看器样式 */
+        #img-viewer { position: fixed; inset: 0; background: black; z-index: 2500; display: none; touch-action: none; align-items: center; justify-content: center; overflow: hidden; }
+        #viewer-img { max-width: 100%; max-height: 100%; transition: transform 0.1s ease-out; transform-origin: center center; }
+        .viewer-close { position: absolute; top: 40px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; z-index: 2600; }
+
         .pre-img-wrap { position: relative; width: 64px; height: 64px; }
         .pre-img-del { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 12px; text-align: center; line-height: 18px; font-weight: bold; }
+        #progress-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .progress-bar-container { width: 70%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        #progress-bar-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
     </style>
 </head>
-<body>
+<body class="">
+
+<script>
+    (function() {
+        const savedTheme = localStorage.getItem('ShiXu_Pro_Theme') || 'auto';
+        const isDark = savedTheme === 'dark' || (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.body.classList.add('dark');
+    })();
+</script>
+
+<div id="img-viewer" onclick="closeViewer()">
+    <div class="viewer-close">×</div>
+    <img id="viewer-img" onclick="event.stopPropagation()">
+</div>
+
+<div id="progress-modal">
+    <div id="progress-text" style="font-size: 16px; font-weight: 600;">正在准备数据...</div>
+    <div class="progress-bar-container"><div id="progress-bar-fill"></div></div>
+    <div id="progress-sub" style="font-size: 12px; margin-top: 10px; opacity: 0.7;">请勿关闭浏览器</div>
+</div>
 
 <div id="auth-layer">
-    <h2 style="font-weight:200; letter-spacing:10px; margin-bottom: 30px;">拾绪</h2>
+    <h2 style="font-weight:200; letter-spacing:10px; margin-bottom: 30px;">拾绪 Pro</h2>
     <input type="password" id="pwd-i" placeholder="解锁密码" autocomplete="off">
     <button class="btn-pill btn-save" style="padding: 12px 40px;" onclick="checkAuth()">解锁</button>
 </div>
 
 <div id="h-page" class="page">
     <div style="padding: 30px 25px 10px; display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="font-size: 22px; font-weight: 200; margin: 0;">拾绪 · 灵感日记</h1>
+        <h1 style="font-size: 22px; font-weight: 200; margin: 0;">拾绪 Pro</h1>
         <button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'">
             <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.50,0.38,1.03,0.70,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
         </button>
@@ -124,12 +153,12 @@
             <div id="img-list-v" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
             <h2 id="title-v" style="margin-top: 0; font-size: 28px; line-height: 1.3;"></h2>
             <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 25px; border-left: 3px solid var(--accent); padding-left: 10px;"></div>
-            <div id="content-v" style="font-size: 18px; line-height: 1.9; color: var(--sub); white-space: pre-wrap;"></div>
+            <div id="content-v" style="font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap;"></div>
         </div>
         <div id="e-box" style="display: none;">
-            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                <div onclick="openMoodModal()" id="mood-trigger-btn" style="flex:1; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer; text-align:center;">选择心情...</div>
-                <div onclick="document.getElementById('img-i').click()" style="padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer;">📷 图片</div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <div onclick="openMoodModal()" id="mood-trigger-btn" style="min-width: 110px; width: auto; flex-shrink: 0; white-space: nowrap; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer; text-align:center;">选择心情...</div>
+                <div onclick="document.getElementById('img-i').click()" style="width: 100px; flex-shrink: 0; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer; text-align:center;">📷 图片</div>
             </div>
             <input type="file" id="img-i" style="display:none" accept="image/*" multiple onchange="handleImgUpload(this)">
             <div id="img-list-e" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
@@ -146,9 +175,18 @@
 <div id="settings-modal" class="modal" onclick="this.style.display='none'">
     <div class="modal-content" onclick="event.stopPropagation()">
         <h3 style="font-weight: 300; margin-top: 0; margin-bottom: 20px;">系统设置</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--mood-bg); border-radius: 15px; margin-bottom: 12px;">
+            <span style="font-size: 14px; font-weight: 600;">主题外观</span>
+            <select id="theme-select" onchange="applyTheme(this.value)" style="background: none; border: none; color: var(--primary); font-weight: 600; font-size: 14px; -webkit-appearance: none;">
+                <option value="auto">跟随系统</option>
+                <option value="light">明亮模式</option>
+                <option value="dark">深色模式</option>
+            </select>
+        </div>
+		<button class="btn-pill" style="width:100%; color:var(--accent); text-align:left; padding: 14px; margin-bottom:12px;" onclick="cleanStorage()">🧹 清理冗余图片 </button>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份灵感 (Export)</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复灵感 (Import)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份数据 (含图片)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复数据</button>
         <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️ 清空本地记录</button>
         <input type="file" id="file-i" style="display:none" onchange="importJSON(this)">
     </div>
@@ -184,9 +222,27 @@
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
     let isEditState = false, activeMoods = [], currentImages = [], autoSaveTimer = null;
     const PWD_KEY = 'ShiXu_PWD';
-    const DB_NAME = 'ShiXu_DB';
+    const DB_NAME = 'ShiXu_Pro_DB';
     const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
     const moodFamilies = {'💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy', '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing', '📝 思考': 'f-thinking', '🤔 疑惑': 'f-thinking', '🌑 害怕': 'f-melancholy', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'};
+
+    function applyTheme(mode) {
+        localStorage.setItem('ShiXu_Pro_Theme', mode);
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = (mode === 'dark') || (mode === 'auto' && systemDark);
+        document.body.classList.toggle('dark', isDark);
+    }
+
+    function initTheme() {
+        const saved = localStorage.getItem('ShiXu_Pro_Theme') || 'auto';
+        const select = document.getElementById('theme-select');
+        if(select) select.value = saved;
+        applyTheme(saved);
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (localStorage.getItem('ShiXu_Pro_Theme') === 'auto') applyTheme('auto');
+    });
 
     function getWordCount(text) {
         if (!text) return 0;
@@ -202,10 +258,11 @@
     }
 
     function start() {
+        initTheme();
         document.getElementById('auth-layer').style.display = 'none';
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
-        req.onsuccess = e => { db = e.target.result; sync(); };
+        req.onsuccess = e => { db = e.target.result; sync(); initViewer(); };
     }
 
     async function sync() {
@@ -227,8 +284,7 @@
         document.getElementById('s-month').innerText = mc;
         document.getElementById('days-count').innerText = `${yc} 天`;
         document.getElementById('growth-title').innerText = `${viewYear}年 灵感足迹`;
-        renderCal();
-        renderGrowth(all, viewYear);
+        renderCal(); renderGrowth(all, viewYear);
     }
 
     function renderCal() {
@@ -246,7 +302,6 @@
             if(typeof Solar !== 'undefined') {
                 const l = Solar.fromDate(dateObj).getLunar();
                 f = l.getFestivals()[0] || l.getJieQi() || "";
-                if (f === "龙头节") f = "龙抬头"; 
                 lunar = l.getDayInChinese();
             }
             const el = document.createElement('div');
@@ -261,13 +316,9 @@
     function openNote(k) {
         curKey = k; const d = dataMap.get(k);
         const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
-        const p = k.split('/');
-        document.getElementById('d-date-title').innerText = `${p[0]} . ${p[1]} . ${p[2]}`;
+        document.getElementById('d-date-title').innerText = k.replace(/\//g, ' . ');
         dp.style.display = 'block';
-        requestAnimationFrame(() => {
-            dp.classList.add('active');
-            setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300);
-        });
+        requestAnimationFrame(() => { dp.classList.add('active'); setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300); });
         d ? showView(d) : enterEdit();
     }
 
@@ -297,11 +348,8 @@
     function renderMD(t) {
         if (!t) return '';
         return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") 
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/__(.*?)__/g, '<u>$1</u>')
-                .replace(/~~(.*?)~~/g, '<del>$1</del>')
-                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
-                .replace(/\n/g, '<br>');
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/__(.*?)__/g, '<u>$1</u>').replace(/~~(.*?)~~/g, '<del>$1</del>')
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>').replace(/\n/g, '<br>');
     }
 
     async function showView(d) {
@@ -310,13 +358,11 @@
         document.getElementById('v-tools').style.display='flex'; document.getElementById('e-tools').style.display='none';
         document.getElementById('title-v').innerText = d.title || "无标题";
         document.getElementById('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
-        
-        // 渲染图片
         const vImgList = document.getElementById('img-list-v'); vImgList.innerHTML = '';
         if(d.imgs && d.imgs.length) {
             for(const item of d.imgs) {
                 const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
-                if(url) vImgList.innerHTML += <img src="${url}" class="img-item-v" onclick="this.classList.toggle('full')">;
+                if(url) vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="openViewer('${url}')">`;
             }
         }
         document.getElementById('content-v').innerHTML = renderMD(d.content);
@@ -325,12 +371,10 @@
     const editor = document.getElementById('e-content');
     editor.addEventListener('input', () => {
         document.getElementById('wc-d').innerText = getWordCount(editor.innerText.trim());
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
+        clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
     });
 	document.getElementById('e-title').addEventListener('input', () => {
-		clearTimeout(autoSaveTimer);
-		autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
+		clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
 	});
 	
     function save(manual) {
@@ -338,8 +382,7 @@
         const d = { date: curKey, title: document.getElementById('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
         db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
             if(manual) showView(d);
-            const hint = document.getElementById('save-hint');
-            hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
+            const hint = document.getElementById('save-hint'); hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
             setTimeout(() => hint.innerText = "", 2000);
         };
     }
@@ -357,9 +400,7 @@
     function renderMoodModal() {
         const container = document.getElementById('mood-grid-main'); container.innerHTML = '';
         [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
-            const family = moodFamilies[m] || 'f-custom';
-			const el = document.createElement('div');
-			el.className = `mood-tag ${family} ${activeMoods.includes(m) ? 'active' : ''}`;
+            const el = document.createElement('div'); el.className = `mood-tag ${moodFamilies[m]||'f-custom'} ${activeMoods.includes(m)?'active':''}`;
             el.innerText = m; el.onclick = () => {
                 if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m);
                 updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input'));
@@ -380,8 +421,7 @@
         document.getElementById('v-box').style.display='none'; document.getElementById('e-box').style.display='block';
         document.getElementById('v-tools').style.display='none'; document.getElementById('e-tools').style.display='block';
         document.getElementById('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
-        activeMoods = d && d.mood ? d.mood.split(',') : []; 
-        currentImages = d && d.imgs ? [...d.imgs] : [];
+        activeMoods = d && d.mood ? d.mood.split(',') : []; currentImages = d && d.imgs ? [...d.imgs] : [];
         renderImgPreviewE(); updateMoodDisplay(); 
         document.getElementById('wc-d').innerText = getWordCount(editor.innerText);
     }
@@ -394,94 +434,260 @@
     function showPwdModal() { document.getElementById('pwd-modal').style.display='flex'; document.getElementById('settings-modal').style.display='none'; }
     function updatePassword() { const oldV = document.getElementById('old-pwd').value, newV = document.getElementById('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("错误"); }
     function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
-    function exportJSON() { db.transaction("notes").objectStore("notes").getAll().onsuccess = e => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(e.target.result)], {type:'application/json'})); a.download = `ShiXu_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }; }
-    function importJSON(f) { const r = new FileReader(); r.onload=e=>{JSON.parse(e.target.result).forEach(n=>db.transaction("notes","readwrite").objectStore("notes").put(n)); sync(); alert("成功");}; r.readAsText(f.files[0]); }
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
 
-    / --- 架构师级：图片兼容存储模块 --- /
+    /* --- 核心修复：Pro 级导入与手势查看逻辑 --- */
 
-    async function handleImgUpload(input) {
-        if(!input.files.length) return;
-        const hint = document.getElementById('save-hint'); hint.innerText = "处理图片中...";
-        try {
-            for (const file of input.files) {
-                const blob = await compressImg(file);
-                try {
-                    // 尝试 OPFS 存储
-                    const name = `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp`;
-                    await writeOPFS(name, blob);
-                    currentImages.push(name);
-                } catch(e) {
-                    // 降级：如果 OPFS 失败，转 Base64 存入 IDB
-                    const reader = new FileReader();
-                    const dataUrl = await new Promise(r => { reader.onload=()=>r(reader.result); reader.readAsDataURL(blob); });
-                    currentImages.push(dataUrl);
-                }
-            }
-            renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
-            hint.innerText = "已处理图片";
-        } catch(e) { alert("处理失败: " + e.message); }
-        finally { input.value = ''; setTimeout(() => { hint.innerText = ""; }, 2000); }
+    function updateProgress(text, pct) {
+        const modal = document.getElementById('progress-modal');
+        modal.style.display = 'flex';
+        document.getElementById('progress-text').innerText = text;
+        document.getElementById('progress-bar-fill').style.width = pct + '%';
     }
 
-    async function compressImg(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = e => {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if(w > 1200) { h *= 1200 / w; w = 1200; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(b => resolve(b), 'image/webp', 0.8);
-                };
-                img.onerror = reject;
-            };
-            reader.onerror = reject;
+    // 强力 Base64 转 Blob 逻辑
+    function b64ToBlob(b64) {
+        const parts = b64.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const uInt8Array = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; ++i) uInt8Array[i] = raw.charCodeAt(i);
+        return new Blob([uInt8Array], {type: contentType});
+    }
+
+    // 1. 容器化导出 (使用 ZIP 减少体积)
+	async function exportJSON() {
+		const zip = new JSZip();
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+		const dateStr = `${year}-${month}-${day}`;
+		try {
+			updateProgress("正在打包文字...", 10);
+			const notes = await new Promise(r => db.transaction("notes").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
+			const total = notes.length;
+			
+			// 分离图片与文字，图片存入 images 文件夹，JSON 只存文件名
+			for (let i = 0; i < total; i++) {
+				updateProgress(`处理媒体中 (${i+1}/${total})`, ((i+1)/total)*90);
+				if (notes[i].imgs && notes[i].imgs.length) {
+					for (let imgName of notes[i].imgs) {
+						if (imgName.startsWith('data:')) continue; // 跳过未处理的旧 Base64 数据
+						try {
+							const fileBlob = await readOPFS(imgName);
+							zip.file("images/" + imgName, fileBlob); // 以二进制存入 ZIP
+						} catch(e) { console.warn("丢失图片引用:", imgName); }
+					}
+				}
+			}
+			
+			zip.file("data.json", JSON.stringify(notes));
+			const content = await zip.generateAsync({type:"blob", compression: "DEFLATE"});
+			
+			const a = document.createElement('a');
+			a.href = URL.createObjectURL(content);
+			a.download = `ShiXu_Pro_Backup_${dateStr}.zip`;
+			a.click();
+		} catch(e) { alert("导出失败: " + e.message); }
+		finally { document.getElementById('progress-modal').style.display = 'none'; }
+	}
+
+    async function importJSON(f) {
+		if (!f.files[0]) return;
+		const file = f.files[0];
+		const isZip = file.name.endsWith('.zip');
+
+		try {
+			if (isZip) {
+				updateProgress("解析 ZIP 容器...", 10);
+				const zip = await JSZip.loadAsync(file);
+				const jsonStr = await zip.file("data.json").async("text");
+				const data = JSON.parse(jsonStr);
+				const imgFolder = zip.folder("images");
+				
+				await processImportLoop(data, async (ref) => {
+					const imgInZip = imgFolder.file(ref);
+					return imgInZip ? await imgInZip.async("blob") : null;
+				});
+			} else {
+				updateProgress("解析旧版 JSON...", 10);
+				const text = await new Response(file.stream()).text();
+				const data = JSON.parse(text);
+				// 旧版 JSON 图片是 Base64，需要转回 Blob
+				await processImportLoop(data, async (ref) => ref.startsWith('data:') ? b64ToBlob(ref) : null);
+			}
+			sync(); alert("恢复成功！图片已同步还原。");
+		} catch(e) { alert("导入失败: " + e.message); }
+		finally { document.getElementById('progress-modal').style.display = 'none'; f.value=''; }
+	}
+	
+	// 内部函数：处理数据入库与图片物理还原
+	async function processImportLoop(data, getBlobFn) {
+		const total = data.length;
+		for (let i = 0; i < total; i++) {
+			updateProgress(`正在恢复记录 (${i+1}/${total})`, (i/total)*100);
+			const item = data[i];
+			if (item.imgs) {
+				const finalImgs = [];
+				for (let ref of item.imgs) {
+					const blob = await getBlobFn(ref);
+					if (blob) {
+						// 如果是从 Base64 恢复或 ZIP 提取，重新生成唯一名并写入 OPFS
+						const name = ref.startsWith('data:') ? `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp` : ref;
+						await writeOPFS(name, blob); // 物理还原文件
+						finalImgs.push(name);
+					} else { finalImgs.push(ref); }
+				}
+				item.imgs = finalImgs;
+			}
+			await new Promise(r => {
+				const tx = db.transaction("notes", "readwrite");
+				tx.objectStore("notes").put(item);
+				tx.oncomplete = r;
+			});
+		}
+	}
+
+	// 3. 新增：存储空间清理器 (物理删除冗余文件)
+	async function cleanStorage() {
+		if (!confirm("此操作将永久删除本地未被日记引用的图片，是否继续？")) return;
+		updateProgress("扫描数据库引用...", 20);
+		try {
+			const tx = db.transaction("notes", "readonly");
+			const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = e => r(e.target.result));
+			const whiteList = new Set();
+			all.forEach(n => { if(n.imgs) n.imgs.forEach(img => whiteList.add(img)); });
+
+			const root = await navigator.storage.getDirectory();
+			let deleted = 0;
+			for await (const name of root.keys()) {
+				if (!whiteList.has(name)) {
+					await root.removeEntry(name);
+					deleted++;
+				}
+			}
+			alert(`清理完成，删除了 ${deleted} 个孤儿文件。`);
+		} catch(e) { alert("清理失败: " + e.message); }
+		finally { document.getElementById('progress-modal').style.display = 'none'; }
+	}
+
+    /* --- Pro 图片查看器逻辑 (支持双指缩放) --- */
+    let viewerScale = 1, viewerStartDist = 0;
+    function openViewer(url) {
+        const v = document.getElementById('img-viewer'), img = document.getElementById('viewer-img');
+        img.src = url; img.style.transform = `scale(1)`; viewerScale = 1;
+        v.style.display = 'flex';
+    }
+    function closeViewer() { document.getElementById('img-viewer').style.display = 'none'; }
+
+    function initViewer() {
+        const img = document.getElementById('viewer-img');
+        img.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                viewerStartDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+            }
+        });
+        img.addEventListener('touchmove', e => {
+            if (e.touches.length === 2) {
+                const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                const factor = dist / viewerStartDist;
+                viewerScale = Math.min(Math.max(1, viewerScale * factor), 4); // 限制缩放倍数 1-4
+                img.style.transform = `scale(${viewerScale})`;
+                viewerStartDist = dist;
+            }
         });
     }
 
-    async function writeOPFS(name, blob) {
-        const root = await navigator.storage.getDirectory();
-        const handle = await root.getFileHandle(name, { create: true });
-        if(!handle.createWritable) throw new Error("Main thread write unsupported"); 
-        const writable = await handle.createWritable();
-        await writable.write(blob); await writable.close();
+    /* --- 底层存储 API --- */
+    async function writeOPFS(n, b) {
+        const r = await navigator.storage.getDirectory();
+        const h = await r.getFileHandle(n, { create: true });
+        const w = await h.createWritable(); await w.write(b); await w.close();
     }
-
-    async function readOPFSSafe(name) {
-        try {
-            const root = await navigator.storage.getDirectory();
-            const handle = await root.getFileHandle(name);
-            return URL.createObjectURL(await handle.getFile());
-        } catch(e) { return null; }
+    async function readOPFS(n) {
+        const r = await navigator.storage.getDirectory();
+        return await (await r.getFileHandle(n)).getFile();
     }
-
-    async function delOPFS(name) {
-        try { const root = await navigator.storage.getDirectory(); await root.removeEntry(name); } catch(e){}
+    async function readOPFSSafe(n) {
+        try { return URL.createObjectURL(await readOPFS(n)); } catch(e) { return null; }
     }
-
+    async function delOPFS(n) {
+        try { const r = await navigator.storage.getDirectory(); await r.removeEntry(n); } catch(e){}
+    }
     async function renderImgPreviewE() {
         const box = document.getElementById('img-list-e'); box.innerHTML = '';
         for(let i=0; i<currentImages.length; i++) {
-            const item = currentImages[i];
-            const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
+            const url = currentImages[i].startsWith('data:') ? currentImages[i] : await readOPFSSafe(currentImages[i]);
             if(url) {
                 const wrap = document.createElement('div'); wrap.className = 'pre-img-wrap';
-                wrap.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
-                                 <div class="pre-img-del" onclick="removeImg(${i})">×</div>`;
+                wrap.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div class="pre-img-del" onclick="removeImg(${i})">×</div>`;
                 box.appendChild(wrap);
             }
         }
     }
-
-    async function removeImg(index) {
-        const item = currentImages[index];
-        if(!item.startsWith('data:')) await delOPFS(item);
-        currentImages.splice(index, 1); renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
+    async function removeImg(idx) {
+        const itm = currentImages[idx]; if(!itm.startsWith('data:')) await delOPFS(itm);
+        currentImages.splice(idx, 1); renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
     }
+    async function handleImgUpload(input) {
+        if(!input.files.length) return;
+        const hint = document.getElementById('save-hint'); hint.innerText = "处理中...";
+        try {
+            for (const file of input.files) {
+                const blob = await compressImg(file);
+                const name = `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp`;
+                try { await writeOPFS(name, blob); currentImages.push(name); } 
+                catch(e) { const b64 = await new Promise(r => { const rd = new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(blob); }); currentImages.push(b64); }
+            }
+            renderImgPreviewE(); editor.dispatchEvent(new Event('input'));
+        } finally { hint.innerText = ""; input.value = ''; }
+    }
+    async function compressImg(file) {
+		return new Promise((resolve, reject) => {
+			const rd = new FileReader();
+			rd.readAsDataURL(file);
+			rd.onload = e => {
+				const img = new Image();
+				img.src = e.target.result;
+				img.onload = () => {
+					const cvs = document.createElement('canvas');
+					let w = img.width;
+					let h = img.height;
+
+					// --- 动态分辨率算法开始 ---
+					// 1. 获取设备屏幕宽度，并考虑像素比 (Retina 屏)
+					const screenWidth = window.screen.width * (window.devicePixelRatio || 1);
+					
+					// 2. 设定动态目标宽度：取屏幕宽度与 1200 的较大者
+					// 同时设定硬上限为 2048px (iPad Pro 级别)，防止文件过大
+					let targetWidth = Math.max(1200, screenWidth);
+					targetWidth = Math.min(targetWidth, 2048); 
+
+					// 3. 执行等比缩放计算
+					if (w > targetWidth) {
+						h *= targetWidth / w;
+						w = targetWidth;
+					}
+					// --- 动态分辨率算法结束 ---
+
+					cvs.width = w;
+					cvs.height = h;
+					const ctx = cvs.getContext('2d');
+					
+					// 使用高质量绘图参数
+					ctx.imageSmoothingEnabled = true;
+					ctx.imageSmoothingQuality = 'high';
+					
+					ctx.drawImage(img, 0, 0, w, h);
+					
+					// 导出 WebP：在保证画质的前提下，质量设为 0.75 是体积性价比最高的点
+					cvs.toBlob(b => resolve(b), 'image/webp', 0.75);
+				};
+				img.onerror = reject;
+			};
+		});
+	}
 </script>
 </body>
 </html>
