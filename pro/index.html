@@ -60,7 +60,6 @@
         .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; cursor: pointer; transition: transform 0.2s; }
 		.img-item-v:active { transform: scale(0.96); opacity: 0.9; }
         
-        /* 增强：Pro 图片查看器样式 */
         #img-viewer { position: fixed; inset: 0; background: black; z-index: 2500; display: none; touch-action: none; align-items: center; justify-content: center; overflow: hidden; }
         #viewer-img { max-width: 100%; max-height: 100%; transition: transform 0.1s ease-out; transform-origin: center center; }
         .viewer-close { position: absolute; top: 40px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; z-index: 2600; }
@@ -102,7 +101,7 @@
 <div id="h-page" class="page">
     <div style="padding: 30px 25px 10px; display: flex; justify-content: space-between; align-items: center;">
         <h1 style="font-size: 22px; font-weight: 200; margin: 0;">拾绪 Pro</h1>
-        <button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'">
+        <button class="icon-btn" onclick="$('settings-modal').style.display='flex'">
             <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.50,0.38,1.03,0.70,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
         </button>
     </div>
@@ -148,6 +147,13 @@
         </div>
         <div id="e-tools" style="display: none;"><button class="btn-pill btn-save" onclick="save(true)">完成</button></div>
     </div>
+	
+	<div id="md-tools" style="display: none; width: 100%; padding: 8px 20px; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); gap: 10px;">
+		<button style="flex:1; padding:7px 0; font-size:13px; font-weight:700; color:var(--sub); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" onclick="insertMD('**')">B</button>
+		<button style="flex:1; padding:7px 0; font-size:13px; font-weight:700; color:var(--sub); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" onclick="insertMD('__')">U</button>
+		<button style="flex:1; padding:7px 0; font-size:13px; font-weight:700; color:var(--sub); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" onclick="insertMD('~~')">S</button>
+	</div>
+
     <div style="max-width: 650px; margin: 0 auto; padding: 20px 25px;">
         <div id="v-box">
             <div id="img-list-v" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
@@ -158,7 +164,7 @@
         <div id="e-box" style="display: none;">
             <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <div onclick="openMoodModal()" id="mood-trigger-btn" style="min-width: 110px; width: auto; flex-shrink: 0; white-space: nowrap; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer; text-align:center;">选择心情...</div>
-                <div onclick="document.getElementById('img-i').click()" style="width: 100px; flex-shrink: 0; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer; text-align:center;">📷 图片</div>
+                <div onclick="$('img-i').click()" style="width: 100px; flex-shrink: 0; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); cursor: pointer; text-align:center;">📷 图片</div>
             </div>
             <input type="file" id="img-i" style="display:none" accept="image/*" multiple onchange="handleImgUpload(this)">
             <div id="img-list-e" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
@@ -186,7 +192,7 @@
 		<button class="btn-pill" style="width:100%; color:var(--accent); text-align:left; padding: 14px; margin-bottom:12px;" onclick="cleanStorage()">🧹 清理冗余图片 </button>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份数据 (含图片)</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复数据</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="$('file-i').click()">恢复数据</button>
         <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️ 清空本地记录</button>
         <input type="file" id="file-i" style="display:none" onchange="importJSON(this)">
     </div>
@@ -196,7 +202,7 @@
     <div class="modal-content" onclick="event.stopPropagation()">
         <div id="mood-grid-main" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;"></div>
         <div style="display:flex; gap:8px;"><input type="text" id="custom-mood-i" placeholder="临时标签..." style="flex:1; border:none; background:var(--mood-bg); padding:12px; border-radius:12px; font-size:13px;"><button class="btn-pill btn-save" onclick="addTransientMood()">添加</button></div>
-        <button class="btn-pill" style="width:100%; margin-top: 25px; padding: 12px;" onclick="document.getElementById('mood-modal').style.display='none'">确定</button>
+        <button class="btn-pill" style="width:100%; margin-top: 25px; padding: 12px;" onclick="$('mood-modal').style.display='none'">确定</button>
     </div>
 </div>
 
@@ -219,12 +225,23 @@
         });
     }
 
+    /* --- 1. 底层加固：变量声明与节点缓存工具 --- */
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
     let isEditState = false, activeMoods = [], currentImages = [], autoSaveTimer = null;
-    const PWD_KEY = 'ShiXu_PWD';
-    const DB_NAME = 'ShiXu_Pro_DB';
+    const PWD_KEY = 'ShiXu_PWD', DB_NAME = 'ShiXu_Pro_DB';
     const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
     const moodFamilies = {'💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy', '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing', '📝 思考': 'f-thinking', '🤔 疑惑': 'f-thinking', '🌑 害怕': 'f-melancholy', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'};
+    const colorMap = {'f-energy': '255, 183, 77', 'f-healing': '165, 190, 154', 'f-thinking': '144, 164, 174', 'f-melancholy': '121, 134, 203', 'f-release': '229, 115, 115', 'f-custom': '207, 216, 220'};
+
+    const $ = (id) => document.getElementById(id);
+
+    function debounce(func, delay) {
+        let timer = null;
+        return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
 
     function applyTheme(mode) {
         localStorage.setItem('ShiXu_Pro_Theme', mode);
@@ -235,7 +252,7 @@
 
     function initTheme() {
         const saved = localStorage.getItem('ShiXu_Pro_Theme') || 'auto';
-        const select = document.getElementById('theme-select');
+        const select = $('theme-select');
         if(select) select.value = saved;
         applyTheme(saved);
     }
@@ -252,19 +269,20 @@
     }
 
     function checkAuth() {
-        const input = document.getElementById('pwd-i').value, stored = localStorage.getItem(PWD_KEY);
+        const input = $('pwd-i').value, stored = localStorage.getItem(PWD_KEY);
         if(!stored) { localStorage.setItem(PWD_KEY, btoa(input)); start(); }
-        else if(btoa(input) === stored) start(); else { alert("密码错误"); document.getElementById('pwd-i').value=''; }
+        else if(btoa(input) === stored) start(); else { alert("密码错误"); $('pwd-i').value=''; }
     }
 
     function start() {
         initTheme();
-        document.getElementById('auth-layer').style.display = 'none';
+        $('auth-layer').style.display = 'none';
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
         req.onsuccess = e => { db = e.target.result; sync(); initViewer(); };
     }
 
+    /* --- 2. 性能加固：精准统计与同步逻辑 --- */
     async function sync() {
         if(!db) return;
         const tx = db.transaction("notes", "readonly");
@@ -272,25 +290,30 @@
         dataMap.clear();
         let tw = 0, mc = 0, yc = 0;
         const viewYear = curMonth.getFullYear(); 
-        const cmPrefix = `${viewYear}/${curMonth.getMonth()+1}/`;
+        const viewMonth = curMonth.getMonth() + 1;
+
         all.forEach(n => {
             dataMap.set(n.date, n);
+            const [y, m, d] = n.date.split('/').map(Number);
             tw += (n.words || 0);
-            if(n.date.startsWith(cmPrefix)) mc++;
-            if(parseInt(n.date.split('/')[0]) === viewYear) yc++;
+            if(y === viewYear) {
+                yc++;
+                if(m === viewMonth) mc++;
+            }
         });
-        document.getElementById('s-total').innerText = all.length;
-        document.getElementById('s-words').innerText = tw.toLocaleString();
-        document.getElementById('s-month').innerText = mc;
-        document.getElementById('days-count').innerText = `${yc} 天`;
-        document.getElementById('growth-title').innerText = `${viewYear}年 灵感足迹`;
+
+        $('s-total').innerText = all.length;
+        $('s-words').innerText = tw.toLocaleString();
+        $('s-month').innerText = mc;
+        $('days-count').innerText = `${yc} 天`;
+        $('growth-title').innerText = `${viewYear}年 灵感足迹`;
         renderCal(); renderGrowth(all, viewYear);
     }
 
     function renderCal() {
-        const g = document.getElementById('cal-g'); g.innerHTML = '';
+        const g = $('cal-g'); g.innerHTML = '';
         const y = curMonth.getFullYear(), m = curMonth.getMonth();
-        document.getElementById('cal-m-label').innerText = `${y}年 ${m+1}月`;
+        $('cal-m-label').innerText = `${y}年 ${m+1}月`;
         const first = new Date(y, m, 1).getDay();
         const days = new Date(y, m+1, 0).getDate();
         const offset = (first === 0 ? 6 : first - 1); 
@@ -315,21 +338,24 @@
 
     function openNote(k) {
         curKey = k; const d = dataMap.get(k);
-        const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
-        document.getElementById('d-date-title').innerText = k.replace(/\//g, ' . ');
+        const dp = $('d-page'), hp = $('h-page');
+        $('d-date-title').innerText = k.replace(/\//g, ' . ');
         dp.style.display = 'block';
-        requestAnimationFrame(() => { dp.classList.add('active'); setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300); });
+        requestAnimationFrame(() => {
+            dp.classList.add('active');
+            setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300);
+        });
         d ? showView(d) : enterEdit();
     }
 
     function closePage() {
-        const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
+        const dp = $('d-page'), hp = $('h-page');
         hp.style.display = 'block';
         requestAnimationFrame(() => { dp.classList.remove('active'); setTimeout(() => { dp.style.display = 'none'; sync(); }, 300); });
     }
 
     function renderGrowth(all, year) {
-        const grid = document.getElementById('growth-grid'); grid.innerHTML = '';
+        const grid = $('growth-grid'); grid.innerHTML = '';
         all.filter(n => parseInt(n.date.split('/')[0]) === parseInt(year))
            .sort((a,b) => new Date(a.date.replace(/\//g, '-')) - new Date(b.date.replace(/\//g, '-')))
            .forEach(n => {
@@ -338,9 +364,9 @@
                const family = moods.length > 0 ? (moodFamilies[moods[0]] || 'f-custom') : 'f-custom';
                const lv = n.words > 300 ? 'lv-3' : (n.words > 100 ? 'lv-2' : 'lv-1');
                cell.className = `growth-cell ${family} ${lv}`;
-               const cssVarStr = moodFamilies[moods[0]] ? `--${moodFamilies[moods[0]].split('-')[1]}` : '--custom';
-               const rgbValue = getComputedStyle(document.documentElement).getPropertyValue(cssVarStr).trim();
-               cell.style.backgroundColor = `rgba(${rgbValue}, ${lv==='lv-3'?1:lv==='lv-2'?0.6:0.3})`;
+               const rgbValue = colorMap[family] || colorMap['f-custom'];
+               const opacity = lv === 'lv-3' ? 1 : (lv === 'lv-2' ? 0.6 : 0.3);
+               cell.style.backgroundColor = `rgba(${rgbValue}, ${opacity})`;
                grid.appendChild(cell);
            });
     }
@@ -354,51 +380,53 @@
 
     async function showView(d) {
         isEditState = false; 
-        document.getElementById('v-box').style.display='block'; document.getElementById('e-box').style.display='none';
-        document.getElementById('v-tools').style.display='flex'; document.getElementById('e-tools').style.display='none';
-        document.getElementById('title-v').innerText = d.title || "无标题";
-        document.getElementById('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
-        const vImgList = document.getElementById('img-list-v'); vImgList.innerHTML = '';
+        $('v-box').style.display='block'; $('e-box').style.display='none';
+        $('v-tools').style.display='flex'; $('e-tools').style.display='none';
+		$('md-tools').style.display='none'; // 隐藏工具栏
+        $('title-v').innerText = d.title || "无标题";
+        $('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
+        const vImgList = $('img-list-v'); vImgList.innerHTML = '';
         if(d.imgs && d.imgs.length) {
             for(const item of d.imgs) {
                 const url = item.startsWith('data:') ? item : await readOPFSSafe(item);
                 if(url) vImgList.innerHTML += `<img src="${url}" class="img-item-v" onclick="openViewer('${url}')">`;
             }
         }
-        document.getElementById('content-v').innerHTML = renderMD(d.content);
+        $('content-v').innerHTML = renderMD(d.content);
     }
 
-    const editor = document.getElementById('e-content');
+    const editor = $('e-content');
     editor.addEventListener('input', () => {
-        document.getElementById('wc-d').innerText = getWordCount(editor.innerText.trim());
+        $('wc-d').innerText = getWordCount(editor.innerText.trim());
         clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
     });
-	document.getElementById('e-title').addEventListener('input', () => {
+	$('e-title').addEventListener('input', () => {
 		clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
 	});
 	
     function save(manual) {
         const c = editor.innerText;
-        const d = { date: curKey, title: document.getElementById('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
+        const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
         db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
             if(manual) showView(d);
-            const hint = document.getElementById('save-hint'); hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
+            const hint = $('save-hint'); hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
             setTimeout(() => hint.innerText = "", 2000);
         };
     }
 
-    function filterIndex() {
-        const q = document.getElementById('search-input').value.toLowerCase(), list = document.getElementById('index-list');
+    function executeSearch() {
+        const q = $('search-input').value.toLowerCase(), list = $('index-list');
         list.innerHTML = ''; if(!q) return;
         Array.from(dataMap.values()).filter(n=>(n.title+n.content).toLowerCase().includes(q)).slice(0,5).forEach(n=>{
-            const div = document.createElement('div'); div.style="padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600;";
+            const div = document.createElement('div'); div.style="padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer;";
             div.innerHTML = `<span>${n.title||'无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.date}</span>`;
             div.onclick = () => openNote(n.date); list.appendChild(div);
         });
     }
+    const filterIndex = debounce(executeSearch, 300);
 
     function renderMoodModal() {
-        const container = document.getElementById('mood-grid-main'); container.innerHTML = '';
+        const container = $('mood-grid-main'); container.innerHTML = '';
         [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
             const el = document.createElement('div'); el.className = `mood-tag ${moodFamilies[m]||'f-custom'} ${activeMoods.includes(m)?'active':''}`;
             el.innerText = m; el.onclick = () => {
@@ -418,34 +446,55 @@
 
     function enterEdit() {
         isEditState = true; const d = dataMap.get(curKey);
-        document.getElementById('v-box').style.display='none'; document.getElementById('e-box').style.display='block';
-        document.getElementById('v-tools').style.display='none'; document.getElementById('e-tools').style.display='block';
-        document.getElementById('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
+        $('v-box').style.display='none'; $('e-box').style.display='block';
+        $('v-tools').style.display='none'; $('e-tools').style.display='block';
+		$('md-tools').style.display='flex'; // 显示工具栏
+        $('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
+        
+        editor.focus();
+        const range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+
         activeMoods = d && d.mood ? d.mood.split(',') : []; currentImages = d && d.imgs ? [...d.imgs] : [];
         renderImgPreviewE(); updateMoodDisplay(); 
-        document.getElementById('wc-d').innerText = getWordCount(editor.innerText);
+        $('wc-d').innerText = getWordCount(editor.innerText);
     }
 
-    function addTransientMood() { const v = document.getElementById('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); document.getElementById('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input')); } }
+    /* ★ 恢复：Markdown 插入函数 */
+	function insertMD(sym) {
+		editor.focus(); 
+		const sel = window.getSelection(); 
+		if(!sel.rangeCount) return;
+		const range = sel.getRangeAt(0);
+		const txt = range.toString();
+		const ins = sym.endsWith(' ') ? sym + txt : sym + txt + sym;
+		const node = document.createTextNode(ins);
+		range.deleteContents();
+		range.insertNode(node);
+		const newR = document.createRange();
+		if(!txt && !sym.endsWith(' ')) newR.setStart(node, sym.length); else newR.setStartAfter(node);
+		sel.removeAllRanges(); sel.addRange(newR);
+		editor.dispatchEvent(new Event('input')); // 触发统计和自动保存
+	}
+
+    function addTransientMood() { const v = $('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); $('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input')); } }
     function moveMonth(n) { curMonth.setMonth(curMonth.getMonth()+n); sync(); }
     function goToday() { curMonth = new Date(); sync(); }
-    function openMoodModal() { renderMoodModal(); document.getElementById('mood-modal').style.display='flex'; }
-    function updateMoodDisplay() { document.getElementById('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
-    function showPwdModal() { document.getElementById('pwd-modal').style.display='flex'; document.getElementById('settings-modal').style.display='none'; }
-    function updatePassword() { const oldV = document.getElementById('old-pwd').value, newV = document.getElementById('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("错误"); }
+    function openMoodModal() { renderMoodModal(); $('mood-modal').style.display='flex'; }
+    function updateMoodDisplay() { $('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
+    function showPwdModal() { $('pwd-modal').style.display='flex'; $('settings-modal').style.display='none'; }
+    function updatePassword() { const oldV = $('old-pwd').value, newV = $('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); $('pwd-modal').style.display='none'; } else alert("错误"); }
     function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
 
-    /* --- 核心修复：Pro 级导入与手势查看逻辑 --- */
-
+    /* --- 3. 核心功能：ZIP 备份与图片存储逻辑 --- */
     function updateProgress(text, pct) {
-        const modal = document.getElementById('progress-modal');
+        const modal = $('progress-modal');
         modal.style.display = 'flex';
-        document.getElementById('progress-text').innerText = text;
-        document.getElementById('progress-bar-fill').style.width = pct + '%';
+        $('progress-text').innerText = text;
+        $('progress-bar-fill').style.width = pct + '%';
     }
 
-    // 强力 Base64 转 Blob 逻辑
     function b64ToBlob(b64) {
         const parts = b64.split(';base64,');
         const contentType = parts[0].split(':')[1];
@@ -455,49 +504,38 @@
         return new Blob([uInt8Array], {type: contentType});
     }
 
-    // 1. 容器化导出 (使用 ZIP 减少体积)
 	async function exportJSON() {
 		const zip = new JSZip();
 		const now = new Date();
-		const year = now.getFullYear();
-		const month = String(now.getMonth() + 1).padStart(2, '0');
-		const day = String(now.getDate()).padStart(2, '0');
-		const dateStr = `${year}-${month}-${day}`;
+		const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 		try {
 			updateProgress("正在打包文字...", 10);
 			const notes = await new Promise(r => db.transaction("notes").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
 			const total = notes.length;
-			
-			// 分离图片与文字，图片存入 images 文件夹，JSON 只存文件名
 			for (let i = 0; i < total; i++) {
 				updateProgress(`处理媒体中 (${i+1}/${total})`, ((i+1)/total)*90);
 				if (notes[i].imgs && notes[i].imgs.length) {
 					for (let imgName of notes[i].imgs) {
-						if (imgName.startsWith('data:')) continue; // 跳过未处理的旧 Base64 数据
+						if (imgName.startsWith('data:')) continue; 
 						try {
 							const fileBlob = await readOPFS(imgName);
-							zip.file("images/" + imgName, fileBlob); // 以二进制存入 ZIP
-						} catch(e) { console.warn("丢失图片引用:", imgName); }
+							zip.file("images/" + imgName, fileBlob); 
+						} catch(e) { console.warn("图片读取失败:", imgName); }
 					}
 				}
 			}
-			
 			zip.file("data.json", JSON.stringify(notes));
 			const content = await zip.generateAsync({type:"blob", compression: "DEFLATE"});
-			
-			const a = document.createElement('a');
-			a.href = URL.createObjectURL(content);
-			a.download = `ShiXu_Pro_Backup_${dateStr}.zip`;
-			a.click();
+			const a = document.createElement('a'); a.href = URL.createObjectURL(content);
+			a.download = `ShiXu_Pro_Backup_${dateStr}.zip`; a.click();
 		} catch(e) { alert("导出失败: " + e.message); }
-		finally { document.getElementById('progress-modal').style.display = 'none'; }
+		finally { $('progress-modal').style.display = 'none'; }
 	}
 
     async function importJSON(f) {
 		if (!f.files[0]) return;
 		const file = f.files[0];
 		const isZip = file.name.endsWith('.zip');
-
 		try {
 			if (isZip) {
 				updateProgress("解析 ZIP 容器...", 10);
@@ -505,7 +543,6 @@
 				const jsonStr = await zip.file("data.json").async("text");
 				const data = JSON.parse(jsonStr);
 				const imgFolder = zip.folder("images");
-				
 				await processImportLoop(data, async (ref) => {
 					const imgInZip = imgFolder.file(ref);
 					return imgInZip ? await imgInZip.async("blob") : null;
@@ -513,16 +550,13 @@
 			} else {
 				updateProgress("解析旧版 JSON...", 10);
 				const text = await new Response(file.stream()).text();
-				const data = JSON.parse(text);
-				// 旧版 JSON 图片是 Base64，需要转回 Blob
-				await processImportLoop(data, async (ref) => ref.startsWith('data:') ? b64ToBlob(ref) : null);
+				await processImportLoop(JSON.parse(text), async (ref) => ref.startsWith('data:') ? b64ToBlob(ref) : null);
 			}
-			sync(); alert("恢复成功！图片已同步还原。");
+			sync(); alert("恢复成功！");
 		} catch(e) { alert("导入失败: " + e.message); }
-		finally { document.getElementById('progress-modal').style.display = 'none'; f.value=''; }
+		finally { $('progress-modal').style.display = 'none'; f.value=''; }
 	}
 	
-	// 内部函数：处理数据入库与图片物理还原
 	async function processImportLoop(data, getBlobFn) {
 		const total = data.length;
 		for (let i = 0; i < total; i++) {
@@ -534,9 +568,8 @@
 					let ref = item.imgs[j];
 					const blob = await getBlobFn(ref);
 					if (blob) {
-						// 如果是从 Base64 恢复或 ZIP 提取，重新生成唯一名并写入 OPFS
 						const name = ref.startsWith('data:') ? `img_${Date.now()}_${i}_${j}.webp` : ref;
-						await writeOPFS(name, blob); // 物理还原文件
+						await writeOPFS(name, blob);
 						finalImgs.push(name);
 					} else { finalImgs.push(ref); }
 				}
@@ -550,41 +583,34 @@
 		}
 	}
 
-	// 3. 新增：存储空间清理器 (物理删除冗余文件)
 	async function cleanStorage() {
-		if (!confirm("此操作将永久删除本地未被日记引用的图片，是否继续？")) return;
-		updateProgress("扫描数据库引用...", 20);
+		if (!confirm("永久删除未被日记引用的图片，是否继续？")) return;
+		updateProgress("扫描数据库...", 20);
 		try {
 			const tx = db.transaction("notes", "readonly");
 			const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = e => r(e.target.result));
 			const whiteList = new Set();
 			all.forEach(n => { if(n.imgs) n.imgs.forEach(img => whiteList.add(img)); });
-
 			const root = await navigator.storage.getDirectory();
 			let deleted = 0;
-			for await (const name of root.keys()) {
-				if (!whiteList.has(name)) {
-					await root.removeEntry(name);
-					deleted++;
-				}
-			}
+			for await (const name of root.keys()) { if (!whiteList.has(name)) { await root.removeEntry(name); deleted++; } }
 			alert(`清理完成，删除了 ${deleted} 个孤儿文件。`);
 		} catch(e) { alert("清理失败: " + e.message); }
-		finally { document.getElementById('progress-modal').style.display = 'none'; }
+		finally { $('progress-modal').style.display = 'none'; }
 	}
 
-    /* --- Pro 图片查看器逻辑 (支持双指缩放) --- */
+    /* --- 4. Pro 图片查看器逻辑 (支持双指缩放与单指平移) --- */
 	let viewerScale = 1, viewerStartDist = 0, startScale = 1;
-	let translateX = 0, translateY = 0, startX = 0, startY = 0; // 新增平移变量
+	let translateX = 0, translateY = 0, startX = 0, startY = 0;
 	
     function initViewer() {
-		const img = document.getElementById('viewer-img');
+		const img = $('viewer-img');
 		img.addEventListener('touchstart', e => {
 			if (e.touches.length === 2) {
 				viewerStartDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-				startScale = viewerScale; // 锁定初始缩放比例
+				startScale = viewerScale;
 			} else if (e.touches.length === 1) {
-				startX = e.touches[0].pageX - translateX; // 记录平移起点
+				startX = e.touches[0].pageX - translateX;
 				startY = e.touches[0].pageY - translateY;
 			}
 		});
@@ -592,11 +618,10 @@
 		img.addEventListener('touchmove', e => {
 			if (e.touches.length === 2) {
 				const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-				const factor = dist / viewerStartDist;
-				viewerScale = Math.min(Math.max(1, startScale * factor), 4); // 线性缩放
+				viewerScale = Math.min(Math.max(1, startScale * (dist / viewerStartDist)), 4);
 				updateTransform();
 			} else if (e.touches.length === 1 && viewerScale > 1) {
-				translateX = e.touches[0].pageX - startX; // 处理位移
+				translateX = e.touches[0].pageX - startX;
 				translateY = e.touches[0].pageY - startY;
 				updateTransform();
 			}
@@ -604,19 +629,18 @@
 	}
 	
 	function updateTransform() {
-		const img = document.getElementById('viewer-img');
-		img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${viewerScale})`; // 组合变换
+		const img = $('viewer-img');
+		img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${viewerScale})`;
 	}
 	
 	function openViewer(url) {
-		const v = document.getElementById('img-viewer'), img = document.getElementById('viewer-img');
-		img.src = url; 
-		viewerScale = 1; translateX = 0; translateY = 0; // 重置状态
-		updateTransform();
-		v.style.display = 'flex';
+		const v = $('img-viewer'), img = $('viewer-img');
+		img.src = url; viewerScale = 1; translateX = 0; translateY = 0;
+		updateTransform(); v.style.display = 'flex';
 	}
+    function closeViewer() { $('img-viewer').style.display = 'none'; }
 
-    /* --- 底层存储 API --- */
+    /* --- 5. 底层存储与图片压缩 API --- */
     async function writeOPFS(n, b) {
         const r = await navigator.storage.getDirectory();
         const h = await r.getFileHandle(n, { create: true });
@@ -633,7 +657,7 @@
         try { const r = await navigator.storage.getDirectory(); await r.removeEntry(n); } catch(e){}
     }
     async function renderImgPreviewE() {
-        const box = document.getElementById('img-list-e'); box.innerHTML = '';
+        const box = $('img-list-e'); box.innerHTML = '';
         for(let i=0; i<currentImages.length; i++) {
             const url = currentImages[i].startsWith('data:') ? currentImages[i] : await readOPFSSafe(currentImages[i]);
             if(url) {
@@ -649,7 +673,7 @@
     }
     async function handleImgUpload(input) {
         if(!input.files.length) return;
-        const hint = document.getElementById('save-hint'); hint.innerText = "处理中...";
+        const hint = $('save-hint'); hint.innerText = "处理中...";
         try {
             for (const file of input.files) {
                 const blob = await compressImg(file);
@@ -662,43 +686,18 @@
     }
     async function compressImg(file) {
 		return new Promise((resolve, reject) => {
-			const rd = new FileReader();
-			rd.readAsDataURL(file);
+			const rd = new FileReader(); rd.readAsDataURL(file);
 			rd.onload = e => {
-				const img = new Image();
-				img.src = e.target.result;
+				const img = new Image(); img.src = e.target.result;
 				img.onload = () => {
 					const cvs = document.createElement('canvas');
-					let w = img.width;
-					let h = img.height;
-
-					// --- 动态分辨率算法开始 ---
-					// 1. 获取设备屏幕宽度，并考虑像素比 (Retina 屏)
 					const screenWidth = window.screen.width * (window.devicePixelRatio || 1);
-					
-					// 2. 设定动态目标宽度：取屏幕宽度与 1200 的较大者
-					// 同时设定硬上限为 2048px (iPad Pro 级别)，防止文件过大
-					let targetWidth = Math.max(1200, screenWidth);
-					targetWidth = Math.min(targetWidth, 2048); 
-
-					// 3. 执行等比缩放计算
-					if (w > targetWidth) {
-						h *= targetWidth / w;
-						w = targetWidth;
-					}
-					// --- 动态分辨率算法结束 ---
-
-					cvs.width = w;
-					cvs.height = h;
+					let w = img.width, h = img.height, targetWidth = Math.min(Math.max(1200, screenWidth), 2048); 
+					if (w > targetWidth) { h *= targetWidth / w; w = targetWidth; }
+					cvs.width = w; cvs.height = h;
 					const ctx = cvs.getContext('2d');
-					
-					// 使用高质量绘图参数
-					ctx.imageSmoothingEnabled = true;
-					ctx.imageSmoothingQuality = 'high';
-					
+					ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 					ctx.drawImage(img, 0, 0, w, h);
-					
-					// 导出 WebP：在保证画质的前提下，质量设为 0.75 是体积性价比最高的点
 					cvs.toBlob(b => resolve(b), 'image/webp', 0.75);
 				};
 				img.onerror = reject;
