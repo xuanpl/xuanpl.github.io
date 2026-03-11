@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shixu-pro-v2'; // 提升版本号
+const CACHE_NAME = 'shixu-pro-v3'; // 提升版本号
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -6,7 +6,7 @@ self.addEventListener('install', e => {
     './', 
     './index.html', 
     './manifest.json', 
-    './shixu.png', // 确保包含这个图片文件
+    './shixupro.png', // 确保包含这个图片文件
     'https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js'
   ])));
 });

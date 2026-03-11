@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
     <style>
         :root { 
@@ -182,9 +183,10 @@
                 <option value="dark">深色模式</option>
             </select>
         </div>
+		<button class="btn-pill" style="width:100%; color:var(--accent); text-align:left; padding: 14px; margin-bottom:12px;" onclick="cleanStorage()">🧹 清理冗余图片 </button>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份全量灵感 (含图片)</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复全量灵感 (从文件)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份数据 (含图片)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复数据</button>
         <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️ 清空本地记录</button>
         <input type="file" id="file-i" style="display:none" onchange="importJSON(this)">
     </div>
@@ -453,68 +455,122 @@
         return new Blob([uInt8Array], {type: contentType});
     }
 
-    async function exportJSON() {
-        try {
-            const notes = await new Promise(r => db.transaction("notes").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
-            const total = notes.length;
-            for(let i=0; i<total; i++) {
-                updateProgress(`正在打包 (${i+1}/${total})`, ((i+1)/total)*100);
-                if(notes[i].imgs && notes[i].imgs.length) {
-                    const b64s = [];
-                    for(let name of notes[i].imgs) {
-                        if(name.startsWith('data:')) { b64s.push(name); continue; }
-                        try {
-                            const file = await readOPFS(name);
-                            const b64 = await new Promise(r => { const rd = new FileReader(); rd.onload=()=>r(rd.result); rd.readAsDataURL(file); });
-                            b64s.push(b64);
-                        } catch(e) {}
-                    }
-                    notes[i].imgs = b64s;
-                }
-            }
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(notes)], {type:'application/json'}));
-            a.download = `ShiXu_Pro_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
-        } catch(e) { alert("导出失败: " + e.message); }
-        finally { document.getElementById('progress-modal').style.display = 'none'; }
-    }
+    // 1. 容器化导出 (使用 ZIP 减少体积)
+	async function exportJSON() {
+		const zip = new JSZip();
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+		const dateStr = `${year}-${month}-${day}`;
+		try {
+			updateProgress("正在打包文字...", 10);
+			const notes = await new Promise(r => db.transaction("notes").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
+			const total = notes.length;
+			
+			// 分离图片与文字，图片存入 images 文件夹，JSON 只存文件名
+			for (let i = 0; i < total; i++) {
+				updateProgress(`处理媒体中 (${i+1}/${total})`, ((i+1)/total)*90);
+				if (notes[i].imgs && notes[i].imgs.length) {
+					for (let imgName of notes[i].imgs) {
+						if (imgName.startsWith('data:')) continue; // 跳过未处理的旧 Base64 数据
+						try {
+							const fileBlob = await readOPFS(imgName);
+							zip.file("images/" + imgName, fileBlob); // 以二进制存入 ZIP
+						} catch(e) { console.warn("丢失图片引用:", imgName); }
+					}
+				}
+			}
+			
+			zip.file("data.json", JSON.stringify(notes));
+			const content = await zip.generateAsync({type:"blob", compression: "DEFLATE"});
+			
+			const a = document.createElement('a');
+			a.href = URL.createObjectURL(content);
+			a.download = `ShiXu_Pro_Backup_${dateStr}.zip`;
+			a.click();
+		} catch(e) { alert("导出失败: " + e.message); }
+		finally { document.getElementById('progress-modal').style.display = 'none'; }
+	}
 
     async function importJSON(f) {
-        const rd = new FileReader();
-        rd.onload = async e => {
-            try {
-                const data = JSON.parse(e.target.result);
-                const total = data.length;
-                for(let i=0; i<total; i++) {
-                    updateProgress(`正在恢复 (${i+1}/${total})`, ((i+1)/total)*100);
-                    let n = data[i];
-                    if(n.imgs && n.imgs.length) {
-                        const newNames = [];
-                        for(let b64 of n.imgs) {
-                            try {
-                                if(b64.startsWith('data:image')) {
-                                    // 使用二进制转换替代 fetch
-                                    const blob = b64ToBlob(b64);
-                                    const name = `img_${Date.now()}_${i}_${Math.random().toString(36).slice(-4)}.webp`;
-                                    await writeOPFS(name, blob);
-                                    newNames.push(name);
-                                } else { newNames.push(b64); }
-                            } catch(imgErr) { console.error("图片恢复失败", imgErr); }
-                        }
-                        n.imgs = newNames;
-                    }
-                    // 严格异步顺序写入，防止文件句柄冲突
-                    await new Promise((resolve) => {
-                        const tx = db.transaction("notes", "readwrite");
-                        tx.objectStore("notes").put(n);
-                        tx.oncomplete = () => resolve();
-                    });
-                }
-                sync(); alert("恢复成功！");
-            } catch(ex) { alert("导入失败: " + ex.message); }
-            finally { document.getElementById('progress-modal').style.display = 'none'; }
-        };
-        rd.readAsText(f.files[0]);
-    }
+		if (!f.files[0]) return;
+		const file = f.files[0];
+		const isZip = file.name.endsWith('.zip');
+
+		try {
+			if (isZip) {
+				updateProgress("解析 ZIP 容器...", 10);
+				const zip = await JSZip.loadAsync(file);
+				const jsonStr = await zip.file("data.json").async("text");
+				const data = JSON.parse(jsonStr);
+				const imgFolder = zip.folder("images");
+				
+				await processImportLoop(data, async (ref) => {
+					const imgInZip = imgFolder.file(ref);
+					return imgInZip ? await imgInZip.async("blob") : null;
+				});
+			} else {
+				updateProgress("解析旧版 JSON...", 10);
+				const text = await new Response(file.stream()).text();
+				const data = JSON.parse(text);
+				// 旧版 JSON 图片是 Base64，需要转回 Blob
+				await processImportLoop(data, async (ref) => ref.startsWith('data:') ? b64ToBlob(ref) : null);
+			}
+			sync(); alert("恢复成功！图片已同步还原。");
+		} catch(e) { alert("导入失败: " + e.message); }
+		finally { document.getElementById('progress-modal').style.display = 'none'; f.value=''; }
+	}
+	
+	// 内部函数：处理数据入库与图片物理还原
+	async function processImportLoop(data, getBlobFn) {
+		const total = data.length;
+		for (let i = 0; i < total; i++) {
+			updateProgress(`正在恢复记录 (${i+1}/${total})`, (i/total)*100);
+			const item = data[i];
+			if (item.imgs) {
+				const finalImgs = [];
+				for (let ref of item.imgs) {
+					const blob = await getBlobFn(ref);
+					if (blob) {
+						// 如果是从 Base64 恢复或 ZIP 提取，重新生成唯一名并写入 OPFS
+						const name = ref.startsWith('data:') ? `img_${Date.now()}_${Math.random().toString(36).slice(-4)}.webp` : ref;
+						await writeOPFS(name, blob); // 物理还原文件
+						finalImgs.push(name);
+					} else { finalImgs.push(ref); }
+				}
+				item.imgs = finalImgs;
+			}
+			await new Promise(r => {
+				const tx = db.transaction("notes", "readwrite");
+				tx.objectStore("notes").put(item);
+				tx.oncomplete = r;
+			});
+		}
+	}
+
+	// 3. 新增：存储空间清理器 (物理删除冗余文件)
+	async function cleanStorage() {
+		if (!confirm("此操作将永久删除本地未被日记引用的图片，是否继续？")) return;
+		updateProgress("扫描数据库引用...", 20);
+		try {
+			const tx = db.transaction("notes", "readonly");
+			const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = e => r(e.target.result));
+			const whiteList = new Set();
+			all.forEach(n => { if(n.imgs) n.imgs.forEach(img => whiteList.add(img)); });
+
+			const root = await navigator.storage.getDirectory();
+			let deleted = 0;
+			for await (const name of root.keys()) {
+				if (!whiteList.has(name)) {
+					await root.removeEntry(name);
+					deleted++;
+				}
+			}
+			alert(`清理完成，删除了 ${deleted} 个孤儿文件。`);
+		} catch(e) { alert("清理失败: " + e.message); }
+		finally { document.getElementById('progress-modal').style.display = 'none'; }
+	}
 
     /* --- Pro 图片查看器逻辑 (支持双指缩放) --- */
     let viewerScale = 1, viewerStartDist = 0;
@@ -588,20 +644,50 @@
         } finally { hint.innerText = ""; input.value = ''; }
     }
     async function compressImg(file) {
-        return new Promise((resolve, reject) => {
-            const rd = new FileReader(); rd.readAsDataURL(file);
-            rd.onload = e => {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = () => {
-                    const cvs = document.createElement('canvas'); let w = img.width, h = img.height;
-                    if(w > 1200) { h *= 1200 / w; w = 1200; }
-                    cvs.width = w; cvs.height = h; cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                    cvs.toBlob(b => resolve(b), 'image/webp', 0.8);
-                };
-                img.onerror = reject;
-            };
-        });
-    }
+		return new Promise((resolve, reject) => {
+			const rd = new FileReader();
+			rd.readAsDataURL(file);
+			rd.onload = e => {
+				const img = new Image();
+				img.src = e.target.result;
+				img.onload = () => {
+					const cvs = document.createElement('canvas');
+					let w = img.width;
+					let h = img.height;
+
+					// --- 动态分辨率算法开始 ---
+					// 1. 获取设备屏幕宽度，并考虑像素比 (Retina 屏)
+					const screenWidth = window.screen.width * (window.devicePixelRatio || 1);
+					
+					// 2. 设定动态目标宽度：取屏幕宽度与 1200 的较大者
+					// 同时设定硬上限为 2048px (iPad Pro 级别)，防止文件过大
+					let targetWidth = Math.max(1200, screenWidth);
+					targetWidth = Math.min(targetWidth, 2048); 
+
+					// 3. 执行等比缩放计算
+					if (w > targetWidth) {
+						h *= targetWidth / w;
+						w = targetWidth;
+					}
+					// --- 动态分辨率算法结束 ---
+
+					cvs.width = w;
+					cvs.height = h;
+					const ctx = cvs.getContext('2d');
+					
+					// 使用高质量绘图参数
+					ctx.imageSmoothingEnabled = true;
+					ctx.imageSmoothingQuality = 'high';
+					
+					ctx.drawImage(img, 0, 0, w, h);
+					
+					// 导出 WebP：在保证画质的前提下，质量设为 0.75 是体积性价比最高的点
+					cvs.toBlob(b => resolve(b), 'image/webp', 0.75);
+				};
+				img.onerror = reject;
+			};
+		});
+	}
 </script>
 </body>
 </html>
