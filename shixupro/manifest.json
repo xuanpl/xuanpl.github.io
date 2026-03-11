@@ -1,15 +1,17 @@
 {
   "name": "拾绪 Pro · 灵感日记",
-  "short_name": "拾绪Pro",
-  "start_url": "index.html", 
+  "short_name": "拾绪 Pro",
+  "description": "离线、私密的灵感记录工具，支持图片与全量备份",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f8f9fa",
   "theme_color": "#2c3e50",
   "icons": [
     {
-      "src": "shixu.png", 
+      "src": "shixupro.png",
       "sizes": "512x512",
-      "type": "image/png" 
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
