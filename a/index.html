@@ -29,7 +29,6 @@
         .static-nav { position: relative; width: 100%; min-height: var(--nav-height); background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); padding-bottom: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
         .cal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
-        .cal-ctrl { display: flex; background: none; padding: 3px; border-radius: 18px; gap: 2px; }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; gap: 1px; }
         .day { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; position: relative; }
         .day span:first-child { font-size: 18px; font-weight: 600; }
@@ -50,27 +49,8 @@
         .modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; padding-bottom: calc(25px + env(safe-area-inset-bottom)); }
         #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:400; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         #pwd-i { padding:15px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:220px; }
-		/* --- 心情标签基础样式 --- */
-		.mood-tag {
-			display: inline-block;
-			padding: 8px 16px;
-			margin: 4px;
-			border-radius: 18px;
-			background: var(--mood-bg); /* 使用你定义的浅灰背景 */
-			color: var(--sub);          /* 使用你定义的文字颜色 */
-			font-size: 13px;
-			cursor: pointer;
-			transition: all 0.2s ease;
-			border: 1px solid transparent;
-		}
-
-		/* --- 选中状态的视觉效果 --- */
-		.mood-tag.active {
-			background: var(--primary) !important; /* 变为你定义的主色调（深色） */
-			color: var(--bg) !important;           /* 文字变为背景色（白色/浅色） */
-			font-weight: bold;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* 增加一点点击后的阴影感 */
-		}
+		.mood-tag { display: inline-block; padding: 8px 16px; margin: 4px; border-radius: 18px; background: var(--mood-bg); color: var(--sub); font-size: 13px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
+		.mood-tag.active { background: var(--primary) !important; color: var(--bg) !important; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 		.mood-tag.active[class*="f-energy"] { background: rgb(var(--energy)) !important; }
 		.mood-tag.active[class*="f-healing"] { background: rgb(var(--healing)) !important; }
 		.mood-tag.active[class*="f-thinking"] { background: rgb(var(--thinking)) !important; }
@@ -103,12 +83,10 @@
     <div class="cal-section">
         <div class="cal-header">
             <div id="cal-m-label" style="font-weight: 600; font-size: 18px;"></div>
-            <div class="cal-ctrl">
-                <div class="cal-ctrl" style="background: transparent; padding: 3px; border-radius: 18px; gap: 2px;">
-                    <button style="background:none; color: var(--primary); border:none; -webkit-appearance: none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(-1)">◀</button>
-                    <button style="background:rgba(0,0,0,0.03); color: var(--primary); border:none; padding: 5px 12px; font-size:16px; border-radius:15px; cursor:pointer; color:var(--accent);" onclick="goToday()">今天</button>
-                    <button style="background:none; color: var(--primary); border:none; -webkit-appearance: none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(1)">▶</button>
-                </div>
+            <div class="cal-ctrl" style="display: flex; background: none; padding: 3px; border-radius: 18px; gap: 2px;">
+                <button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(-1)">◀</button>
+                <button style="background:rgba(0,0,0,0.03); color: var(--accent); border:none; padding: 5px 12px; font-size:16px; border-radius:15px; cursor:pointer;" onclick="goToday()">今天</button>
+                <button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(1)">▶</button>
             </div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; color: var(--sub); margin-bottom: 8px; font-weight: bold;"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
@@ -146,7 +124,7 @@
         <div id="v-box">
             <h2 id="title-v" style="margin-top: 0; font-size: 28px; line-height: 1.3;"></h2>
             <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 25px; border-left: 3px solid var(--accent); padding-left: 10px;"></div>
-            <div id="content-v" style="font-size: 18px; line-height: 1.9; color: var(--sub); white-space: pre-wrap;"></div>
+            <div id="content-v" style="font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap;"></div>
         </div>
         <div id="e-box" style="display: none;">
             <div onclick="openMoodModal()" id="mood-trigger-btn" style="display: inline-block; padding: 8px 16px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; color: var(--sub); margin-bottom: 15px; cursor: pointer;">选择心情...</div>
@@ -164,7 +142,7 @@
         <h3 style="font-weight: 300; margin-top: 0; margin-bottom: 20px;">系统设置</h3>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
         <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份灵感 (Export)</button>
-        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢有灵感 (Import)</button>
+        <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复灵感 (Import)</button>
         <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️ 清空本地记录</button>
         <input type="file" id="file-i" style="display:none" onchange="importJSON(this)">
     </div>
@@ -197,14 +175,25 @@
         });
     }
 
+    /* --- 核心变量与优化映射 --- */
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
-    let isEditState = false, activeMoods = [], autoSaveTimer = null, debounceTimer = null;
-    const PWD_KEY = 'ShiXu_PWD';
-    const DB_NAME = 'ShiXu_DB';
+    let isEditState = false, activeMoods = [], autoSaveTimer = null;
+    const PWD_KEY = 'ShiXu_PWD', DB_NAME = 'ShiXu_DB';
     const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
     const moodFamilies = {'💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy', '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing', '📝 思考': 'f-thinking', '🤔 疑惑': 'f-thinking', '🌑 害怕': 'f-melancholy', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'};
+    const colorMap = {'f-energy': '255, 183, 77', 'f-healing': '165, 190, 154', 'f-thinking': '144, 164, 174', 'f-melancholy': '121, 134, 203', 'f-release': '229, 115, 115', 'f-custom': '207, 216, 220'};
 
-    // 字数统计逻辑
+    // 助手函数：DOM 获取
+    const $ = (id) => document.getElementById(id);
+
+    function debounce(func, delay) {
+        let timer = null;
+        return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
     function getWordCount(text) {
         if (!text) return 0;
         const cn = text.match(/[\u4e00-\u9fa5]/g) || [];
@@ -213,13 +202,13 @@
     }
 
     function checkAuth() {
-        const input = document.getElementById('pwd-i').value, stored = localStorage.getItem(PWD_KEY);
+        const input = $('pwd-i').value, stored = localStorage.getItem(PWD_KEY);
         if(!stored) { localStorage.setItem(PWD_KEY, btoa(input)); start(); }
-        else if(btoa(input) === stored) start(); else { alert("密码错误"); document.getElementById('pwd-i').value=''; }
+        else if(btoa(input) === stored) start(); else { alert("密码错误"); $('pwd-i').value=''; }
     }
 
     function start() {
-        document.getElementById('auth-layer').style.display = 'none';
+        $('auth-layer').style.display = 'none';
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
         req.onsuccess = e => { db = e.target.result; sync(); };
@@ -231,31 +220,32 @@
         const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = e => r(e.target.result));
         dataMap.clear();
         let tw = 0, mc = 0, yc = 0;
-        const viewYear = curMonth.getFullYear(); 
-        const cmPrefix = `${viewYear}/${curMonth.getMonth()+1}/`;
-        
+        const currY = curMonth.getFullYear(), currM = curMonth.getMonth() + 1;
+
         all.forEach(n => {
             dataMap.set(n.date, n);
+            const [y, m, d] = n.date.split('/').map(Number); // 精确拆分日期
             tw += (n.words || 0);
-            if(n.date.startsWith(cmPrefix)) mc++;
-            const noteYear = parseInt(n.date.split('/')[0]);
-            if(noteYear === viewYear) yc++;
+            if(y === currY) {
+                yc++;
+                if(m === currM) mc++;
+            }
         });
 
-        document.getElementById('s-total').innerText = all.length;
-        document.getElementById('s-words').innerText = tw.toLocaleString();
-        document.getElementById('s-month').innerText = mc;
-        document.getElementById('days-count').innerText = `${yc} 天`;
-        document.getElementById('growth-title').innerText = `${viewYear}年 灵感足迹`;
+        $('s-total').innerText = all.length;
+        $('s-words').innerText = tw.toLocaleString();
+        $('s-month').innerText = mc;
+        $('days-count').innerText = `${yc} 天`;
+        $('growth-title').innerText = `${currY}年 灵感足迹`;
         
         renderCal();
-        renderGrowth(all, viewYear);
+        renderGrowth(all, currY);
     }
 
     function renderCal() {
-        const g = document.getElementById('cal-g'); g.innerHTML = '';
+        const g = $('cal-g'); g.innerHTML = '';
         const y = curMonth.getFullYear(), m = curMonth.getMonth();
-        document.getElementById('cal-m-label').innerText = `${y}年 ${m+1}月`;
+        $('cal-m-label').innerText = `${y}年 ${m+1}月`;
         const first = new Date(y, m, 1).getDay();
         const days = new Date(y, m+1, 0).getDate();
         const offset = (first === 0 ? 6 : first - 1); 
@@ -268,7 +258,6 @@
             if(typeof Solar !== 'undefined') {
                 const l = Solar.fromDate(dateObj).getLunar();
                 f = l.getFestivals()[0] || l.getJieQi() || "";
-                if (f === "龙头节") f = "龙抬头"; 
                 lunar = l.getDayInChinese();
             }
             const el = document.createElement('div');
@@ -282,171 +271,147 @@
 
     function openNote(k) {
         curKey = k; const d = dataMap.get(k);
-        const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
-        const p = k.split('/');
-        document.getElementById('d-date-title').innerText = `${p[0]} . ${p[1]} . ${p[2]}`;
-        
+        const dp = $('d-page'), hp = $('h-page');
+        $('d-date-title').innerText = k.replace(/\//g, ' . ');
         dp.style.display = 'block';
-        requestAnimationFrame(() => {
-            dp.classList.add('active');
-            setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300);
-        });
+        requestAnimationFrame(() => { dp.classList.add('active'); setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300); });
         d ? showView(d) : enterEdit();
     }
 
     function closePage() {
-        const dp = document.getElementById('d-page'), hp = document.getElementById('h-page');
+        const dp = $('d-page'), hp = $('h-page');
         hp.style.display = 'block';
-        requestAnimationFrame(() => {
-            dp.classList.remove('active');
-            setTimeout(() => { dp.style.display = 'none'; sync(); }, 300);
-        });
+        requestAnimationFrame(() => { dp.classList.remove('active'); setTimeout(() => { dp.style.display = 'none'; sync(); }, 300); });
     }
 
-    /** ★ 核心修复：防御性解析心情，防止脚本崩溃 ★ **/
     function renderGrowth(all, year) {
-        const grid = document.getElementById('growth-grid'); grid.innerHTML = '';
+        const grid = $('growth-grid'); grid.innerHTML = '';
         all.filter(n => parseInt(n.date.split('/')[0]) === parseInt(year))
            .sort((a,b) => new Date(a.date.replace(/\//g, '-')) - new Date(b.date.replace(/\//g, '-')))
            .forEach(n => {
                const cell = document.createElement('div');
-               // 核心修复点：检查 n.mood 是否存在
                const moods = n.mood ? n.mood.split(',') : [];
                const family = moods.length > 0 ? (moodFamilies[moods[0]] || 'f-custom') : 'f-custom';
                const lv = n.words > 300 ? 'lv-3' : (n.words > 100 ? 'lv-2' : 'lv-1');
                cell.className = `growth-cell ${family} ${lv}`;
-               
-               const cssVarStr = moodFamilies[moods[0]] ? `--${moodFamilies[moods[0]].split('-')[1]}` : '--custom';
-               const rgb = getComputedStyle(document.documentElement).getPropertyValue(cssVarStr).trim();
-               cell.style.backgroundColor = `rgba(${rgb}, ${lv==='lv-3'?1:lv==='lv-2'?0.6:0.3})`;
+               const rgbValue = colorMap[family] || colorMap['f-custom']; // 性能加速
+               const opacity = lv === 'lv-3' ? 1 : (lv === 'lv-2' ? 0.6 : 0.3);
+               cell.style.backgroundColor = `rgba(${rgbValue}, ${opacity})`;
                grid.appendChild(cell);
            });
     }
 
-    // ★ 核心修复：找回 Markdown 解析逻辑 ★
     function renderMD(t) {
         if (!t) return '';
         return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") 
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/__(.*?)__/g, '<u>$1</u>')
-                .replace(/~~(.*?)~~/g, '<del>$1</del>')
-                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
-                .replace(/\n/g, '<br>');
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/__(.*?)__/g, '<u>$1</u>').replace(/~~(.*?)~~/g, '<del>$1</del>')
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>').replace(/\n/g, '<br>');
     }
 
     function showView(d) {
         isEditState = false; 
-        document.getElementById('v-box').style.display='block'; document.getElementById('e-box').style.display='none';
-        document.getElementById('v-tools').style.display='flex'; document.getElementById('e-tools').style.display='none';
-        document.getElementById('title-v').innerText = d.title || "无标题";
-        document.getElementById('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
-        // ★ 修复点：调用 Markdown 渲染 ★
-        document.getElementById('content-v').innerHTML = renderMD(d.content);
+        $('v-box').style.display='block'; $('e-box').style.display='none';
+        $('v-tools').style.display='flex'; $('e-tools').style.display='none';
+        $('title-v').innerText = d.title || "无标题";
+        $('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
+        $('content-v').innerHTML = renderMD(d.content);
     }
 
-    const editor = document.getElementById('e-content');
+    const editor = $('e-content');
     editor.addEventListener('input', () => {
         const text = editor.innerText.trim();
-        if (text === "") editor.innerHTML = ""; 
-        document.getElementById('wc-d').innerText = getWordCount(text);
+        $('wc-d').innerText = getWordCount(text);
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
     });
-	document.getElementById('e-title').addEventListener('input', () => {
+	$('e-title').addEventListener('input', () => {
 		clearTimeout(autoSaveTimer);
 		autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
 	});
 	
     function save(manual) {
         const c = editor.innerText;
-        const d = { date: curKey, title: document.getElementById('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c) };
+        const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c) };
         db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
             if(manual) showView(d);
-            const hint = document.getElementById('save-hint');
+            const hint = $('save-hint');
             hint.innerText = "已自动保存 " + new Date().toLocaleTimeString().slice(0,5);
             setTimeout(() => hint.innerText = "", 2000);
         };
     }
 
-    function filterIndex() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            const q = document.getElementById('search-input').value.toLowerCase(), list = document.getElementById('index-list');
-            list.innerHTML = ''; if(!q) return;
-            Array.from(dataMap.values()).filter(n=>(n.title+n.content).toLowerCase().includes(q)).slice(0,5).forEach(n=>{
-                const div = document.createElement('div'); div.style="padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600;";
-                div.innerHTML = `<span>${n.title||'无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.date}</span>`;
-                div.onclick = () => openNote(n.date); list.appendChild(div);
-            });
-        }, 300);
+    function executeSearch() {
+        const q = $('search-input').value.toLowerCase(), list = $('index-list');
+        list.innerHTML = ''; if (!q) return;
+        Array.from(dataMap.values()).filter(n => (n.title + n.content).toLowerCase().includes(q)).slice(0, 5).forEach(n => {
+            const div = document.createElement('div');
+            div.style = "padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer;";
+            div.innerHTML = `<span>${n.title || '无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.date}</span>`;
+            div.onclick = () => openNote(n.date);
+            list.appendChild(div);
+        });
     }
+    const filterIndex = debounce(executeSearch, 300); // 搜索防抖
 
-    // 常用逻辑补全
     function renderMoodModal() {
-        const container = document.getElementById('mood-grid-main'); container.innerHTML = '';
+        const container = $('mood-grid-main'); container.innerHTML = '';
         [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
-            const family = moodFamilies[m] || 'f-custom';
-			const el = document.createElement('div');
-			el.className = `mood-tag ${family} ${activeMoods.includes(m) ? 'active' : ''}`
+            const el = document.createElement('div'); el.className = `mood-tag ${moodFamilies[m] || 'f-custom'} ${activeMoods.includes(m) ? 'active' : ''}`;
             el.innerText = m; el.onclick = () => {
                 if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m);
                 updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input'));
             }; container.appendChild(el);
         });
     }
-    function moveMonth(n) { curMonth.setMonth(curMonth.getMonth()+n); sync(); }
-    function goToday() { curMonth = new Date(); sync(); }
-    function openMoodModal() { renderMoodModal(); document.getElementById('mood-modal').style.display='flex'; }
-    function updateMoodDisplay() { document.getElementById('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
-    function showPwdModal() { document.getElementById('pwd-modal').style.display='flex'; document.getElementById('settings-modal').style.display='none'; }
-    function updatePassword() { const oldV = document.getElementById('old-pwd').value, newV = document.getElementById('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); document.getElementById('pwd-modal').style.display='none'; } else alert("错误"); }
-    function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
-    function exportJSON() { db.transaction("notes").objectStore("notes").getAll().onsuccess = e => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(e.target.result)], {type:'application/json'})); a.download = `ShiXu_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }; }
-    function importJSON(f) { const r = new FileReader(); r.onload=e=>{JSON.parse(e.target.result).forEach(n=>db.transaction("notes","readwrite").objectStore("notes").put(n)); sync(); alert("成功");}; r.readAsText(f.files[0]); }
-    function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
-    function doDel() { if(confirm("删除？")) db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>closePage(); }
+
     function enterEdit() {
         isEditState = true; const d = dataMap.get(curKey);
-        document.getElementById('v-box').style.display='none'; document.getElementById('e-box').style.display='block';
-        document.getElementById('v-tools').style.display='none'; document.getElementById('e-tools').style.display='block';
-        document.getElementById('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
-        activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay(); 
-        document.getElementById('wc-d').innerText = getWordCount(editor.innerText);
+        $('v-box').style.display='none'; $('e-box').style.display='block';
+        $('v-tools').style.display='none'; $('e-tools').style.display='block';
+        $('e-title').value = d ? d.title : ''; editor.innerText = d ? d.content : '';
+        
+        editor.focus(); // 自动聚焦
+        const range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        
+        activeMoods = d && d.mood ? d.mood.split(',') : [];
+        updateMoodDisplay();
+        $('wc-d').innerText = getWordCount(editor.innerText);
     }
-    function addTransientMood() { const v = document.getElementById('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); document.getElementById('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); save(false); } }
-	// Markdown 插入逻辑
-	function insertMD(sym) {
-		editor.focus(); 
-		const sel = window.getSelection(); 
-		if(!sel.rangeCount) return;
 
-		const range = sel.getRangeAt(0);
-		const txt = range.toString();
+    function insertMD(sym) {
+        editor.focus(); const sel = window.getSelection(); if(!sel.rangeCount) return;
+        const range = sel.getRangeAt(0), txt = range.toString();
+        const ins = sym.endsWith(' ') ? sym + txt : sym + txt + sym;
+        const node = document.createTextNode(ins);
+        range.deleteContents(); range.insertNode(node);
+        const newR = document.createRange();
+        if(!txt && !sym.endsWith(' ')) newR.setStart(node, sym.length); else newR.setStartAfter(node);
+        sel.removeAllRanges(); sel.addRange(newR);
+        editor.dispatchEvent(new Event('input')); 
+    }
 
-		// 逻辑：如果选中了文字，则用符号包裹文字；如果没选中，则插入成对符号并将光标置于中间
-		const ins = sym.endsWith(' ') ? sym + txt : sym + txt + sym;
-		const node = document.createTextNode(ins);
-		
-		range.deleteContents();
-		range.insertNode(node);
-
-		// 重新定位光标
-		const newR = document.createRange();
-		if(!txt && !sym.endsWith(' ')) {
-			// 如果没选中文字，把光标放在两个符号中间（如 **|**）
-			newR.setStart(node, sym.length); 
-		} else {
-			// 如果选中了文字或插入的是前缀（如 > ），光标移到最后
-			newR.setStartAfter(node);
-		}
-		
-		sel.removeAllRanges();
-		sel.addRange(newR);
-
-		// 触发字数更新和自动保存
-		if (typeof updateWC === 'function') updateWC();
-		editor.dispatchEvent(new Event('input')); 
-	}
+    function moveMonth(n) { curMonth.setMonth(curMonth.getMonth()+n); sync(); }
+    function goToday() { curMonth = new Date(); sync(); }
+    function openMoodModal() { renderMoodModal(); $('mood-modal').style.display='flex'; }
+    function updateMoodDisplay() { $('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
+    function showPwdModal() { $('pwd-modal').style.display='flex'; $('settings-modal').style.display='none'; }
+    function updatePassword() { const oldV = $('old-pwd').value, newV = $('new-pwd').value; if(btoa(oldV) === localStorage.getItem(PWD_KEY)) { localStorage.setItem(PWD_KEY, btoa(newV)); alert("修改成功"); $('pwd-modal').style.display='none'; } else alert("错误"); }
+    function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
+    function exportJSON() { db.transaction("notes").objectStore("notes").getAll().onsuccess = e => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(e.target.result)], {type:'application/json'})); a.download = `ShiXu_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }; }
+    function importJSON(f) {
+        const r = new FileReader(); r.onload = e => {
+            try {
+                const data = JSON.parse(e.target.result); if (!Array.isArray(data)) throw new Error("无效格式");
+                const tx = db.transaction("notes", "readwrite");
+                data.forEach(n => { if(n.date) tx.objectStore("notes").put(n); });
+                tx.oncomplete = () => { sync(); alert("恢复成功"); };
+            } catch (err) { alert("失败: " + err.message); }
+        }; r.readAsText(f.files[0]);
+    }
+    function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
+    function doDel() { if(confirm("删除？")) db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>closePage(); }
+    function addTransientMood() { const v = $('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); $('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); save(false); } }
 </script>
 </body>
 </html>
