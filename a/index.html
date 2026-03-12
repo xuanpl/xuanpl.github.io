@@ -22,7 +22,8 @@
             :root { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c; }
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
+        html, body { min-height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
+		html { background: var(--bg); }
         .page { position: fixed; inset: 0; background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top); }
         #d-page { display: none; position: absolute; inset: 0; width: 100%; min-height: 100vh; background: var(--bg); z-index: 100; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: env(safe-area-inset-top); }
         #d-page.active { transform: translateX(0); }
@@ -176,6 +177,7 @@
     }
 
     /* --- 核心变量与优化映射 --- */
+	let lastActiveTime = Date.now();
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
     let isEditState = false, activeMoods = [], autoSaveTimer = null;
     const PWD_KEY = 'ShiXu_PWD', DB_NAME = 'ShiXu_DB';
@@ -211,7 +213,7 @@
         $('auth-layer').style.display = 'none';
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
-        req.onsuccess = e => { db = e.target.result; sync(); };
+        req.onsuccess = e => { db = e.target.result; sync(); initAutoLock() };
     }
 
     async function sync() {
@@ -412,6 +414,19 @@
     function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
     function doDel() { if(confirm("删除？")) db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>closePage(); }
     function addTransientMood() { const v = $('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); $('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); save(false); } }
+	function initAutoLock() {
+		// 监听：点击、触摸、按键、滚动
+		['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(ev => {
+			window.addEventListener(ev, () => { lastActiveTime = Date.now(); }, {passive: true});
+		});
+
+		// 每 10 秒巡逻一次是否超时
+		setInterval(() => {
+			if (Date.now() - lastActiveTime > 5 * 60 * 1000) {
+				location.reload(); // 超时则刷新页面，强制回到解锁墙
+			}
+		}, 10000);
+	}
 </script>
 </body>
 </html>
