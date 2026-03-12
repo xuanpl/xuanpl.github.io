@@ -26,7 +26,7 @@
         html, body { min-height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
 		html { background: var(--bg); }
         .page { position: fixed; inset: 0; background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top); }
-        #d-page { display: none; position: absolute; inset: 0; width: 100%; min-height: 100vh; background: var(--bg); z-index: 100; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: env(safe-area-inset-top); }
+        #d-page { display: none; position: fixed; inset: 0; width: 100%; 100%: 100vh; background: var(--bg); z-index: 100; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: env(safe-area-inset-top); overflow-y: auto; }
         #d-page.active { transform: translateX(0); }
         .static-nav { position: relative; width: 100%; min-height: var(--nav-height); background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); padding-bottom: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
@@ -61,8 +61,8 @@
         .img-item-v { width: calc(50% - 4px); height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 4px; cursor: pointer; transition: transform 0.2s; }
 		.img-item-v:active { transform: scale(0.96); opacity: 0.9; }
         
-        #img-viewer { position: fixed; inset: 0; background: black; z-index: 2500; display: none; touch-action: none; align-items: center; justify-content: center; overflow: hidden; }
-        #viewer-img { max-width: 100%; max-height: 100%; transition: transform 0.1s ease-out; transform-origin: center center; }
+        #img-viewer { position: fixed; inset: 0; background: black; z-index: 2500; display: none; touch-action: none; align-items: center; justify-content: center; overflow: hidden; overscroll-behavior: none; }
+        #viewer-img { max-width: 100%; max-height: 100%; transform-origin: center center; will-change: transform; }
         .viewer-close { position: absolute; top: 40px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; z-index: 2600; }
 
         .pre-img-wrap { position: relative; width: 64px; height: 64px; }
