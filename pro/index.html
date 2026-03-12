@@ -23,7 +23,8 @@
             --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --sub: #a4b0be; --mood-bg: #2c2c2c;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
+        html, body { min-height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
+		html { background: var(--bg); }
         .page { position: fixed; inset: 0; background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top); }
         #d-page { display: none; position: absolute; inset: 0; width: 100%; min-height: 100vh; background: var(--bg); z-index: 100; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: env(safe-area-inset-top); }
         #d-page.active { transform: translateX(0); }
@@ -228,6 +229,7 @@
     /* --- 1. 底层加固：变量声明与节点缓存工具 --- */
     let db, curMonth = new Date(), curKey = '', dataMap = new Map();
     let isEditState = false, activeMoods = [], currentImages = [], autoSaveTimer = null;
+	let lastActiveTime = Date.now();
     const PWD_KEY = 'ShiXu_PWD', DB_NAME = 'ShiXu_Pro_DB';
     const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
     const moodFamilies = {'💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy', '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing', '📝 思考': 'f-thinking', '🤔 疑惑': 'f-thinking', '🌑 害怕': 'f-melancholy', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'};
@@ -279,7 +281,7 @@
         $('auth-layer').style.display = 'none';
         const req = indexedDB.open(DB_NAME, 1);
         req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
-        req.onsuccess = e => { db = e.target.result; sync(); initViewer(); };
+        req.onsuccess = e => { db = e.target.result; sync(); initViewer(); initAutoLock();};
     }
 
     /* --- 2. 性能加固：精准统计与同步逻辑 --- */
@@ -616,6 +618,9 @@
 		});
 
 		img.addEventListener('touchmove', e => {
+			// ★ 关键修复：禁止浏览器默认行为，防止滑出边缘时闪烁
+			if (e.cancelable) e.preventDefault(); 
+
 			if (e.touches.length === 2) {
 				const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
 				viewerScale = Math.min(Math.max(1, startScale * (dist / viewerStartDist)), 4);
@@ -625,7 +630,7 @@
 				translateY = e.touches[0].pageY - startY;
 				updateTransform();
 			}
-		});
+		}, { passive: false }); // ★ 必须设置为 false 才能让 preventDefault 生效
 	}
 	
 	function updateTransform() {
@@ -703,6 +708,23 @@
 				img.onerror = reject;
 			};
 		});
+	}
+	
+	function initAutoLock() {
+		// 监听鼠标点击、触摸、按键和滚动行为
+		['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(ev => {
+			window.addEventListener(ev, () => { 
+				lastActiveTime = Date.now(); // 只要有操作，就重置活跃时间
+			}, {passive: true});
+		});
+
+		// 每 10 秒检查一次是否超时
+		setInterval(() => {
+			if (Date.now() - lastActiveTime > 5 * 60 * 1000) {
+				// 超过 5 分钟未操作，直接刷新页面，回到密码解锁界面
+				location.reload(); 
+			}
+		}, 10000);
 	}
 </script>
 </body>
