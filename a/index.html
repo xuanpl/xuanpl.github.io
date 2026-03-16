@@ -332,15 +332,18 @@
 	});
 	
     function save(manual) {
-        const c = editor.innerText;
-        const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c) };
-        db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
-            if(manual) showView(d);
-            const hint = $('save-hint');
-            hint.innerText = "已自动保存 " + new Date().toLocaleTimeString().slice(0,5);
-            setTimeout(() => hint.innerText = "", 2000);
-        };
-    }
+		const c = editor.innerText;
+		const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
+		
+		db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
+			dataMap.set(curKey, d); // ★ 核心修复：手动保存后立即更新内存缓存
+			
+			if(manual) showView(d); // 现在 showView 拿到的就是最新数据了
+			const hint = $('save-hint'); 
+			hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
+			setTimeout(() => hint.innerText = "", 2000);
+		};
+	}
 
     function executeSearch() {
         const q = $('search-input').value.toLowerCase(), list = $('index-list');
@@ -370,14 +373,23 @@
         isEditState = true; const d = dataMap.get(curKey);
         $('v-box').style.display='none'; $('e-box').style.display='block';
         $('v-tools').style.display='none'; $('e-tools').style.display='block';
-        $('e-title').value = d ? d.title : ''; editor.innerText = d ? d.content : '';
+        $('md-tools').style.display='flex'; // 显示工具栏
+        $('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
         
-        editor.focus(); // 自动聚焦
+        // ★ 核心修复：自动聚焦并确保光标跳转到文本末尾
+        editor.focus();
         const range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
-        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-        
-        activeMoods = d && d.mood ? d.mood.split(',') : [];
-        updateMoodDisplay();
+        const sel = window.getSelection(); 
+        sel.removeAllRanges(); // 移除当前所有选区
+        sel.addRange(range);    // 应用新选区到末尾
+		
+        // 自动滚动到编辑区底部
+		setTimeout(() => {
+			editor.scrollIntoView({ behavior: 'smooth', block: 'end' });
+		}, 100);
+
+        activeMoods = d && d.mood ? d.mood.split(',') : []; currentImages = d && d.imgs ? [...d.imgs] : [];
+        renderImgPreviewE(); updateMoodDisplay(); 
         $('wc-d').innerText = getWordCount(editor.innerText);
     }
 
