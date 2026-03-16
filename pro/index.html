@@ -26,7 +26,20 @@
         html, body { min-height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
 		html { background: var(--bg); }
         .page { position: fixed; inset: 0; background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top); }
-        #d-page { display: none; position: fixed; inset: 0; width: 100%; 100%: 100vh; background: var(--bg); z-index: 100; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: env(safe-area-inset-top); overflow-y: auto; }
+		#d-page { 
+			display: none; 
+			position: fixed; 
+			inset: 0; 
+			width: 100%; 
+			height: 100%; 
+			background: var(--bg); 
+			z-index: 100; 
+			transform: translateX(100%); 
+			transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+			padding-top: env(safe-area-inset-top); 
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch; 
+		}
         #d-page.active { transform: translateX(0); }
         .static-nav { position: relative; width: 100%; min-height: var(--nav-height); background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }
         .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); padding-bottom: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
@@ -146,7 +159,7 @@
             <button class="icon-btn" onclick="doDel()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
             <button class="btn-pill btn-save" onclick="enterEdit()">编辑</button>
         </div>
-        <div id="e-tools" style="display: none;"><button class="btn-pill btn-save" onclick="save(true)">完成</button></div>
+        <div id="e-tools" style="display: none;"><button class="btn-pill btn-save" onmousedown="save(true)">完成</button></div>
     </div>
 	
 	<div id="md-tools" style="display: none; width: 100%; padding: 8px 20px; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); gap: 10px;">
@@ -407,14 +420,18 @@
 	});
 	
     function save(manual) {
-        const c = editor.innerText;
-        const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
-        db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
-            if(manual) showView(d);
-            const hint = $('save-hint'); hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
-            setTimeout(() => hint.innerText = "", 2000);
-        };
-    }
+		const c = editor.innerText;
+		const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), imgs: currentImages };
+		
+		db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
+			dataMap.set(curKey, d); 
+			
+			if(manual) showView(d); 
+			const hint = $('save-hint'); 
+			hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5);
+			setTimeout(() => hint.innerText = "", 2000);
+		};
+	}
 
     function executeSearch() {
         const q = $('search-input').value.toLowerCase(), list = $('index-list');
@@ -450,12 +467,20 @@
         isEditState = true; const d = dataMap.get(curKey);
         $('v-box').style.display='none'; $('e-box').style.display='block';
         $('v-tools').style.display='none'; $('e-tools').style.display='block';
-		$('md-tools').style.display='flex'; // 显示工具栏
+        $('md-tools').style.display='flex'; // 显示工具栏
         $('e-title').value = d?d.title:''; editor.innerText = d?d.content:'';
         
+        // ★ 核心修复：自动聚焦并确保光标跳转到文本末尾
         editor.focus();
         const range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
-        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        const sel = window.getSelection(); 
+        sel.removeAllRanges(); // 移除当前所有选区
+        sel.addRange(range);    // 应用新选区到末尾
+		
+        // 自动滚动到编辑区底部
+		setTimeout(() => {
+			editor.scrollIntoView({ behavior: 'smooth', block: 'end' });
+		}, 100);
 
         activeMoods = d && d.mood ? d.mood.split(',') : []; currentImages = d && d.imgs ? [...d.imgs] : [];
         renderImgPreviewE(); updateMoodDisplay(); 
