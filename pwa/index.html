@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>拾绪 · 灵感日记</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="shixu.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.3/viewer.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.3/viewer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<style>
+:root { 
+--primary: #2c3e50; --accent: #d4af37; --bg: #f8f9fa; --card: #ffffff; --text: #2c3e50; 
+--danger: #e74c3c; --sub: #525c68; --mood-bg: #e9ecef;
+--nav-height: 48px; 
+--energy: 255, 183, 77; --healing: 165, 190, 154; --thinking: 144, 164, 174;
+--release: 229, 115, 115; --melancholy: 121, 134, 203; --fear: 121, 134, 203; --custom: 207, 216, 220;
+}
+[data-theme="dark"] { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --mood-bg: #2c2c2c;}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --mood-bg: #2c2c2c;}
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; transition: background 0.3s; }
+.page, #d-page { transition: opacity 0.15s ease-out; }
+#d-page { 
+    display: none; position: absolute; inset: 0; width: 100%; min-height: 100vh; 
+    background: var(--bg); z-index: 100; 
+    opacity: 0; /* 初始状态为透明 */
+    padding-top: env(safe-area-inset-top); 
+}
+#d-page.active { opacity: 1; }
+#h-page.fade-out { opacity: 0; pointer-events: none; }
+#d-page.active { transform: translateX(0); }
+.static-nav { position: relative; width: 100%; min-height: var(--nav-height); background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; }
+.cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); padding-bottom: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
+.cal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; gap: 1px; }
+.day { 
+    height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    border-radius: 12px; cursor: pointer; position: relative;
+    transition: background-color 0.15s ease, transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); 
+    -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+}
+.day span:first-child { font-size: 18px; font-weight: 600; }
+.day .l { font-size: 12px; margin-top: 2px; white-space: nowrap; letter-spacing: -0.2px; transform: scale(0.9); }
+.day.recorded { background: var(--mood-bg); }
+.day.is-today { background: var(--primary) !important; color: var(--bg); }
+.day.recorded::after { content: ''; position: absolute; bottom: 5px; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
+.day:active { transform: scale(0.92); background-color: var(--mood-bg); }
+.day.is-today:active { transform: scale(0.92); background-color: var(--primary) !important; opacity: 0.8; }
+.day.recorded:active { background-color: rgba(0,0,0,0.08); }
+[data-theme="dark"] .day.recorded:active { background-color: rgba(255,255,255,0.08); }
+.btn-pill { font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: 18px; border: none; background: var(--mood-bg); color: var(--primary); cursor: pointer; }
+.btn-pill { transition: transform 0.1s ease, filter 0.1s ease; }
+.btn-pill:active { transform: scale(0.95); filter: brightness(0.9); }
+.btn-save { background: var(--primary); color: var(--bg); }
+.icon-btn { background: none; border: none; padding: 8px; display: flex; align-items: center; justify-content: center; }
+.icon-btn svg { width: 18px; height: 18px; fill: var(--sub); }
+.icon-btn { transition: transform 0.1s ease, background-color 0.1s ease; border-radius: 50%; }
+.icon-btn:active { transform: scale(0.85); background-color: var(--mood-bg); }
+#btn-voice:active { background-color: var(--mood-bg) !important; transform: scale(0.95); }
+.editor-box { width: 100%; min-height: 30vh; font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; outline: none; padding-bottom: 20px; }
+.editor-box:empty:before { content: attr(placeholder); color: var(--sub); opacity: 0.5; }
+.box-header { font-size: 11px; font-weight: 700; margin: 0 0 12px; color: var(--sub); display: flex; justify-content: space-between; }
+.growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); transition: 0.3s; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
+.modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+#auth-layer { position:fixed; inset:0; background:var(--bg); z-index:400; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#pwd-i { padding:15px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:220px; }
+.mood-tag { display: inline-block; padding: 8px 16px; margin: 4px; border-radius: 18px; background: var(--mood-bg); color: var(--sub); font-size: 13px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
+.mood-tag.active { background: var(--primary) !important; color: var(--bg) !important; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+/* 日历切换按钮点击反馈 */
+.cal-ctrl button { transition: transform 0.1s ease, background-color 0.1s; border-radius: 12px; }
+.cal-ctrl button:active { transform: scale(0.85); background-color: rgba(0,0,0,0.08) !important; }
+/* 日历网格淡入淡出动画 */
+.cal-grid { transition: opacity 0.15s ease-out; }
+.cal-grid.fade { opacity: 0; }
+
+/* 图片九宫格容器样式 */
+.img-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px;}
+.img-wrap { position: relative; width: 100%; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--mood-bg); border: 1px solid rgba(0,0,0,0.05); }
+.img-item { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.2s; }
+.img-item:active { transform: scale(0.98); }
+.img-del-btn { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 12px; z-index: 2; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);}
+.theme-switch-group { display: flex; background: var(--mood-bg); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+.theme-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--sub); cursor: pointer; transition: 0.2s; }
+.theme-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+/* 新增骨架屏与呼吸动画 */
+.img-loading { display: flex; align-items: center; justify-content: center; background: var(--mood-bg); color: var(--sub); font-size: 12px; font-weight: bold; animation: pulse 1.5s infinite; border: 1px dashed rgba(0,0,0,0.2); }
+@keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+/* Viewer.js 样式覆盖优化 */
+.viewer-backdrop { background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); }
+/* 语音听写沉浸式面罩 */
+#voice-mask { position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+#voice-mask.active { display: flex; opacity: 1; }
+[data-theme="dark"] #voice-mask { background: rgba(18,18,18,0.85); }
+
+/* 麦克风呼吸波纹动画 */
+.voice-wave { width: 80px; height: 80px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 0 0 0 rgba(var(--energy), 0.6); animation: pulse-mic 1.5s infinite; margin-bottom: 25px; color: var(--bg); }
+[data-theme="dark"] .voice-wave { background: var(--accent); color: var(--bg); }
+@keyframes pulse-mic { 
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--energy), 0.5); } 
+    70% { transform: scale(1.05); box-shadow: 0 0 0 25px rgba(var(--energy), 0); } 
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(var(--energy), 0); } 
+}
+.voice-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 15px; letter-spacing: 1px; }
+.voice-interim { font-size: 15px; color: var(--sub); max-width: 80%; text-align: center; min-height: 24px; line-height: 1.6; }
+/* 全局轻提示 (Toast) 系统 */
+#toast-container { position: fixed; top: env(safe-area-inset-top, 20px); left: 0; right: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.toast { padding: 12px 24px; border-radius: 14px; background: var(--card); color: var(--text); font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--accent); animation: toast-in 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s ease, transform 0.3s ease; max-width: 90%; text-align: center; word-break: break-word; }
+.toast.t-error { border-left-color: var(--danger); }
+.toast.t-success { border-left-color: var(--healing); }
+.toast.fade-out { opacity: 0; transform: translateY(-20px) scale(0.95); }
+[data-theme="dark"] .toast { box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); }
+[data-theme="dark"] .toast.t-error { border-left-color: var(--danger); }
+[data-theme="dark"] .toast.t-success { border-left-color: var(--healing); }
+@keyframes toast-in { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+/* ==========================================
+   原生 PDF 导出 (打印模式) 专属样式
+========================================== */
+@media print {
+    /* 隐藏所有与阅读无关的 UI 元素 */
+    #h-page, .static-nav, #settings-modal, #toast-container { display: none !important; }
+    
+    /* 强制显示详情页，并去掉背景色和内边距，适应 A4 纸 */
+    #d-page { display: block !important; position: static !important; background: white !important; padding: 0 !important; opacity: 1 !important;}
+    body { background: white !important; color: black !important; }
+    
+    /* 调整图片排版，防止图片被 PDF 分页生硬切断 */
+    .img-wrap { page-break-inside: avoid; border: none; }
+    #content-v { page-break-inside: auto; color: black !important;}
+    
+    /* 强制去除暗色模式干扰 */
+    * { filter: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+<div id="auth-layer">
+<h2 style="font-weight:200; letter-spacing:10px; margin-bottom: 30px;">拾绪</h2>
+<input type="password" id="pwd-i" placeholder="解锁密码" autocomplete="off" onkeydown="if(event.key==='Enter') checkAuth()">
+<button class="btn-pill btn-save" style="padding: 12px 40px;" onclick="checkAuth()">解锁</button>
+</div>
+
+<div id="h-page" class="page">
+<div style="padding: 15px 20px 10px; display: flex; justify-content: space-between; align-items: center;">
+<h1 style="font-size: 22px; font-weight: 200; margin: 0;">拾绪 · 灵感日记</h1>
+<button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'">
+<svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.50,0.38,1.03,0.70,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+</button>
+</div>
+
+<div style="display: flex; gap: 20px; padding: 0 20px; margin-bottom: 10px;">
+<div><span style="font-size: 12px; color: var(--sub); opacity: 0.7; display: block;">累计</span><span id="s-total" style="font-size: 18px; font-weight: bold;">0</span></div>
+<div><span style="font-size: 12px; color: var(--sub); opacity: 0.7; display: block;">本月</span><span id="s-month" style="font-size: 18px; font-weight: bold;">0</span></div>
+<div><span style="font-size: 12px; color: var(--sub); opacity: 0.7; display: block;">字数统计</span><span id="s-words" style="font-size: 18px; font-weight: bold;">0</span></div>
+</div>
+
+<div class="cal-section">
+<div class="cal-header">
+<div id="cal-m-label" style="font-weight: 600; font-size: 18px;"></div>
+<div class="cal-ctrl" style="display: flex; background: none; padding: 3px; border-radius: 18px; gap: 2px;">
+<button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(-1)">◀</button>
+<button style="background:rgba(0,0,0,0.03); color: var(--accent); border:none; padding: 5px 12px; font-size:16px; border-radius:15px; cursor:pointer;" onclick="goToday()">今天</button>
+<button style="background:none; color: var(--primary); border:none; padding: 5px 12px; font-size:18px; cursor:pointer;" onclick="moveMonth(1)">▶</button>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; color: var(--sub); margin-bottom: 8px; font-weight: bold;"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
+<div class="cal-grid" id="cal-g"></div>
+</div>
+
+<div style="margin: 10px 15px; padding: 15px 18px; background: var(--card); border-radius: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.03);">
+<div class="box-header"><span id="growth-title">灵感足迹</span><span id="days-count">0 天</span></div>
+<div class="growth-grid" id="growth-grid"></div>
+</div>
+
+<div style="margin: 10px 15px;">
+    <input type="text" id="search-input" placeholder="搜索..." oninput="filterIndex()" style="width: 100%; padding: 15px; border-radius: 15px; border: none; background: var(--card); font-size: 14px;">
+    <div id="index-list" style="margin-top:10px;"></div>
+    
+    <button class="btn-pill btn-save" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onclick="goRandom()">✨ 漫游时光机</button>
+</div>
+
+</div><div id="d-page">
+    <div class="static-nav" style="min-height: 40px; padding: 2px 10px;">
+        <button class="btn-pill" onclick="closePage()">返回</button>
+        <span id="d-date-title" style="font-size: 16px; font-weight: 700; letter-spacing: 1px;"></span>
+        <div id="v-tools" style="display: flex; gap: 8px;">
+            <button class="icon-btn" onclick="doDel()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+            <button class="btn-pill btn-save" onclick="enterEdit()">编辑</button>
+			<button class="icon-btn" onclick="window.print()" title="导出为 PDF">
+    📄
+</button>
+        </div>
+        <div id="e-tools" style="display: none;"><button class="btn-pill btn-save" onclick="save(true)">完成</button></div>
+    </div>
+
+    <div style="max-width: 650px; margin: 0 auto; padding: 15px 20px;">
+        <div id="v-box">
+            <h2 id="title-v" style="margin-top: 0; font-size: 26px; line-height: 1.4; margin-bottom: 15px;"></h2>
+            <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; opacity: 0.8;"></div>
+            <div id="content-v" style="font-size: 17px; line-height: 1.8; color: var(--text); white-space: pre-wrap; letter-spacing: 0.5px;"></div>
+            
+            <div id="v-img-container" class="img-grid"></div>
+        </div>
+
+        <div id="e-box" style="display: none;">
+            <div onclick="openMoodModal()" id="mood-trigger-btn" style="display: inline-block; padding: 6px 14px; background: var(--mood-bg); border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--sub); margin-bottom: 12px; cursor: pointer;">选择心情</div>
+            
+			<div id="e-img-container" class="img-grid" style="margin-top: 5px; margin-bottom: 10px;"></div>
+			
+            <input type="text" id="e-title" placeholder="标题..." style="width:100%; border:none; background:none; font-size:24px; font-weight:700; margin-bottom:5px; color:var(--text); outline:none;">
+            
+            <div id="e-content" contenteditable="true" class="editor-box" placeholder="正文..."></div>
+            
+            <div id="md-tools" style="display: flex; gap: 8px; margin-bottom: 15px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1);">
+                <button style="flex:1; padding:8px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:10px;" onmousedown="event.preventDefault(); insertMD('**')" ontouchstart="event.preventDefault(); insertMD('**')">B</button>
+                <button style="flex:1; padding:8px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:10px;" onmousedown="event.preventDefault(); insertMD('__')" ontouchstart="event.preventDefault(); insertMD('__')">U</button>
+                <button style="flex:1; padding:8px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:10px;" onmousedown="event.preventDefault(); insertMD('~~')" ontouchstart="event.preventDefault(); insertMD('~~')">S</button>
+                <label style="flex:1; display:flex; align-items:center; justify-content:center; padding:8px 0; font-size:15px; background:var(--card); border:1px solid var(--mood-bg); border-radius:10px; cursor:pointer;">
+					📷
+					<input type="file" accept="image/jpeg, image/png, image/webp" style="display:none" onchange="handleImageUpload(this)">
+				</label>
+				<button id="btn-voice" style="flex:1; padding:8px 0; font-size:15px; background:var(--card); border:1px solid var(--mood-bg); border-radius:10px; touch-action:none; user-select:none; -webkit-user-select:none;">🎤</button>
+            </div>
+
+            <div style="font-size: 11px; color: var(--sub); font-weight: 700; padding-bottom: 10vh;">
+                字数：<span id="wc-d">0</span> <span id="save-hint" style="margin-left: 10px; opacity: 0.6;"></span>
+            </div>
+        </div>
+    </div>
+	<div id="voice-mask">
+        <div class="voice-wave">🎤</div>
+        <div class="voice-title">松开结束识别</div>
+        <div id="voice-interim" class="voice-interim">正在准备引擎...</div>
+    </div>
+</div>
+
+<div id="settings-modal" class="modal" onclick="this.style.display='none'">
+<div class="modal-content" onclick="event.stopPropagation()">
+    <h3 style="font-weight: 300; margin-top: 0; margin-bottom: 20px;">系统设置</h3>   
+    
+    <div class="theme-switch-group">
+        <div class="theme-btn" onclick="setTheme('light')" id="theme-light">浅色</div>
+        <div class="theme-btn" onclick="setTheme('system')" id="theme-system">跟随系统</div>
+        <div class="theme-btn" onclick="setTheme('dark')" id="theme-dark">深色</div>
+    </div>
+	<div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; background: var(--mood-bg); padding: 12px 15px; border-radius: 12px;">
+        <span style="font-size: 13px; font-weight: 600; color: var(--sub);">个性化调色</span>
+        <input type="color" id="color-picker" value="#d4af37" onchange="setAccentColor(this.value)" style="border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; background:none; padding:0;">
+    </div>
+    <button id="btn-install-pwa" class="btn-pill btn-save" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px; display:none; background: var(--accent); color: var(--bg);">✨ 安装到手机桌面</button>
+    <div id="storage-status" style="font-size: 12px; color: var(--sub); text-align: center; margin-bottom: 15px; display: none;">存储状态：检测中...</div>
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
+    
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportZip()">📦导出图文包(.zip)</button>
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">📥恢复图文包(.zip)</button>
+    
+    <input type="file" id="file-i" accept=".zip, .json" style="display:none" onchange="importZip(this)">
+    
+    <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️摧毁本地记录</button>
+</div>
+</div>
+
+<div id="mood-modal" class="modal" onclick="this.style.display='none'">
+<div class="modal-content" onclick="event.stopPropagation()">
+<div id="mood-grid-main" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;"></div>
+<div style="display:flex; gap:8px;"><input type="text" id="custom-mood-i" placeholder="临时标签" style="flex:1; border:none; background:var(--mood-bg); padding:12px; border-radius:12px; font-size:13px;"><button class="btn-pill btn-save" onclick="addTransientMood()">添加</button></div>
+<button class="btn-pill" style="width:100%; margin-top: 25px; padding: 12px;" onclick="document.getElementById('mood-modal').style.display='none'">确定</button>
+</div>
+</div>
+
+<div id="pwd-modal" class="modal" onclick="this.style.display='none'">
+<div class="modal-content" onclick="event.stopPropagation()">
+<h3 style="font-weight: 300; margin-top: 0; margin-bottom: 20px;">安全修改</h3>
+<input type="password" id="old-pwd" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--mood-bg); margin-bottom:15px;" placeholder="旧密码">
+<input type="password" id="new-pwd" style="width:100%; padding:14px; border-radius:12px; border:1px solid var(--mood-bg); margin-bottom:20px;" placeholder="新密码">
+<button class="btn-pill btn-save" style="width:100%; padding: 14px;" onclick="updatePassword()">确认修改</button>
+</div>
+</div>
+
+<script>
+// ==========================================
+// 工业级轻提示引擎 (Toast)
+// ==========================================
+function showToast(msg, type = 'info', duration = 3000) {
+    const container = $('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast t-${type}`;
+    toast.innerText = msg;
+    container.appendChild(toast);
+    
+    // 如果提示过多，强制移除最早的一个
+    if (container.children.length > 5) container.children[0].remove();
+
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+// ==========================================
+// 核心状态机与全局变量
+// ==========================================
+let db, searchWorker, imageViewer = null;
+let lastActiveTime = Date.now(), curMonth = new Date(), curKey = '';
+let dataMap = new Map(); 
+let isEditState = false, activeMoods = [], autoSaveTimer = null;
+let currentImages = []; // 存放 OPFS 文件名指针
+let objectURLRegistry = []; // 内存泄露保险丝
+
+const PWD_KEY = 'ShiXu_PWD_V2', DB_NAME = 'ShiXu_DB';
+const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
+const moodFamilies = {'💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy', '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing', '📝 思考': 'f-thinking', '🤔 疑惑': 'f-thinking', '🌑 害怕': 'f-melancholy', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'};
+const colorMap = {'f-energy': '255, 183, 77', 'f-healing': '165, 190, 154', 'f-thinking': '144, 164, 174', 'f-melancholy': '121, 134, 203', 'f-release': '229, 115, 115', 'f-custom': '207, 216, 220'};
+const $ = (id) => document.getElementById(id);
+
+// --- 并发隔离：多 Tab 数据总线 ---
+const syncChannel = new BroadcastChannel('shixu_sync_bus');
+syncChannel.onmessage = (event) => {
+    if (event.data.action === 'refresh') {
+        sync(); 
+        if (curKey === event.data.key) {
+            const hint = $('save-hint');
+            hint.innerText = "⚠️ 其他窗口已更新此记录";
+            hint.style.color = "var(--danger)"; 
+        }
+    }
+};
+
+// --- 性能隔离：Web Worker 引擎注入 ---
+const workerCode = `
+self.onmessage = function(e) {
+    if(e.data.action === 'search') {
+        const { query, docs } = e.data;
+        const q = query.toLowerCase();
+        const results = docs.filter(n => (n.t + n.c).toLowerCase().includes(q)).slice(0, 10);
+        self.postMessage({ action: 'searchResult', results });
+    }
+};`;
+const workerBlob = new Blob([workerCode], {type: 'application/javascript'});
+searchWorker = new Worker(URL.createObjectURL(workerBlob));
+searchWorker.onmessage = (e) => {
+    if(e.data.action === 'searchResult') renderSearchResults(e.data.results);
+};
+
+// ==========================================
+// OPFS 异步文件系统核心驱动
+// ==========================================
+async function writeToOPFS(blob) {
+    try {
+        const root = await navigator.storage.getDirectory();
+        const fileName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.webp`;
+        const fileHandle = await root.getFileHandle(fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return fileName;
+    } catch (e) { console.error("OPFS 写入失败:", e); return null; }
+}
+
+async function readFromOPFS(fileName) {
+    try {
+        const root = await navigator.storage.getDirectory();
+        const fileHandle = await root.getFileHandle(fileName);
+        const file = await fileHandle.getFile(); 
+        const url = URL.createObjectURL(file);
+        objectURLRegistry.push(url); 
+        return url;
+    } catch (e) { console.warn("OPFS 孤儿文件或读取失败:", fileName); return null; }
+}
+
+async function deleteFromOPFS(fileName) {
+    try {
+        const root = await navigator.storage.getDirectory();
+        await root.removeEntry(fileName);
+    } catch (e) { console.warn("OPFS 释放失败:", fileName); }
+}
+
+function releaseObjectUrls() {
+    objectURLRegistry.forEach(url => URL.revokeObjectURL(url));
+    objectURLRegistry = [];
+    if (imageViewer) { imageViewer.destroy(); imageViewer = null; }
+}
+
+// ==========================================
+// PWA & 系统环境配置
+// ==========================================
+// ==========================================
+// 高级视觉引擎：主题与无缝转场
+// ==========================================
+function setTheme(theme) {
+    const updateDOM = () => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('ShiXu_Theme_Pro', theme); // Q3: 采用新 Key 隔离配置
+        ['light', 'system', 'dark'].forEach(t => $(`theme-${t}`).classList.remove('active'));
+        $(`theme-${theme}`).classList.add('active');
+    };
+
+    // 真正的无缝转场魔法 (View Transitions API)
+    // 如果浏览器不支持，退化为瞬间切换
+    if (!document.startViewTransition) {
+        updateDOM();
+        return;
+    }
+    // 浏览器会在此处截图，执行 updateDOM，然后再截新图进行 GPU 混合
+    document.startViewTransition(() => updateDOM());
+}
+
+function setAccentColor(hexColor) {
+    document.documentElement.style.setProperty('--accent', hexColor);
+    localStorage.setItem('ShiXu_Accent_Pro', hexColor);
+}
+
+// 初始化主题与颜色
+(function initTheme() { 
+    setTheme(localStorage.getItem('ShiXu_Theme_Pro') || 'system'); 
+    const savedAccent = localStorage.getItem('ShiXu_Accent_Pro');
+    if (savedAccent) {
+        document.documentElement.style.setProperty('--accent', savedAccent);
+        if ($('color-picker')) $('color-picker').value = savedAccent;
+    }
+})();
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferredPrompt = e; $('btn-install-pwa').style.display = 'block';
+});
+$('btn-install-pwa').addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') $('btn-install-pwa').style.display = 'none';
+        deferredPrompt = null;
+    }
+});
+window.addEventListener('appinstalled', () => {
+    $('btn-install-pwa').style.display = 'none';
+    requestPersistentStorage();
+});
+
+async function requestPersistentStorage() {
+    const statusEl = $('storage-status'); statusEl.style.display = 'block';
+    if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persisted();
+        if (isPersisted) { statusEl.innerText = "🔒 存储已受系统最高保护"; statusEl.style.color = "var(--healing)"; return; }
+        const granted = await navigator.storage.persist();
+        statusEl.innerText = granted ? "🔒 存储已受系统最高保护" : "⚠️ 浏览器随时可能清理此应用数据";
+        statusEl.style.color = granted ? "var(--healing)" : "var(--danger)";
+    } else statusEl.innerText = "⚠️ 当前环境不支持持久化存储";
+}
+
+function checkIOS() {
+    if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) && !window.navigator.standalone) {
+        const btn = $('btn-install-pwa'); btn.style.display = 'block'; btn.innerText = "🍎 点击浏览器[分享] -> [添加到主屏幕]";
+        btn.onclick = () => showToast("请点击底部 Safari 的『分享』图标，然后选择『添加到主屏幕』，避免数据丢失！");
+    }
+}
+
+// ==========================================
+// 工业级数据输入/输出 (Zip 流媒体引擎)
+// ==========================================
+
+async function exportZip() {
+    try {
+        const hint = $('storage-status'); // 借用设置面板的状态栏显示进度
+        hint.style.display = 'block';
+        hint.innerText = "⏳ 正在拉取数据库与图片，请勿关闭页面...";
+        hint.style.color = "var(--accent)";
+
+        const zip = new JSZip();
+        
+        // 1. 提取核心文本数据
+        const allNotes = await new Promise(r => db.transaction("notes", "readonly").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
+        zip.file("data.json", JSON.stringify(allNotes, null, 2));
+
+        // 2. 提取 OPFS 沙盒中的所有图片
+        const imgFolder = zip.folder("images");
+        const root = await navigator.storage.getDirectory();
+        
+        // 遍历物理硬盘，将文件指针塞入 Zip 流
+        for await (const [name, handle] of root.entries()) {
+            if (name.startsWith('img_')) {
+                const file = await handle.getFile();
+                imgFolder.file(name, file); // 直接将 Blob 压入压缩包
+            }
+        }
+
+        // 3. 异步生成压缩包并触发下载
+        hint.innerText = "📦正在打包中...";
+        const blob = await zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE", // 开启压缩
+            compressionOptions: { level: 6 } // 压缩等级，平衡速度与体积
+        });
+
+        saveAs(blob, `Shixupro_Backup_${new Date().toISOString().split('T')[0]}.zip`);
+        
+        hint.innerText = "✅ 导出成功！";
+        hint.style.color = "var(--healing)";
+        setTimeout(() => hint.style.display = 'none', 3000);
+    } catch(e) {
+        showToast("导出崩溃: " + e.message);
+    }
+}
+
+// ==========================================
+// 时光机漫游算法 (三级漏斗)
+// ==========================================
+function goRandom() {
+    const keys = Array.from(dataMap.keys());
+    if (keys.length === 0) {
+        showToast("还没有任何记录可以漫步哦", "info");
+        return;
+    }
+
+    // 过滤掉当前正在查看的日记，避免“随机到了当前这篇”的尴尬
+    const availableKeys = keys.filter(k => k !== curKey);
+    if (availableKeys.length === 0) {
+        showToast("这是你唯一的记录，快去多多书写吧", "info");
+        return;
+    }
+
+    const today = new Date();
+    const currM = today.getMonth() + 1;
+    const currD = today.getDate();
+
+    // 优先级 1：那年今日 (月、日精确相同)
+    const yearlyKeys = availableKeys.filter(k => {
+        const [, m, d] = k.split('/').map(Number);
+        return m === currM && d === currD;
+    });
+
+    // 优先级 2：某月今日 (仅日相同，且避开当月)
+    const monthlyKeys = availableKeys.filter(k => {
+        const [, m, d] = k.split('/').map(Number);
+        return d === currD && m !== currM; 
+    });
+
+    let targetKey = '';
+    if (yearlyKeys.length > 0) {
+        targetKey = yearlyKeys[Math.floor(Math.random() * yearlyKeys.length)];
+        showToast("翻开历史上的今天", "success");
+    } else if (monthlyKeys.length > 0) {
+        targetKey = monthlyKeys[Math.floor(Math.random() * monthlyKeys.length)];
+        showToast("某个月的今天，你曾写下这些", "success");
+    } else {
+        // 优先级 3：完全随机漫步
+        targetKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+        showToast("✨随机坠入某段回忆", "info");
+    }
+
+    openNote(targetKey);
+}
+
+async function importZip(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // 依然保留对旧版纯 JSON 的向下兼容
+    if (file.name.endsWith('.json')) {
+        return importLegacyJSON(file, input);
+    }
+
+    if (!confirm("⚠️恢复操作将覆盖现有冲突记录，并导入新图片。强烈建议先导出当前状态。是否继续？")) {
+        input.value = ''; return;
+    }
+
+    try {
+        const hint = $('storage-status');
+        hint.style.display = 'block';
+        hint.innerText = "⏳正在解压并写入沙盒，请勿离开...";
+        hint.style.color = "var(--danger)";
+
+        const zip = await JSZip.loadAsync(file);
+        
+        // 1. 恢复核心文本数据
+        const jsonFile = zip.file("data.json");
+        if (!jsonFile) throw new Error("压缩包内缺失核心数据文件 data.json");
+        
+        const jsonStr = await jsonFile.async("string");
+        const notes = JSON.parse(jsonStr);
+        
+        const tx = db.transaction("notes", "readwrite");
+        notes.forEach(n => tx.objectStore("notes").put(n));
+
+        // 2. 恢复图片到 OPFS
+        const root = await navigator.storage.getDirectory();
+        const imgFolder = zip.folder("images");
+        
+        if (imgFolder) {
+            const promises = [];
+            imgFolder.forEach((relativePath, zipEntry) => {
+                if (!zipEntry.dir) {
+                    // 并发将解压出来的 Blob 写回本地物理硬盘
+                    promises.push(zipEntry.async("blob").then(async blob => {
+                        const fileHandle = await root.getFileHandle(relativePath, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                    }));
+                }
+            });
+            await Promise.all(promises); // 等待所有图片写盘完毕
+        }
+
+        tx.oncomplete = () => {
+            showToast("✅ 图文全量包恢复成功！点击确定重载应用。");
+            location.reload();
+        };
+    } catch(e) {
+        const hint = $('storage-status');
+        hint.innerText = "❌ 导入失败: " + e.message;
+        hint.style.color = "var(--danger)";
+        setTimeout(() => hint.style.display = 'none', 3000);
+    } finally {
+        input.value = '';
+    }
+}
+
+// 降级兼容：处理纯 JSON 文件的导入
+function importLegacyJSON(file, input) {
+    const r = new FileReader(); r.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result); if (!Array.isArray(data)) throw new Error("无效格式");
+            const tx = db.transaction("notes", "readwrite");
+            data.forEach(n => { if(n.date) tx.objectStore("notes").put(n); });
+            tx.oncomplete = () => { sync(); showToast("纯文本记录恢复成功"); $('settings-modal').style.display='none'; };
+        } catch (err) { showToast("失败: " + err.message); }
+    }; r.readAsText(file); input.value = '';
+}
+
+// ==========================================
+// 鉴权与引擎启动
+// ==========================================
+async function hashStr(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function checkAuth() {
+    const input = $('pwd-i').value; if (!input) return;
+    const stored = localStorage.getItem(PWD_KEY), hashedInput = await hashStr(input);
+    if(!stored) { localStorage.setItem(PWD_KEY, hashedInput); start(); } 
+    else if(hashedInput === stored) start(); 
+    else { showToast("密码错误"); $('pwd-i').value=''; }
+}
+
+function start() {
+    $('auth-layer').style.display = 'none';
+    const req = indexedDB.open(DB_NAME, 2); 
+    req.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains("notes")) e.target.result.createObjectStore("notes", {keyPath: "date"}); };
+    req.onsuccess = e => { db = e.target.result; sync(); initAutoLock(); checkIOS(); requestPersistentStorage(); };
+}
+
+// ==========================================
+// 业务链路: 数据查询与日历渲染
+// ==========================================
+async function sync() {
+    if(!db) return;
+    const all = await new Promise(r => db.transaction("notes", "readonly").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
+    dataMap.clear();
+    let tw = 0, mc = 0, yc = 0; const currY = curMonth.getFullYear(), currM = curMonth.getMonth() + 1;
+
+    all.forEach(n => {
+        dataMap.set(n.date, { d: n.date, m: n.mood, w: n.words || 0 });
+        const [y, m, d] = n.date.split('/').map(Number);
+        tw += (n.words || 0);
+        if(y === currY) { yc++; if(m === currM) mc++; }
+    });
+
+    $('s-total').innerText = all.length; $('s-words').innerText = tw.toLocaleString();
+    $('s-month').innerText = mc; $('days-count').innerText = `${yc} 天`;
+    $('growth-title').innerText = `${currY}年 灵感足迹`;
+    renderCal(); renderGrowth(all, currY);
+}
+
+function renderCal() {
+    const g = $('cal-g'); g.innerHTML = '';
+    const y = curMonth.getFullYear(), m = curMonth.getMonth();
+    $('cal-m-label').innerText = `${y}年 ${m+1}月`;
+    const offset = (new Date(y, m, 1).getDay() || 7) - 1, days = new Date(y, m+1, 0).getDate();
+    
+    const frag = document.createDocumentFragment();
+    for(let i=0; i<offset; i++) frag.appendChild(document.createElement('div'));
+
+    const todayK = `${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`;
+    for(let d=1; d<=days; d++) {
+        const k = `${y}/${m+1}/${d}`; let f = "", lunar = "";
+        if(typeof Solar !== 'undefined') {
+            const l = Solar.fromDate(new Date(y, m, d)).getLunar();
+            f = l.getFestivals()[0] || l.getJieQi() || ""; lunar = l.getDayInChinese();
+        }
+        const el = document.createElement('div');
+        el.className = `day ${k === todayK ? 'is-today' : ''} ${dataMap.has(k) ? 'recorded' : ''}`;
+        el.innerHTML = `<span>${d}</span><span class="l" style="color:${f ? 'var(--danger)' : 'var(--sub)'}">${f || lunar}</span>`;
+        el.onclick = () => openNote(k); frag.appendChild(el);
+    }
+    g.appendChild(frag);
+}
+
+function renderGrowth(all, year) {
+    const grid = $('growth-grid'); grid.innerHTML = ''; const frag = document.createDocumentFragment();
+    all.filter(n => parseInt(n.date.split('/')[0]) === parseInt(year)).sort((a,b) => new Date(a.date.replace(/\//g, '-')) - new Date(b.date.replace(/\//g, '-'))).forEach(n => {
+        const cell = document.createElement('div');
+        const family = n.mood && n.mood.split(',').length ? (moodFamilies[n.mood.split(',')[0]] || 'f-custom') : 'f-custom';
+        const lv = n.words > 300 ? 'lv-3' : (n.words > 100 ? 'lv-2' : 'lv-1');
+        cell.className = `growth-cell ${family} ${lv}`;
+        cell.style.backgroundColor = `rgba(${colorMap[family] || colorMap['f-custom']}, ${lv === 'lv-3' ? 1 : (lv === 'lv-2' ? 0.6 : 0.3)})`;
+        frag.appendChild(cell);
+    });
+    grid.appendChild(frag);
+}
+
+// ==========================================
+// 页面路由与 Fade 转场引擎
+// ==========================================
+function openNote(k) {
+	// 强制当前页面所有聚焦元素失焦，收起软键盘，防止转场抽搐
+    if (document.activeElement) document.activeElement.blur();
+    curKey = k; const dp = $('d-page'), hp = $('h-page');
+    $('d-date-title').innerText = k.replace(/\//g, ' . ');
+    
+    // 1. 挂载 DOM（此时 opacity 为 0）
+    dp.style.display = 'block'; 
+    
+    // 2. 下一帧触发 CSS opacity 动画
+    requestAnimationFrame(() => { 
+        dp.classList.add('active');   // 详情页淡入
+        hp.classList.add('fade-out'); // 主页面淡出
+        setTimeout(() => { 
+            hp.style.display = 'none'; // 150ms 动画结束后隐藏主页 DOM
+            window.scrollTo(0,0); 
+        }, 150); 
+    });
+
+    db.transaction("notes").objectStore("notes").get(k).onsuccess = e => { e.target.result ? showView(e.target.result) : enterEdit(); };
+}
+
+function closePage() {
+	// 关闭详情页前，同样确保编辑框失去焦点
+    if (document.activeElement) document.activeElement.blur();
+    const dp = $('d-page'), hp = $('h-page'); 
+    
+    // 1. 唤醒主页 DOM
+    hp.style.display = 'block';
+    if(typeof releaseObjectUrls === 'function') releaseObjectUrls(); 
+    currentImages = []; 
+    
+    // 2. 触发 CSS opacity 动画
+    requestAnimationFrame(() => { 
+        dp.classList.remove('active'); // 详情页淡出
+        hp.classList.remove('fade-out'); // 主页面淡入
+        setTimeout(() => { 
+            dp.style.display = 'none'; // 150ms 动画结束后隐藏详情页 DOM
+            sync(); 
+        }, 150); 
+    });
+}
+
+async function showView(d) {
+    isEditState = false; 
+    $('v-box').style.display='block'; $('e-box').style.display='none';
+    $('v-tools').style.display='flex'; $('e-tools').style.display='none';
+    $('title-v').innerText = d.title || "无标题";
+    $('meta-v').innerText = `${d.mood?d.mood.replace(/,/g,' '):''} · ${d.words} 字`;
+    $('content-v').innerHTML = renderMD(d.content);
+    await renderImageGrid('v-img-container', d.images || [], false);
+}
+
+// --- 增加了容错装甲的 enterEdit ---
+async function enterEdit() {
+    isEditState = true; 
+    db.transaction("notes").objectStore("notes").get(curKey).onsuccess = async e => {
+        try { // 👈 增加 try 保护块
+            const d = e.target.result;
+            $('v-box').style.display='none'; $('e-box').style.display='block';
+            $('v-tools').style.display='none'; $('e-tools').style.display='block';
+            $('e-title').value = d ? d.title : ''; $('e-content').innerText = d ? d.content : '';
+            activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay();
+            $('wc-d').innerText = getWordCount($('e-content').innerText);
+            
+            currentImages = d && d.images ? [...d.images] : [];
+            // 👈 增加 catch 拦截，防止某张图片损坏导致整个文字日记无法编辑
+            await renderImageGrid('e-img-container', currentImages, true).catch(err => console.warn("图片加载跳过:", err));
+        } catch (err) {
+            console.error("进入编辑模式失败:", err);
+            showToast("界面初始化异常，请重试", "error");
+        }
+    };
+}
+
+function save(manual) {
+    const c = $('e-content').innerText;
+    const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), images: currentImages };
+    db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
+        syncChannel.postMessage({ action: 'refresh', key: curKey });
+        if(manual) showView(d);
+        const hint = $('save-hint'); hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5); setTimeout(() => hint.innerText = "", 2000);
+    };
+}
+
+// 级联删除：拦截 OPFS 孤儿文件
+function doDel() { 
+    if(!confirm("确定要销毁这篇日记及所有配图吗？(不可恢复)")) return;
+    db.transaction("notes").objectStore("notes").get(curKey).onsuccess = async e => {
+        const d = e.target.result;
+        if (d && d.images) for (const fn of d.images) if (fn.startsWith('img_')) await deleteFromOPFS(fn);
+        db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>{ syncChannel.postMessage({ action: 'refresh', key: curKey }); closePage(); }
+    };
+}
+
+// ==========================================
+// 图片压缩与 Viewer.js 渲染引擎
+// ==========================================
+function handleImageUpload(input) {
+    if (currentImages.length >= 4) { showToast("为了性能，单篇限传 4 张配图"); return; }
+    const file = input.files[0]; if (!file) return;
+
+    // 【新增】1. 立即触发视觉反馈：插入骨架屏占位符
+    const container = $('e-img-container');
+    const skeleton = document.createElement('div');
+    skeleton.className = 'img-wrap img-loading';
+    skeleton.innerText = '压缩中...';
+    container.appendChild(skeleton);
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            let w = img.width, h = img.height, max = 1200; 
+            if (w > max || h > max) { if (w > h) { h = Math.round(h * max / w); w = max; } else { w = Math.round(w * max / h); h = max; } }
+            canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h);
+            
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    $('.img-loading').forEach(el => el.remove()); 
+                    showToast("图片压缩失败：您的设备底层不支持此操作。"); 
+                    return; 
+                }
+                const fileName = await writeToOPFS(blob);
+                if (fileName) { 
+                    currentImages.push(fileName); 
+                    await renderImageGrid('e-img-container', currentImages, true); 
+                    save(false); 
+                } else {
+                    $('.img-loading').forEach(el => el.remove()); 
+                    showToast("写入沙盒失败");
+                }
+            }, 'image/jpeg', 0.8); // ⚠️ 换用 JPEG 并在质量上妥协 (0.8)，保全 iOS 兼容性
+        }; img.src = e.target.result;
+    }; reader.readAsDataURL(file); input.value = '';
+}
+
+async function renderImageGrid(containerId, fileNames, isEdit) {
+    const c = $(containerId); releaseObjectUrls(); c.innerHTML = '';
+    if (!fileNames || fileNames.length === 0) return;
+    
+    const renderPromises = fileNames.map(async (fileName, idx) => {
+        // 向下兼容：判断是指针还是旧数据的 Base64 字符串
+        let url = fileName.startsWith('img_') ? await readFromOPFS(fileName) : fileName; 
+        if (!url) return;
+
+        const wrap = document.createElement('div'); wrap.className = 'img-wrap';
+        const img = document.createElement('img'); img.className = 'img-item'; img.src = url; img.alt = "拾绪视界";
+        wrap.appendChild(img);
+        
+        if (isEdit) {
+            const delBtn = document.createElement('button'); delBtn.className = 'img-del-btn'; delBtn.innerText = '✕';
+            delBtn.onclick = async (e) => { 
+                e.stopPropagation(); const removedName = currentImages.splice(idx, 1)[0]; 
+                if (removedName.startsWith('img_')) await deleteFromOPFS(removedName); 
+                await renderImageGrid(containerId, currentImages, true); save(false); 
+            };
+            wrap.appendChild(delBtn);
+        }
+        c.appendChild(wrap);
+    });
+
+    await Promise.all(renderPromises);
+
+    // 唤醒 Viewer.js (仅在查看模式)
+    if (!isEdit && c.children.length > 0) {
+        imageViewer = new Viewer(c, { navbar: false, toolbar: false, title: false, transition: true, movable: true, zoomable: true });
+    }
+}
+
+// ==========================================
+// 辅助与工具链
+// ==========================================
+const editor = $('e-content'); let lastRange = null;
+editor.addEventListener('input', () => { $('wc-d').innerText = getWordCount(editor.innerText.trim()); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); });
+document.addEventListener('selectionchange', () => { const sel = window.getSelection(); if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) lastRange = sel.getRangeAt(0).cloneRange(); });
+
+editor.addEventListener('paste', (e) => {
+    e.preventDefault(); let text = (e.originalEvent || e).clipboardData.getData('text/plain'); if (!text) return;
+    if (/^(https?:\/\/[^\s]+)$/i.test(text.trim())) text = `[网页链接](${text.trim()})`;
+    if (document.queryCommandSupported('insertText')) document.execCommand('insertText', false, text);
+    else { const sel = window.getSelection(); if (!sel.rangeCount) return; const range = sel.getRangeAt(0); range.deleteContents(); range.insertNode(document.createTextNode(text)); range.collapse(false); }
+});
+
+function insertMD(sym) {
+    editor.focus(); const sel = window.getSelection(); 
+    if (lastRange) { sel.removeAllRanges(); sel.addRange(lastRange); } else if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0), txt = range.toString(), node = document.createTextNode(sym.endsWith(' ') ? sym + txt : sym + txt + sym);
+    range.deleteContents(); range.insertNode(node); const newR = document.createRange();
+    if (!txt && !sym.endsWith(' ')) newR.setStart(node, sym.length); else newR.setStartAfter(node);
+    sel.removeAllRanges(); sel.addRange(newR); editor.dispatchEvent(new Event('input')); lastRange = newR.cloneRange();
+}
+
+// ==========================================
+// 语音闪念引擎 (Web Speech API)
+// ==========================================
+let recognition = null;
+let isDictating = false;
+
+// 探测并初始化系统级别的语音引擎
+if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;     // 允许连续不断地说话
+    recognition.interimResults = true; // 允许返回正在识别中的半成品文本（为了实现视觉上的实时反馈）
+    recognition.lang = 'zh-CN';        // 默认中文，可随系统调整
+
+    recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                // 识别完毕，调用原有的 insertMD 直接将文字平滑塞入光标位置
+                insertMD(event.results[i][0].transcript + ' '); 
+            } else {
+                // 识别中的草稿，显示在面罩上
+                interim += event.results[i][0].transcript;
+            }
+        }
+        $('voice-interim').innerText = interim || '正在聆听...';
+    };
+    
+    recognition.onerror = (e) => {
+        const mask = $('voice-interim');
+        if(e.error === 'not-allowed') {
+            mask.innerText = '⚠️权限被拒：请确保使用 HTTPS 协议，并允许麦克风权限';
+        } else {
+            mask.innerText = `识别中止: ${e.error}`;
+        }
+    };
+}
+
+function startDictation() {
+    if (!recognition) { showToast('您的设备/浏览器暂不支持原生语音识别引擎'); return; }
+    if (isDictating) return;
+    
+    isDictating = true;
+    const mask = $('voice-mask');
+    mask.classList.add('active'); // 唤起毛玻璃面罩
+    $('voice-interim').innerText = '正在聆听...';
+    
+    try { recognition.start(); } catch(e) {} // 捕获引擎重复启动的偶发异常
+}
+
+function stopDictation() {
+    if (!isDictating) return;
+    isDictating = false;
+    const mask = $('voice-mask');
+    mask.classList.remove('active'); // 褪去面罩
+    if (recognition) recognition.stop();
+}
+
+// 绑定工业级触摸防抖事件
+// 注意：必须绑定在 window 上监听 touchend，防止用户手指滑出按钮区域后无法触发停止
+window.addEventListener('DOMContentLoaded', () => {
+    const btnVoice = $('btn-voice');
+    if (btnVoice) {
+        // 桌面端鼠标支持
+        btnVoice.addEventListener('mousedown', (e) => { e.preventDefault(); startDictation(); });
+        // 移动端核心触控支持 (passive: false 配合 preventDefault 彻底绞杀系统原生选择菜单)
+        btnVoice.addEventListener('touchstart', (e) => { e.preventDefault(); startDictation(); }, {passive: false});
+    }
+});
+window.addEventListener('mouseup', stopDictation);
+window.addEventListener('touchend', stopDictation);
+
+function executeSearch() {
+    const q = $('search-input').value; if (!q) { $('index-list').innerHTML = ''; return; }
+    db.transaction("notes").objectStore("notes").getAll().onsuccess = e => {
+        const docs = e.target.result.map(n => ({ d: n.date, t: n.title||'', c: n.content||'' }));
+        searchWorker.postMessage({ action: 'search', query: q, docs });
+    };
+}
+function renderSearchResults(results) {
+    const list = $('index-list'); list.innerHTML = ''; const frag = document.createDocumentFragment();
+    results.forEach(n => {
+        const div = document.createElement('div'); div.style = "padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer;";
+        div.innerHTML = `<span>${n.t || '无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.d}</span>`;
+        div.onclick = () => openNote(n.d); frag.appendChild(div);
+    }); list.appendChild(frag);
+}
+const filterIndex = debounce(executeSearch, 300);
+
+function renderMD(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/__(.*?)__/g,'<u>$1</u>').replace(/~~(.*?)~~/g,'<del>$1</del>').replace(/^> (.*$)/gm,'<blockquote>$1</blockquote>') : ''; }
+function getWordCount(text) { const cn = text.match(/[\u4e00-\u9fa5]/g) || []; const en = text.match(/[a-zA-Z]{2,}/g) || []; return cn.length + en.length; }
+function debounce(func, delay) { let timer = null; return function(...args) { clearTimeout(timer); timer = setTimeout(() => func.apply(this, args), delay); }; }
+function moveMonth(n) { 
+    const g = $('cal-g'); g.classList.add('fade');
+    setTimeout(() => { curMonth.setMonth(curMonth.getMonth()+n); sync(); g.classList.remove('fade'); }, 150); 
+}
+function goToday() { 
+    const g = $('cal-g'); g.classList.add('fade');
+    setTimeout(() => { curMonth = new Date(); sync(); g.classList.remove('fade'); }, 150); 
+}
+function openMoodModal() { renderMoodModal(); $('mood-modal').style.display='flex'; }
+function updateMoodDisplay() { $('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情'; }
+function showPwdModal() { $('pwd-modal').style.display='flex'; $('settings-modal').style.display='none'; }
+// --- 补回意外丢失的修改密码函数 ---
+async function updatePassword() { 
+    const oldV = $('old-pwd').value, newV = $('new-pwd').value; 
+    const stored = localStorage.getItem(PWD_KEY);
+    const oldHashed = await hashStr(oldV);
+    
+    if(oldHashed === stored) { 
+        const newHashed = await hashStr(newV);
+        localStorage.setItem(PWD_KEY, newHashed); 
+        showToast("密码修改成功", "success"); 
+        $('pwd-modal').style.display='none'; 
+        $('old-pwd').value = ''; $('new-pwd').value = '';
+    } else {
+        showToast("旧密码验证失败", "error"); 
+    } 
+}
+function renderMoodModal() {
+    const container = $('mood-grid-main'); container.innerHTML = '';
+    [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
+        const el = document.createElement('div'); el.className = `mood-tag ${moodFamilies[m] || 'f-custom'} ${activeMoods.includes(m) ? 'active' : ''}`;
+        el.innerText = m; el.onclick = () => { if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m); updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input')); }; container.appendChild(el);
+    });
+}
+function addTransientMood() { const v = $('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); $('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); save(false); } }
+
+// 初始化系统监听
+function initAutoLock() {
+    const debouncedActiveUpdate = debounce(() => { lastActiveTime = Date.now(); }, 1000);
+    ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(ev => window.addEventListener(ev, debouncedActiveUpdate, {passive: true}));
+    setInterval(() => { if (Date.now() - lastActiveTime > 5 * 60 * 1000) location.reload(); }, 10000);
+}
+
+// ==========================================
+// 工业级侧滑返回引擎 (Edge Swipe)
+// ==========================================
+let edgeTouchStartX = 0;
+let edgeTouchStartY = 0;
+const detailPage = $('d-page');
+
+detailPage.addEventListener('touchstart', (e) => {
+    edgeTouchStartX = e.changedTouches[0].screenX;
+    edgeTouchStartY = e.changedTouches[0].screenY;
+}, { passive: true }); // passive: true 保证不卡顿原本的滚动
+
+detailPage.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    
+    const deltaX = touchEndX - edgeTouchStartX;
+    const deltaY = Math.abs(touchEndY - edgeTouchStartY);
+
+    // 严苛的判定条件：
+    // 1. edgeTouchStartX < 40 : 手指必须从屏幕最左侧边缘 40px 以内开始滑动（纯正的 iOS 边缘侧滑）
+    // 2. deltaX > 80 : 向右滑动距离必须超过 80px 才算有效
+    // 3. deltaY < 50 : 上下漂移不能超过 50px（防止用户是在斜着滚动文章）
+    if (edgeTouchStartX < 40 && deltaX > 80 && deltaY < 50) {
+        // 如果正在录音，安全中断
+        if (typeof stopDictation === 'function') stopDictation();
+        // 触发关闭
+        closePage();
+    }
+}, { passive: true });
+
+// ⚠️ 极其暴力的格式化引擎
+async function clearAllData() { 
+    if(!confirm("⚠️ 警告：此操作将同时清空数据库与 OPFS 物理硬盘中的所有图片，不可逆转！是否继续？")) return;
+    try {
+        const root = await navigator.storage.getDirectory();
+        for await (const [name, handle] of root.entries()) { await root.removeEntry(name, { recursive: true }); }
+        db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload();
+    } catch(e) { showToast("清空异常: " + e); }
+}
+// ==========================================
+// 离线状态机 (Offline State Machine)
+// ==========================================
+function updateNetworkStatus() {
+    const isOnline = navigator.onLine;
+    const voiceBtn = $('btn-voice');
+    const titleEl = $('d-date-title');
+
+    if (!isOnline) {
+        // 断网时：视觉警告，并物理锁死云端依赖功能
+        showToast("已进入离线模式，图文已受本地保护", "info");
+        if (titleEl && !titleEl.innerText.includes('☁️')) {
+            titleEl.innerHTML = `☁️ 离线 · ${titleEl.innerText}`;
+        }
+        if (voiceBtn) {
+            voiceBtn.style.opacity = '0.3';
+            voiceBtn.style.pointerEvents = 'none'; // 物理阻断点击
+        }
+    } else {
+        // 恢复网络时：解除锁定
+        if (titleEl) titleEl.innerText = titleEl.innerText.replace('☁️ 离线 · ', '');
+        if (voiceBtn) {
+            voiceBtn.style.opacity = '1';
+            voiceBtn.style.pointerEvents = 'auto';
+        }
+    }
+}
+
+// 监听系统底层的网络切换事件
+window.addEventListener('offline', updateNetworkStatus);
+window.addEventListener('online', () => {
+    showToast("网络已恢复", "success");
+    updateNetworkStatus();
+});
+
+// 初始化时执行一次检测
+window.addEventListener('DOMContentLoaded', updateNetworkStatus);
+</script>
+</body>
+</html>
