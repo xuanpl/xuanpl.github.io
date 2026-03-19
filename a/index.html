@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="system">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -18,54 +18,129 @@
 --energy: 255, 183, 77; --healing: 165, 190, 154; --thinking: 144, 164, 174;
 --release: 229, 115, 115; --melancholy: 121, 134, 203; --fear: 121, 134, 203; --custom: 207, 216, 220;
 }
-[data-theme="dark"],
+[data-theme="dark"] { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --mood-bg: #2c2c2c;}
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { 
-    --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0;
-  }
+  :root:not([data-theme="light"]) { --primary: #ecf0f1; --accent: #f1c40f; --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --mood-bg: #2c2c2c;}
 }
-.img-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 15px; }
-.img-item { width: 100%; aspect-ratio: 1; border-radius: 12px; object-fit: cover; cursor: pointer; border: 1px solid var(--mood-bg); }
-.img-del-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; z-index: 2;}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; }
-.page { position: fixed; inset: 0; background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top); }
-#d-page { display: none; position: absolute; inset: 0; width: 100%; min-height: 100vh; background: var(--bg); z-index: 100; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding-top: env(safe-area-inset-top); }
+html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; transition: background 0.3s; }
+.page, #d-page { transition: opacity 0.15s ease-out; }
+#d-page { 
+    display: none; 
+    position: fixed;
+    inset: 0; 
+    width: 100%; 
+    height: 100vh;
+    background: var(--bg); 
+    z-index: 100; 
+    opacity: 0; 
+    padding-top: env(safe-area-inset-top); 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+#d-page.active { opacity: 1; }
+#h-page.fade-out { opacity: 0; pointer-events: none; }
 #d-page.active { transform: translateX(0); }
 .static-nav { position: relative; width: 100%; min-height: var(--nav-height); background: var(--bg); border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; }
 .cal-section { margin: 8px 15px; border-radius: 20px; background: var(--card); padding-bottom: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.03); }
 .cal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; gap: 1px; }
-.day { height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; position: relative; }
-.day span:first-child { font-size: 18px; font-weight: 600; }
-.day .l { font-size: 12px; margin-top: 2px; white-space: nowrap; letter-spacing: -0.2px; transform: scale(0.9); }
+.day { 
+    height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    border-radius: 12px; cursor: pointer; position: relative;
+    transition: background-color 0.15s ease, transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); 
+    -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+}
+.day span:first-child { font-size: 17px; font-weight: 600; }
+.day .l { font-size: 12px; margin-top: 0px; white-space: nowrap; letter-spacing: -0.2px; transform: scale(0.82); }
 .day.recorded { background: var(--mood-bg); }
 .day.is-today { background: var(--primary) !important; color: var(--bg); }
-.day.recorded::after { content: ''; position: absolute; bottom: 5px; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
+.day.recorded::after { content: ''; position: absolute; bottom: 2px; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; }
+.day:active { transform: scale(0.92); background-color: var(--mood-bg); }
+.day.is-today:active { transform: scale(0.92); background-color: var(--primary) !important; opacity: 0.8; }
+.day.recorded:active { background-color: rgba(0,0,0,0.08); }
+[data-theme="dark"] .day.recorded:active { background-color: rgba(255,255,255,0.08); }
 .btn-pill { font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: 18px; border: none; background: var(--mood-bg); color: var(--primary); cursor: pointer; }
+.btn-pill { transition: transform 0.1s ease, filter 0.1s ease; }
+.btn-pill:active { transform: scale(0.95); filter: brightness(0.9); }
 .btn-save { background: var(--primary); color: var(--bg); }
 .icon-btn { background: none; border: none; padding: 8px; display: flex; align-items: center; justify-content: center; }
 .icon-btn svg { width: 18px; height: 18px; fill: var(--sub); }
-.editor-box { width: 100%; min-height: 50vh; font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; outline: none; padding-bottom: 20vh; }
+.icon-btn { transition: transform 0.1s ease, background-color 0.1s ease; border-radius: 50%; }
+.icon-btn:active { transform: scale(0.85); background-color: var(--mood-bg); }
+
+.editor-box { width: 100%; min-height: 30vh; font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; outline: none; padding-bottom: 20vh; }
 .editor-box:empty:before { content: attr(placeholder); color: var(--sub); opacity: 0.5; }
-.box-header { font-size: 11px; font-weight: 700; margin: 0 0 12px; color: var(--sub); display: flex; justify-content: space-between; }
+.box-header { 
+    font-size: 12px; 
+    font-weight: 700; 
+    margin: 0 0 12px; 
+    color: var(--text); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
 .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); transition: 0.3s; }
+.growth-cell { width: 12px; height: 12px; border-radius: 3px; background: var(--mood-bg); transition: 0.3s; }
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
-.modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; padding-bottom: calc(25px + env(safe-area-inset-bottom)); }
+.modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
 #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:400; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 #pwd-i { padding:15px; border:none; background:var(--mood-bg); color:var(--text); border-radius:20px; margin-bottom:20px; text-align:center; font-size: 24px; width:220px; }
 .mood-tag { display: inline-block; padding: 8px 16px; margin: 4px; border-radius: 18px; background: var(--mood-bg); color: var(--sub); font-size: 13px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; }
 .mood-tag.active { background: var(--primary) !important; color: var(--bg) !important; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-.mood-tag.active[class*="f-energy"] { background: rgb(var(--energy)) !important; }
-.mood-tag.active[class*="f-healing"] { background: rgb(var(--healing)) !important; }
-.mood-tag.active[class*="f-thinking"] { background: rgb(var(--thinking)) !important; }
-.mood-tag.active[class*="f-melancholy"] { background: rgb(var(--melancholy)) !important; }
-.mood-tag.active[class*="f-release"] { background: rgb(var(--release)) !important; }
+
+.cal-ctrl button { transition: transform 0.1s ease, background-color 0.1s; border-radius: 12px; }
+.cal-ctrl button:active { transform: scale(0.85); background-color: rgba(0,0,0,0.08) !important; }
+.cal-grid { transition: opacity 0.15s ease-out; }
+.cal-grid.fade { opacity: 0; }
+
+.theme-switch-group { display: flex; background: var(--mood-bg); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+.theme-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--sub); cursor: pointer; transition: 0.2s; }
+.theme-btn.active { background: var(--card); color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+#toast-container { position: fixed; top: env(safe-area-inset-top, 20px); left: 0; right: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.toast { padding: 12px 24px; border-radius: 12px; background: var(--card); color: var(--text); font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--accent); animation: toast-in 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s ease, transform 0.3s ease; max-width: 90%; text-align: center; word-break: break-word; }
+.toast.t-error { border-left-color: var(--danger); }
+.toast.t-success { border-left-color: var(--healing); }
+.toast.fade-out { opacity: 0; transform: translateY(-20px) scale(0.95); }
+[data-theme="dark"] .toast { box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); }
+[data-theme="dark"] .toast.t-error { border-left-color: var(--danger); }
+[data-theme="dark"] .toast.t-success { border-left-color: var(--healing); }
+@keyframes toast-in { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+
+@media print {
+    #h-page, .static-nav, #settings-modal, #toast-container { display: none !important; }
+    #d-page { display: block !important; position: static !important; background: white !important; padding: 0 !important; opacity: 1 !important;}
+    body { background: white !important; color: black !important; }
+    #content-v { page-break-inside: auto; color: black !important;}
+    * { filter: none !important; }
+}
+
+.mood-tag.active.f-energy { background: rgb(var(--energy)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-healing { background: rgb(var(--healing)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-thinking { background: rgb(var(--thinking)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-melancholy { background: rgb(var(--melancholy)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-release { background: rgb(var(--release)) !important; color: #fff !important; border:none; }
+
+@media (min-width: 768px) {
+    body { background: #eef2f5; display: flex; justify-content: center; }
+    [data-theme="dark"] body { background: #0a0a0a; }
+    .page, #d-page { 
+        position: relative !important; width: 100% !important; max-width: 480px !important; 
+        margin: 20px auto; height: calc(100vh - 40px) !important; 
+        border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); 
+        overflow: hidden; border: 1px solid rgba(0,0,0,0.05);
+    }
+    [data-theme="dark"] .page, [data-theme="dark"] #d-page { border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .modal { position: absolute; border-radius: 30px; }
+    #toast-container { max-width: 480px; margin: 0 auto; top: 40px; }
+}
 </style>
 </head>
 <body>
-
+<div id="toast-container"></div>
 <div id="auth-layer">
 <h2 style="font-weight:200; letter-spacing:10px; margin-bottom: 30px;">拾绪</h2>
 <input type="password" id="pwd-i" placeholder="解锁密码" autocomplete="off" onkeydown="if(event.key==='Enter') checkAuth()">
@@ -73,14 +148,14 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 </div>
 
 <div id="h-page" class="page">
-<div style="padding: 30px 25px 10px; display: flex; justify-content: space-between; align-items: center;">
+<div style="padding: calc(15px + env(safe-area-inset-top)) 20px 10px; display: flex; justify-content: space-between; align-items: center;">
 <h1 style="font-size: 22px; font-weight: 200; margin: 0;">拾绪 · 灵感日记</h1>
 <button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'">
 <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.50,0.38,1.03,0.70,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
 </button>
 </div>
 
-<div style="display: flex; gap: 20px; padding: 0 25px; margin-bottom: 10px;">
+<div style="display: flex; gap: 20px; padding: 0 20px; margin-bottom: 10px;">
 <div><span style="font-size: 12px; color: var(--sub); opacity: 0.7; display: block;">累计</span><span id="s-total" style="font-size: 18px; font-weight: bold;">0</span></div>
 <div><span style="font-size: 12px; color: var(--sub); opacity: 0.7; display: block;">本月</span><span id="s-month" style="font-size: 18px; font-weight: bold;">0</span></div>
 <div><span style="font-size: 12px; color: var(--sub); opacity: 0.7; display: block;">字数统计</span><span id="s-words" style="font-size: 18px; font-weight: bold;">0</span></div>
@@ -105,51 +180,40 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 </div>
 
 <div style="margin: 10px 15px;">
-<input type="text" id="search-input" placeholder="搜索..." oninput="filterIndex()" style="width: 100%; padding: 15px; border-radius: 15px; border: none; background: var(--card); font-size: 14px;">
-<div id="index-list" style="margin-top:10px;"></div>
-<button class="btn-pill btn-save" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 14px;" onclick="goRandom()">✨ 随机漫步</button>
-</div>
+    <input type="text" id="search-input" placeholder="搜索... (Worker 加速中)" oninput="filterIndex()" style="width: 100%; padding: 15px; border-radius: 15px; border: none; background: var(--card); font-size: 14px;">
+    <div id="index-list" style="margin-top:10px;"></div>
+    
+    <button class="btn-pill btn-save" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onclick="goRandom()">✨漫游时光机</button>
 </div>
 
-<div id="d-page">
-    <div class="static-nav">
+</div><div id="d-page">
+    <div class="static-nav" style="min-height: 40px; padding: 2px 10px;">
         <button class="btn-pill" onclick="closePage()">返回</button>
         <span id="d-date-title" style="font-size: 16px; font-weight: 700; letter-spacing: 1px;"></span>
         <div id="v-tools" style="display: flex; gap: 8px;">
             <button class="icon-btn" onclick="doDel()"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
             <button class="btn-pill btn-save" onclick="enterEdit()">编辑</button>
+			<button class="icon-btn" onclick="window.print()" title="导出为 PDF">📄</button>
         </div>
         <div id="e-tools" style="display: none;"><button class="btn-pill btn-save" onclick="save(true)">完成</button></div>
     </div>
 
-    <div style="max-width: 650px; margin: 0 auto; padding: 10px;">
+    <div style="max-width: 650px; margin: 0 auto; padding: 15px 20px;">
         <div id="v-box">
-            <h2 id="title-v" style="margin-top: 0; font-size: 26px; line-height: 1.4; margin-bottom: 15px;"></h2>
-            <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 30px; border-left: 3px solid var(--accent); padding-left: 12px; opacity: 0.8;"></div>
+            <h2 id="title-v" style="margin-top: 0; font-size: 26px; line-height: 1.4; margin-bottom: 5px;"></h2>
+            <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; opacity: 0.8;"></div>
             <div id="content-v" style="font-size: 17px; line-height: 1.8; color: var(--text); white-space: pre-wrap; letter-spacing: 0.5px;"></div>
         </div>
 
         <div id="e-box" style="display: none;">
-            <div onclick="openMoodModal()" id="mood-trigger-btn" style="display: inline-block; padding: 4px 12px; background: var(--mood-bg); border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--sub); margin-bottom: 8px; cursor: pointer;">选择心情...</div>
+            <input type="text" id="e-title" placeholder="标题..." style="width:100%; border:none; background:none; font-size:24px; font-weight:700; margin-bottom:12px; color:var(--text); outline:none;">
+			
+			<div onclick="openMoodModal()" id="mood-trigger-btn" style="display: inline-block; padding: 6px 14px; background: var(--mood-bg); border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--sub); margin-bottom: 15px; cursor: pointer;">选择心情...</div>
             
-            <input type="text" id="e-title" placeholder="标题..." style="width:100%; border:none; background:none; font-size:20px; font-weight:700; margin-bottom:8px; color:var(--text); outline:none;">
-            
-            <div id="e-content" contenteditable="true" class="editor-box" placeholder="正文..." style="min-height: 40vh; padding-bottom: 20px;"></div>
-            
-            <div id="md-tools" style="display: flex; gap: 10px; margin-bottom: 5px; padding-top: 5px; border-top: 1px dashed rgba(0,0,0,0.1);">
-                <button style="flex:1; padding:6px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" 
-                        onmousedown="event.preventDefault(); insertMD('**')" 
-                        ontouchstart="event.preventDefault(); insertMD('**')">加粗</button>
-                <button style="flex:1; padding:6px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" 
-                        onmousedown="event.preventDefault(); insertMD('__')" 
-                        ontouchstart="event.preventDefault(); insertMD('__')">下划线</button>
-                <button style="flex:1; padding:6px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:8px;" 
-                        onmousedown="event.preventDefault(); insertMD('~~')" 
-                        ontouchstart="event.preventDefault(); insertMD('~~')">删除线</button>
-            </div>
+            <div id="e-content" contenteditable="true" class="editor-box" placeholder="正文..."></div> 
 
-            <div style="font-size: 11px; color: var(--sub); font-weight: 700; padding-bottom: 10vh;">
-                字数：<span id="wc-d">0</span> <span id="save-hint" style="margin-left: 10px; opacity: 0.6;"></span>
+            <div style="font-size: 11px; color: var(--sub); font-weight: 700; padding-top: 20px;">
+                字数：<span id="wc-d">0</span> <span id="save-hint" style="margin-left: 10px; opacity: 0.6;"></span> 
             </div>
         </div>
     </div>
@@ -157,23 +221,34 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 
 <div id="settings-modal" class="modal" onclick="this.style.display='none'">
 <div class="modal-content" onclick="event.stopPropagation()">
-<h3 style="font-weight: 300; margin-top: 0; margin-bottom: 20px;">系统设置</h3>   
-<button id="btn-install-pwa" class="btn-pill btn-save" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px; display:none; background: var(--accent); color: var(--bg);">安装到手机桌面</button>
-    <div id="storage-status" style="font-size: 12px; color: var(--sub); text-align: center; margin-bottom: 15px; display: none;">
-        存储状态：检测中...
+    <h3 style="font-weight: 300; margin-top: 0; margin-bottom: 20px;">系统设置</h3>   
+    
+    <div class="theme-switch-group">
+        <div class="theme-btn" onclick="setTheme('light')" id="theme-light">浅色</div>
+        <div class="theme-btn" onclick="setTheme('system')" id="theme-system">跟随系统</div>
+        <div class="theme-btn" onclick="setTheme('dark')" id="theme-dark">深色</div>
     </div>
-<button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码</button>
-<button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">备份数据</button>
-<button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复数据</button>
-<button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">！清空本地记录</button>
-<input type="file" id="file-i" style="display:none" onchange="importJSON(this)">
+	<div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; background: var(--mood-bg); padding: 12px 15px; border-radius: 12px;">
+        <span style="font-size: 13px; font-weight: 600; color: var(--sub);">个性化调色</span>
+        <input type="color" id="color-picker" value="#d4af37" onchange="setAccentColor(this.value)" style="border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; background:none; padding:0;">
+    </div>
+    <button id="btn-install-pwa" class="btn-pill btn-save" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px; display:none; background: var(--accent); color: var(--bg);">✨安装到手机桌面</button>
+    <div id="storage-status" style="font-size: 12px; color: var(--sub); text-align: center; margin-bottom: 15px; display: none;">存储状态：检测中...</div>
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
+    
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportJSON()">📦 备份文本数据 (.json)</button>
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">📥 恢复文本数据 (.json)</button>
+    
+    <input type="file" id="file-i" accept=".json" style="display:none" onchange="importJSON(this)">
+    
+    <button class="btn-pill" style="width:100%; color:var(--danger); text-align:left; padding: 14px; margin-top: 10px;" onclick="clearAllData()">⚠️摧毁本地记录</button>
 </div>
 </div>
 
 <div id="mood-modal" class="modal" onclick="this.style.display='none'">
 <div class="modal-content" onclick="event.stopPropagation()">
 <div id="mood-grid-main" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;"></div>
-<div style="display:flex; gap:8px;"><input type="text" id="custom-mood-i" placeholder="临时标签..." style="flex:1; border:none; background:var(--mood-bg); padding:12px; border-radius:12px; font-size:13px;"><button class="btn-pill btn-save" onclick="addTransientMood()">添加</button></div>
+<div style="display:flex; gap:8px;"><input type="text" id="custom-mood-i" placeholder="自定义心情..." style="flex:1; border:none; background:var(--mood-bg); padding:12px; border-radius:12px; font-size:13px;"><button class="btn-pill btn-save" onclick="addTransientMood()">添加</button></div>
 <button class="btn-pill" style="width:100%; margin-top: 25px; padding: 12px;" onclick="document.getElementById('mood-modal').style.display='none'">确定</button>
 </div>
 </div>
@@ -188,276 +263,403 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 </div>
 
 <script>
-let lastRange = null;
-
-const syncChannel = new BroadcastChannel('shixu_sync_bus');
-
-syncChannel.onmessage = (event) => {
-    if (event.data.action === 'refresh') {
-        sync(); // 后台静默刷新日历和足迹的内存树
-        
-        // 冲突预警：如果其他标签页正在修改当前你正在看的同一篇日记
-        if (curKey === event.data.key) {
-            const hint = $('save-hint');
-            hint.innerText = "⚠️ 其他窗口已更新此记录";
-            hint.style.color = "var(--danger)"; // 标红警告
-        }
-    }
-};
-
 if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.onupdatefound = () => {
+            const worker = reg.installing;
+            worker.onstatechange = () => { 
+                if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                    location.reload(); 
+                }
+            };
+        };
+    }).catch(err => console.error('PWA 引擎启动失败:', err));
 }
 
-document.addEventListener('selectionchange', () => {
-    const sel = window.getSelection();
-    // 只有当存在选区，且光标确实位于我们的编辑器内部时，才更新缓存快照
-    if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
-        lastRange = sel.getRangeAt(0).cloneRange();
-    }
-});
-/* --- 核心变量与优化映射 --- */
-let lastActiveTime = Date.now();
-let db, curMonth = new Date(), curKey = '', dataMap = new Map();
+function showToast(msg, type = 'info', duration = 3000) {
+    const container = $('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast t-${type}`;
+    toast.innerText = msg;
+    container.appendChild(toast);
+    
+    if (container.children.length > 5) container.children[0].remove();
+
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+let db, searchWorker;
+let lastActiveTime = Date.now(), curMonth = new Date(), curKey = '';
+let dataMap = new Map(); 
 let isEditState = false, activeMoods = [], autoSaveTimer = null;
+
 const PWD_KEY = 'ShiXu_PWD_V2', DB_NAME = 'ShiXu_DB';
 const MOOD_DEFAULTS = ['💡 灵感', '🚀 动力', '🌈 快乐', '😊 平静', '🌿 成长', '☕ 悠闲', '📝 思考', '🤔 疑惑', '🌑 害怕', '💢 气愤', '😢 低落'];
 const moodFamilies = {'💡 灵感': 'f-energy', '🚀 动力': 'f-energy', '🌈 快乐': 'f-energy', '😊 平静': 'f-healing', '🌿 成长': 'f-healing', '☕ 悠闲': 'f-healing', '📝 思考': 'f-thinking', '🤔 疑惑': 'f-thinking', '🌑 害怕': 'f-melancholy', '💢 气愤': 'f-release', '😢 低落': 'f-melancholy'};
 const colorMap = {'f-energy': '255, 183, 77', 'f-healing': '165, 190, 154', 'f-thinking': '144, 164, 174', 'f-melancholy': '121, 134, 203', 'f-release': '229, 115, 115', 'f-custom': '207, 216, 220'};
-
 const $ = (id) => document.getElementById(id);
+// ==========================================
+// 稳健型异步 IndexedDB 引擎 (纯文本轻量版)
+// ==========================================
+const dbSvc = {
+    getAll: () => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readonly").objectStore("notes").getAll();
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    }),
+    get: (key) => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readonly").objectStore("notes").get(key);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    }),
+    put: (data) => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readwrite").objectStore("notes").put(data);
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    }),
+    // 专门为 JSON 批量导入设计的高性能原子化事务
+    putAll: (dataArray) => new Promise((resolve, reject) => {
+        const tx = db.transaction("notes", "readwrite");
+        tx.oncomplete = () => resolve();
+        tx.onerror = e => reject(e.target.error);
+        const store = tx.objectStore("notes");
+        dataArray.forEach(item => { if(item.date) store.put(item); });
+    }),
+    delete: (key) => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readwrite").objectStore("notes").delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    }),
+    clear: () => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readwrite").objectStore("notes").clear();
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    })
+};
+
+const syncChannel = new BroadcastChannel('shixu_sync_bus');
+syncChannel.onmessage = (event) => {
+    if (event.data.action === 'refresh') {
+        sync(); 
+        if (curKey === event.data.key) {
+            const hint = $('save-hint');
+            hint.innerText = "⚠️其他窗口已更新此记录";
+            hint.style.color = "var(--danger)"; 
+        }
+    }
+};
+
+const workerCode = `
+self.onmessage = function(e) {
+    if(e.data.action === 'search') {
+        const { query, docs } = e.data;
+        const q = query.toLowerCase();
+        const results = docs.filter(n => (n.t + n.c).toLowerCase().includes(q)).slice(0, 10);
+        self.postMessage({ action: 'searchResult', results });
+    }
+};`;
+const workerBlob = new Blob([workerCode], {type: 'application/javascript'});
+searchWorker = new Worker(URL.createObjectURL(workerBlob));
+searchWorker.onmessage = (e) => {
+    if(e.data.action === 'searchResult') renderSearchResults(e.data.results);
+};
+
+function setTheme(theme) {
+    const updateDOM = () => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('ShiXu_Theme_Pro', theme); 
+        ['light', 'system', 'dark'].forEach(t => $(`theme-${t}`).classList.remove('active'));
+        $(`theme-${theme}`).classList.add('active');
+    };
+    if (!document.startViewTransition) { updateDOM(); return; }
+    document.startViewTransition(() => updateDOM());
+}
+
+function setAccentColor(hexColor) {
+    document.documentElement.style.setProperty('--accent', hexColor);
+    localStorage.setItem('ShiXu_Accent_Pro', hexColor);
+}
+
+(function initTheme() { 
+    setTheme(localStorage.getItem('ShiXu_Theme_Pro') || 'system'); 
+    const savedAccent = localStorage.getItem('ShiXu_Accent_Pro');
+    if (savedAccent) {
+        document.documentElement.style.setProperty('--accent', savedAccent);
+        if ($('color-picker')) $('color-picker').value = savedAccent;
+    }
+})();
 
 let deferredPrompt;
-const installBtn = $('btn-install-pwa');
-
 window.addEventListener('beforeinstallprompt', (e) => {
-    // 阻止 Chrome 自动显示底部的迷你信息栏
-    e.preventDefault();
-    // 扣留事件对象，稍后当用户点击按钮时再触发
-    deferredPrompt = e;
-    // 唤醒隐藏的安装按钮
-    installBtn.style.display = 'block';
+    e.preventDefault(); deferredPrompt = e; $('btn-install-pwa').style.display = 'block';
 });
-
-installBtn.addEventListener('click', async () => {
+$('btn-install-pwa').addEventListener('click', async () => {
     if (deferredPrompt) {
-        // 展现在系统级别的安装确认弹窗
         deferredPrompt.prompt();
-        // 等待用户做出选择（接受或拒绝）
         const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            console.log('用户已接受安装');
-            installBtn.style.display = 'none'; // 安装后隐藏按钮
-        }
-        // prompt() 只能调用一次，用完即毁
+        if (outcome === 'accepted') $('btn-install-pwa').style.display = 'none';
         deferredPrompt = null;
     }
 });
-
-// 监听系统安装完成事件
 window.addEventListener('appinstalled', () => {
-    installBtn.style.display = 'none';
-    requestPersistentStorage(); // 安装完成后立即申请持久化存储
+    $('btn-install-pwa').style.display = 'none';
+    requestPersistentStorage();
 });
 
-// 性能优化：防抖函数
-function debounce(func, delay) {
-    let timer = null;
-    return function(...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => func.apply(this, args), delay);
-    };
+async function requestPersistentStorage() {
+    const statusEl = $('storage-status'); statusEl.style.display = 'block';
+    if (navigator.storage && navigator.storage.persist) {
+        const isPersisted = await navigator.storage.persisted();
+        if (isPersisted) { statusEl.innerText = "🔒存储已受系统最高保护"; statusEl.style.color = "var(--healing)"; return; }
+        const granted = await navigator.storage.persist();
+        statusEl.innerText = granted ? "🔒存储已受系统最高保护" : "⚠️浏览器可能清理此应用数据";
+        statusEl.style.color = granted ? "var(--healing)" : "var(--danger)";
+    } else statusEl.innerText = "⚠️当前环境不支持持久化存储";
 }
 
-// 安全优化：Web Crypto API 替代 btoa
+function checkIOS() {
+    if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) && !window.navigator.standalone) {
+        const btn = $('btn-install-pwa'); btn.style.display = 'block'; btn.innerText = "🍎点击浏览器[分享] -> [添加到主屏幕]";
+        btn.onclick = () => showToast("请点击底部 Safari 的『分享』图标，然后选择『添加到主屏幕』，避免数据丢失！");
+    }
+}
+
+// 降级为最极简的纯文本备份方案
+// --- 1. 数据导出与导入重构 ---
+async function exportJSON() {
+    try {
+        const hint = $('storage-status'); 
+        hint.style.display = 'block';
+        hint.innerText = "⏳正在导出数据...";
+
+        const dataList = await dbSvc.getAll();
+        const dataStr = JSON.stringify(dataList, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        saveAsSimple(blob, `Shixu_Backup_${new Date().toISOString().split('T')[0]}.json`);
+        
+        hint.innerText = "✅导出成功！";
+        hint.style.color = "var(--healing)";
+        setTimeout(() => hint.style.display = 'none', 3000);
+    } catch(e) {
+        showToast("导出崩溃: " + e.message, "error");
+    }
+}
+
+function importJSON(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    if (!confirm("⚠️恢复操作将覆盖现有冲突记录。是否继续？")) {
+        input.value = ''; return;
+    }
+
+    const r = new FileReader(); 
+    r.onload = async e => {
+        try {
+            const data = JSON.parse(e.target.result); 
+            if (!Array.isArray(data)) throw new Error("无效格式");
+            
+            // 剔除 Pro 版可能带入的 images 字段，保持普通版数据的绝对纯净
+            const cleanData = data.map(n => {
+                const { images, ...rest } = n;
+                return rest;
+            });
+
+            await dbSvc.putAll(cleanData);
+            
+            sync(); 
+            showToast("✅数据恢复成功！", "success"); 
+            $('settings-modal').style.display='none'; 
+        } catch (err) { 
+            showToast("❌导入失败: " + err.message, "error"); 
+        }
+    }; 
+    r.readAsText(file); 
+    input.value = '';
+}
+
+// 极简下载器，无需引入 FileSaver.js
+function saveAsSimple(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+let randomHistory = []; 
+
+function goRandom() {
+    const keys = Array.from(dataMap.keys());
+    if (keys.length === 0) { showToast("还没有任何记录可以漫步哦", "info"); return; }
+
+    const today = new Date();
+    const currY = today.getFullYear();
+    const currM = today.getMonth() + 1;
+    const currD = today.getDate();
+    const todayKey = `${currY}/${currM}/${currD}`;
+
+    let availableKeys = keys.filter(k => k !== todayKey && k !== curKey);
+    if (availableKeys.length === 0) { showToast("过去还是一片空白，快去创造回忆吧", "info"); return; }
+
+    const yearlyKeys = [];  
+    const monthlyKeys = []; 
+
+    availableKeys.forEach(k => {
+        const [y, m, d] = k.split('/').map(Number);
+        if (m === currM && d === currD && y !== currY) yearlyKeys.push(k);
+        else if (d === currD && (m !== currM || y !== currY)) monthlyKeys.push(k);
+    });
+
+    let targetKey = '';
+
+    if (yearlyKeys.length > 0) {
+        targetKey = yearlyKeys[Math.floor(Math.random() * yearlyKeys.length)];
+        showToast(`时光机：回到了 ${targetKey.split('/')[0]} 年的今天`, "success");
+    } else if (monthlyKeys.length > 0) {
+        targetKey = monthlyKeys[Math.floor(Math.random() * monthlyKeys.length)];
+        const targetMonth = targetKey.split('/')[1];
+		showToast(`时光机：回到了 ${targetMonth} 月的今天`, "success");
+    } else {
+        let pool = availableKeys.filter(k => !randomHistory.includes(k));
+        if (pool.length === 0) {
+            randomHistory = []; 
+            pool = availableKeys;
+        }
+        targetKey = pool[Math.floor(Math.random() * pool.length)];
+        randomHistory.push(targetKey);
+        if (randomHistory.length > 10) randomHistory.shift(); 
+        showToast("✨随机坠入某段回忆", "info");
+    }
+    openNote(targetKey);
+}
+
 async function hashStr(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-function getWordCount(text) {
-    if (!text) return 0;
-    const cn = text.match(/[\u4e00-\u9fa5]/g) || [];
-    const en = text.match(/[a-zA-Z]{2,}/g) || [];
-    return cn.length + en.length;
-}
-
-async function requestPersistentStorage() {
-    const statusEl = $('storage-status');
-    statusEl.style.display = 'block';
-
-    if (navigator.storage && navigator.storage.persist) {
-        const isPersisted = await navigator.storage.persisted();
-        if (isPersisted) {
-            statusEl.innerText = "🔒 存储已受系统最高保护";
-            statusEl.style.color = "var(--healing)";
-            return;
-        }
-
-        // 尝试申请保护
-        const granted = await navigator.storage.persist();
-        if (granted) {
-            statusEl.innerText = "🔒 存储已受系统最高保护";
-            statusEl.style.color = "var(--healing)";
-        } else {
-            statusEl.innerText = "⚠️ 浏览器随时可能清理此应用数据";
-            statusEl.style.color = "var(--danger)";
-        }
-    } else {
-        statusEl.innerText = "⚠️ 当前环境不支持持久化存储";
-    }
-}
-
-function checkIOS() {
-    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
-    const isStandalone = ('standalone' in window.navigator) && (window.navigator.standalone);
-    if (isIos && !isStandalone) {
-        installBtn.style.display = 'block';
-        installBtn.innerText = "🍎 点击浏览器[分享] -> [添加到主屏幕]";
-        installBtn.onclick = () => alert("请点击底部 Safari 菜单栏的『分享』图标，然后选择『添加到主屏幕』。这样能避免数据丢失！");
-    }
-}
-
 async function checkAuth() {
-    const input = $('pwd-i').value;
-    if (!input) return;
-    const stored = localStorage.getItem(PWD_KEY);
-    const hashedInput = await hashStr(input);
-    
-    if(!stored) { 
-        // 兼容旧版 btoa 密码迁移
-        const legacyPwd = localStorage.getItem('ShiXu_PWD');
-        if (legacyPwd && btoa(input) !== legacyPwd) {
-            alert("密码错误"); $('pwd-i').value=''; return;
-        }
-        localStorage.setItem(PWD_KEY, hashedInput); 
-        if(legacyPwd) localStorage.removeItem('ShiXu_PWD');
-        start(); 
-    } else if(hashedInput === stored) {
-        start(); 
-    } else { 
-        alert("密码错误"); $('pwd-i').value=''; 
-    }
+    const input = $('pwd-i').value; if (!input) return;
+    const stored = localStorage.getItem(PWD_KEY), hashedInput = await hashStr(input);
+    if(!stored) { localStorage.setItem(PWD_KEY, hashedInput); start(); } 
+    else if(hashedInput === stored) start(); 
+    else { showToast("密码错误"); $('pwd-i').value=''; }
 }
 
 function start() {
     $('auth-layer').style.display = 'none';
-	
-    const req = indexedDB.open(DB_NAME, 1);
-	const savedTheme = localStorage.getItem('ShiXu_Theme') || 'system';
-	if(savedTheme !== 'system') document.documentElement.setAttribute('data-theme', savedTheme);
-    req.onupgradeneeded = e => e.target.result.createObjectStore("notes", {keyPath: "date"});
-    req.onsuccess = e => { 
-        db = e.target.result; 
-        sync(); 
-        initAutoLock(); // 修复覆盖 bug
-		checkIOS();
-		requestPersistentStorage();
-    };
+    const req = indexedDB.open(DB_NAME, 2); 
+    req.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains("notes")) e.target.result.createObjectStore("notes", {keyPath: "date"}); };
+    req.onsuccess = e => { db = e.target.result; sync(); initAutoLock(); checkIOS(); requestPersistentStorage(); };
 }
 
 async function sync() {
     if(!db) return;
-    const tx = db.transaction("notes", "readonly");
-    const all = await new Promise(r => tx.objectStore("notes").getAll().onsuccess = e => r(e.target.result));
-    dataMap.clear();
-    let tw = 0, mc = 0, yc = 0;
-    const currY = curMonth.getFullYear(), currM = curMonth.getMonth() + 1;
+    try {
+        const all = await dbSvc.getAll();
+        dataMap.clear();
+        let tw = 0, mc = 0, yc = 0; const currY = curMonth.getFullYear(), currM = curMonth.getMonth() + 1;
 
-    all.forEach(n => {
-        dataMap.set(n.date, n);
-        const [y, m, d] = n.date.split('/').map(Number);
-        tw += (n.words || 0);
-        if(y === currY) {
-            yc++;
-            if(m === currM) mc++;
-        }
-    });
+        all.forEach(n => {
+            dataMap.set(n.date, { d: n.date, m: n.mood, w: n.words || 0 });
+            const [y, m, d] = n.date.split('/').map(Number);
+            tw += (n.words || 0);
+            if(y === currY) { yc++; if(m === currM) mc++; }
+        });
 
-    $('s-total').innerText = all.length;
-    $('s-words').innerText = tw.toLocaleString();
-    $('s-month').innerText = mc;
-    $('days-count').innerText = `${yc} 天`;
-    $('growth-title').innerText = `${currY}年 灵感足迹`;
-
-    renderCal();
-    renderGrowth(all, currY);
+        $('s-total').innerText = all.length; $('s-words').innerText = tw.toLocaleString();
+        $('s-month').innerText = mc; $('days-count').innerText = `${yc} 天`;
+        $('growth-title').innerText = `${currY}年 灵感足迹`;
+        renderCal(); renderGrowth(all, currY);
+    } catch (err) {
+        showToast("数据同步受阻", "error");
+    }
 }
 
 function renderCal() {
     const g = $('cal-g'); g.innerHTML = '';
     const y = curMonth.getFullYear(), m = curMonth.getMonth();
     $('cal-m-label').innerText = `${y}年 ${m+1}月`;
-    const first = new Date(y, m, 1).getDay();
-    const days = new Date(y, m+1, 0).getDate();
-    const offset = (first === 0 ? 6 : first - 1); 
+    const offset = (new Date(y, m, 1).getDay() || 7) - 1, days = new Date(y, m+1, 0).getDate();
     
-    // 性能优化：使用 DocumentFragment 批量挂载，减少重排
     const frag = document.createDocumentFragment();
-    for(let i=0; i<offset; i++) {
-        const emptyDiv = document.createElement('div');
-        frag.appendChild(emptyDiv);
-    }
+    for(let i=0; i<offset; i++) frag.appendChild(document.createElement('div'));
 
     const todayK = `${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`;
     for(let d=1; d<=days; d++) {
-        const dateObj = new Date(y, m, d);
-        const k = `${y}/${m+1}/${d}`;
-        let f = "", lunar = "";
+        const k = `${y}/${m+1}/${d}`; let f = "", lunar = "";
         if(typeof Solar !== 'undefined') {
-            const l = Solar.fromDate(dateObj).getLunar();
-            f = l.getFestivals()[0] || l.getJieQi() || "";
-            lunar = l.getDayInChinese();
+            const l = Solar.fromDate(new Date(y, m, d)).getLunar();
+            f = l.getFestivals()[0] || l.getJieQi() || ""; lunar = l.getDayInChinese();
         }
         const el = document.createElement('div');
         el.className = `day ${k === todayK ? 'is-today' : ''} ${dataMap.has(k) ? 'recorded' : ''}`;
         el.innerHTML = `<span>${d}</span><span class="l" style="color:${f ? 'var(--danger)' : 'var(--sub)'}">${f || lunar}</span>`;
-        el.onclick = () => openNote(k);
-        frag.appendChild(el);
+        el.onclick = () => openNote(k); frag.appendChild(el);
     }
     g.appendChild(frag);
 }
 
-function openNote(k) {
-    curKey = k; const d = dataMap.get(k);
-    const dp = $('d-page'), hp = $('h-page');
-    $('d-date-title').innerText = k.replace(/\//g, ' . ');
-    dp.style.display = 'block';
-    requestAnimationFrame(() => { dp.classList.add('active'); setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 300); });
-    d ? showView(d) : enterEdit();
-}
-
-function closePage() {
-    const dp = $('d-page'), hp = $('h-page');
-    hp.style.display = 'block';
-    requestAnimationFrame(() => { dp.classList.remove('active'); setTimeout(() => { dp.style.display = 'none'; sync(); }, 300); });
-}
-
 function renderGrowth(all, year) {
-    const grid = $('growth-grid'); grid.innerHTML = '';
-    const frag = document.createDocumentFragment(); // 性能优化
-    
-    all.filter(n => parseInt(n.date.split('/')[0]) === parseInt(year))
-    .sort((a,b) => new Date(a.date.replace(/\//g, '-')) - new Date(b.date.replace(/\//g, '-')))
-    .forEach(n => {
+    const grid = $('growth-grid'); grid.innerHTML = ''; const frag = document.createDocumentFragment();
+    all.filter(n => parseInt(n.date.split('/')[0]) === parseInt(year)).sort((a,b) => new Date(a.date.replace(/\//g, '-')) - new Date(b.date.replace(/\//g, '-'))).forEach(n => {
         const cell = document.createElement('div');
-        const moods = n.mood ? n.mood.split(',') : [];
-        const family = moods.length > 0 ? (moodFamilies[moods[0]] || 'f-custom') : 'f-custom';
+        const family = n.mood && n.mood.split(',').length ? (moodFamilies[n.mood.split(',')[0]] || 'f-custom') : 'f-custom';
         const lv = n.words > 300 ? 'lv-3' : (n.words > 100 ? 'lv-2' : 'lv-1');
         cell.className = `growth-cell ${family} ${lv}`;
-        const rgbValue = colorMap[family] || colorMap['f-custom'];
-        const opacity = lv === 'lv-3' ? 1 : (lv === 'lv-2' ? 0.6 : 0.3);
-        cell.style.backgroundColor = `rgba(${rgbValue}, ${opacity})`;
+        cell.style.backgroundColor = `rgba(${colorMap[family] || colorMap['f-custom']}, ${lv === 'lv-3' ? 1 : (lv === 'lv-2' ? 0.6 : 0.3)})`;
         frag.appendChild(cell);
     });
     grid.appendChild(frag);
 }
 
-function renderMD(t) {
-    if (!t) return '';
-    return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") 
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/__(.*?)__/g, '<u>$1</u>').replace(/~~(.*?)~~/g, '<del>$1</del>')
-    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>').replace(/\n/g, '<br>');
+async function openNote(k) {
+    if (document.activeElement) document.activeElement.blur();
+    curKey = k; const dp = $('d-page'), hp = $('h-page');
+    $('d-date-title').innerText = k.replace(/\//g, ' . ');
+    
+    dp.style.display = 'block'; 
+    requestAnimationFrame(() => { 
+        dp.classList.add('active');   
+        hp.classList.add('fade-out'); 
+        setTimeout(() => { 
+            hp.style.display = 'none'; 
+            window.scrollTo(0,0); 
+        }, 150); 
+    });
+
+    try {
+        const d = await dbSvc.get(k);
+        if (d) {
+            showView(d);
+        } else {
+            enterEdit();
+        }
+    } catch (err) {
+        showToast("读取日记失败", "error");
+    }
+}
+
+function closePage() {
+    if (document.activeElement) document.activeElement.blur();
+    const dp = $('d-page'), hp = $('h-page'); 
+    
+    hp.style.display = 'block';
+    
+    requestAnimationFrame(() => { 
+        dp.classList.remove('active'); 
+        hp.classList.remove('fade-out'); 
+        setTimeout(() => { 
+            dp.style.display = 'none'; 
+            sync(); 
+        }, 150); 
+    });
 }
 
 function showView(d) {
@@ -469,143 +671,83 @@ function showView(d) {
     $('content-v').innerHTML = renderMD(d.content);
 }
 
-const editor = $('e-content');
-editor.addEventListener('input', () => {
-    const text = editor.innerText.trim();
-    $('wc-d').innerText = getWordCount(text);
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);		
-});
-$('e-title').addEventListener('input', () => {
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(() => isEditState && save(false), 5000);
-});
-
-editor.addEventListener('paste', (e) => {
-    e.preventDefault(); 
-    let text = (e.originalEvent || e).clipboardData.getData('text/plain');
-    if (!text) return;
-
-    // 【新增逻辑：正则侦测 URL】
-    // 匹配标准的 http/https 链接，忽略前后空格
-    const urlRegex = /^(https?:\/\/[^\s]+)$/i;
-    if (urlRegex.test(text.trim())) {
-        // 如果完全匹配 URL，顺水推舟转化为 Markdown 格式
-        text = `[网页链接](${text.trim()})`;
+async function enterEdit() {
+    isEditState = true; 
+    try {
+        const d = await dbSvc.get(curKey);
+        $('v-box').style.display='none'; $('e-box').style.display='block';
+        $('v-tools').style.display='none'; $('e-tools').style.display='block';
+        $('e-title').value = d ? d.title : ''; $('e-content').innerText = d ? d.content : '';
+        activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay();
+        $('wc-d').innerText = getWordCount($('e-content').innerText);
+    } catch (err) {
+        console.error("进入编辑模式失败:", err);
+        showToast("界面初始化异常，请重试", "error");
     }
-
-    if (document.queryCommandSupported('insertText')) {
-        document.execCommand('insertText', false, text);
-    } else {
-        const sel = window.getSelection();
-        if (!sel.rangeCount) return;
-        const range = sel.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(document.createTextNode(text));
-        range.collapse(false);
-    }
-});
-
-function save(manual) {
-    const c = editor.innerText;
-    const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c) };
-    db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
-        dataMap.set(curKey, d); 
-        
-        // 发送更新广播，携带当前操作的日期 key
-        syncChannel.postMessage({ action: 'refresh', key: curKey });
-
-        if(manual) showView(d);
-        const hint = $('save-hint');
-        hint.style.color = "inherit"; // 清除可能存在的红色冲突警告
-        hint.innerText = "已自动保存 " + new Date().toLocaleTimeString().slice(0,5);
-        setTimeout(() => hint.innerText = "", 2000);
-    };
 }
 
-function executeSearch() {
-    const q = $('search-input').value.toLowerCase(), list = $('index-list');
-    list.innerHTML = ''; if (!q) return;
-    const frag = document.createDocumentFragment();
-    Array.from(dataMap.values()).filter(n => (n.title + n.content).toLowerCase().includes(q)).slice(0, 5).forEach(n => {
-        const div = document.createElement('div');
-        div.style = "padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer;";
-        div.innerHTML = `<span>${n.title || '无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.date}</span>`;
-        div.onclick = () => openNote(n.date);
-        frag.appendChild(div);
-    });
-    list.appendChild(frag);
+async function save(manual) {
+    const c = $('e-content').innerText;
+    const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c) };
+    
+    try {
+        await dbSvc.put(d);
+        syncChannel.postMessage({ action: 'refresh', key: curKey });
+        if(manual) showView(d);
+        const hint = $('save-hint'); 
+        hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5); 
+        setTimeout(() => hint.innerText = "", 2000);
+    } catch (err) {
+        showToast("存储记录失败", "error");
+    }
+}
+
+async function doDel() { 
+    if(!confirm("确定要销毁这篇日记吗？(不可恢复)")) return;
+    try {
+        await dbSvc.delete(curKey);
+        syncChannel.postMessage({ action: 'refresh', key: curKey }); 
+        closePage(); 
+    } catch (err) {
+        showToast("数据删除失败", "error");
+    }
+}
+
+async function executeSearch() {
+    const q = $('search-input').value; if (!q) { $('index-list').innerHTML = ''; return; }
+    try {
+        const allNotes = await dbSvc.getAll();
+        const docs = allNotes.map(n => ({ d: n.date, t: n.title||'', c: n.content||'' }));
+        searchWorker.postMessage({ action: 'search', query: q, docs });
+    } catch (err) {
+        showToast("检索数据失败", "error");
+    }
+}
+function renderSearchResults(results) {
+    const list = $('index-list'); list.innerHTML = ''; const frag = document.createDocumentFragment();
+    results.forEach(n => {
+        const div = document.createElement('div'); div.style = "padding:15px; background:var(--card); margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer;";
+        div.innerHTML = `<span>${n.t || '无标题'}</span> <span style="opacity:0.4; float:right; font-weight:normal;">${n.d}</span>`;
+        div.onclick = () => openNote(n.d); frag.appendChild(div);
+    }); list.appendChild(frag);
 }
 const filterIndex = debounce(executeSearch, 300);
 
-function renderMoodModal() {
-    const container = $('mood-grid-main'); container.innerHTML = '';
-    [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
-        const el = document.createElement('div'); el.className = `mood-tag ${moodFamilies[m] || 'f-custom'} ${activeMoods.includes(m) ? 'active' : ''}`;
-        el.innerText = m; el.onclick = () => {
-            if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m);
-            updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input'));
-        }; container.appendChild(el);
-    });
+// 保留轻量的 MD 渲染引擎，允许用户手敲 markdown
+function renderMD(t) { return t ? t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/__(.*?)__/g,'<u>$1</u>').replace(/~~(.*?)~~/g,'<del>$1</del>').replace(/^> (.*$)/gm,'<blockquote>$1</blockquote>') : ''; }
+function getWordCount(text) { const cn = text.match(/[\u4e00-\u9fa5]/g) || []; const en = text.match(/[a-zA-Z]{2,}/g) || []; return cn.length + en.length; }
+function debounce(func, delay) { let timer = null; return function(...args) { clearTimeout(timer); timer = setTimeout(() => func.apply(this, args), delay); }; }
+function moveMonth(n) { 
+    const g = $('cal-g'); g.classList.add('fade');
+    setTimeout(() => { curMonth.setMonth(curMonth.getMonth()+n); sync(); g.classList.remove('fade'); }, 150); 
 }
-
-function enterEdit() {
-    isEditState = true; const d = dataMap.get(curKey);
-    $('v-box').style.display='none'; $('e-box').style.display='block';
-    $('v-tools').style.display='none'; $('e-tools').style.display='block';
-    $('e-title').value = d ? d.title : ''; editor.innerText = d ? d.content : '';
-
-    editor.focus();
-    const range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
-    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-
-    activeMoods = d && d.mood ? d.mood.split(',') : [];
-    updateMoodDisplay();
-    $('wc-d').innerText = getWordCount(editor.innerText);
+function goToday() { 
+    const g = $('cal-g'); g.classList.add('fade');
+    setTimeout(() => { curMonth = new Date(); sync(); g.classList.remove('fade'); }, 150); 
 }
-
-function insertMD(sym) {
-    editor.focus(); 
-    const sel = window.getSelection(); 
-    
-    // 决定性的一步：如果内存中有快照，强行覆盖当前可能已经游离的系统光标
-    if (lastRange) {
-        sel.removeAllRanges();
-        sel.addRange(lastRange);
-    } else if (!sel.rangeCount) {
-        return;
-    }
-
-    const range = sel.getRangeAt(0);
-    const txt = range.toString();
-    const ins = sym.endsWith(' ') ? sym + txt : sym + txt + sym;
-    const node = document.createTextNode(ins);
-    
-    range.deleteContents(); 
-    range.insertNode(node);
-    
-    const newR = document.createRange();
-    if (!txt && !sym.endsWith(' ')) {
-        newR.setStart(node, sym.length); 
-    } else {
-        newR.setStartAfter(node);
-    }
-    sel.removeAllRanges(); 
-    sel.addRange(newR);
-    
-    // 触发保存与字数统计
-    editor.dispatchEvent(new Event('input')); 
-    
-    // 操作完成后，更新最新的光标快照
-    lastRange = newR.cloneRange();
-}
-
-function moveMonth(n) { curMonth.setMonth(curMonth.getMonth()+n); sync(); }
-function goToday() { curMonth = new Date(); sync(); }
 function openMoodModal() { renderMoodModal(); $('mood-modal').style.display='flex'; }
 function updateMoodDisplay() { $('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
 function showPwdModal() { $('pwd-modal').style.display='flex'; $('settings-modal').style.display='none'; }
-
 async function updatePassword() { 
     const oldV = $('old-pwd').value, newV = $('new-pwd').value; 
     const stored = localStorage.getItem(PWD_KEY);
@@ -614,50 +756,79 @@ async function updatePassword() {
     if(oldHashed === stored) { 
         const newHashed = await hashStr(newV);
         localStorage.setItem(PWD_KEY, newHashed); 
-        alert("修改成功"); 
+        showToast("密码修改成功", "success"); 
         $('pwd-modal').style.display='none'; 
         $('old-pwd').value = ''; $('new-pwd').value = '';
     } else {
-        alert("旧密码错误"); 
+        showToast("旧密码验证失败", "error"); 
     } 
 }
-
-function clearAllData() { if(confirm("清空？")) db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload(); }
-function exportJSON() { db.transaction("notes").objectStore("notes").getAll().onsuccess = e => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(e.target.result)], {type:'application/json'})); a.download = `ShiXu_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }; }
-function importJSON(f) {
-    const r = new FileReader(); r.onload = e => {
-        try {
-            const data = JSON.parse(e.target.result); if (!Array.isArray(data)) throw new Error("无效格式");
-            const tx = db.transaction("notes", "readwrite");
-            data.forEach(n => { if(n.date) tx.objectStore("notes").put(n); });
-            tx.oncomplete = () => { sync(); alert("恢复成功"); };
-        } catch (err) { alert("失败: " + err.message); }
-    }; r.readAsText(f.files[0]);
-}
-function goRandom() { const ks = Array.from(dataMap.keys()); if(ks.length) openNote(ks[Math.floor(Math.random()*ks.length)]); }
-function doDel() { 
-    if(confirm("删除？")) {
-        db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>{
-            syncChannel.postMessage({ action: 'refresh', key: curKey });
-            closePage();
-        }
-    } 
+function renderMoodModal() {
+    const container = $('mood-grid-main'); container.innerHTML = '';
+    [...new Set([...MOOD_DEFAULTS, ...activeMoods])].forEach(m => {
+        const el = document.createElement('div'); el.className = `mood-tag ${moodFamilies[m] || 'f-custom'} ${activeMoods.includes(m) ? 'active' : ''}`;
+        el.innerText = m; el.onclick = () => { if(activeMoods.includes(m)) activeMoods = activeMoods.filter(x => x !== m); else if(activeMoods.length < 5) activeMoods.push(m); updateMoodDisplay(); renderMoodModal(); editor.dispatchEvent(new Event('input')); }; container.appendChild(el);
+    });
 }
 function addTransientMood() { const v = $('custom-mood-i').value.trim(); if(v) { activeMoods.push(v); $('custom-mood-i').value=''; updateMoodDisplay(); renderMoodModal(); save(false); } }
 
 function initAutoLock() {
-    // 性能优化：防抖处理高频事件
     const debouncedActiveUpdate = debounce(() => { lastActiveTime = Date.now(); }, 1000);
-    ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(ev => {
-        window.addEventListener(ev, debouncedActiveUpdate, {passive: true});
-    });
-
-    setInterval(() => {
-        if (Date.now() - lastActiveTime > 5 * 60 * 1000) {
-            location.reload(); 
-        }
-    }, 10000);
+    ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(ev => window.addEventListener(ev, debouncedActiveUpdate, {passive: true}));
+    setInterval(() => { if (Date.now() - lastActiveTime > 5 * 60 * 1000) location.reload(); }, 10000);
 }
+
+let edgeTouchStartX = 0;
+let edgeTouchStartY = 0;
+const detailPage = $('d-page');
+
+detailPage.addEventListener('touchstart', (e) => {
+    edgeTouchStartX = e.changedTouches[0].screenX;
+    edgeTouchStartY = e.changedTouches[0].screenY;
+}, { passive: true }); 
+
+detailPage.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    
+    const deltaX = touchEndX - edgeTouchStartX;
+    const deltaY = Math.abs(touchEndY - edgeTouchStartY);
+
+    if (edgeTouchStartX < 40 && deltaX > 80 && deltaY < 50) {
+        closePage();
+    }
+}, { passive: true });
+
+async function clearAllData() { 
+    if(!confirm("⚠️ 警告：此操作将清空本地所有的日记文本，不可逆转！是否继续？")) return;
+    try {
+        await dbSvc.clear();
+        location.reload();
+    } catch(e) { 
+        showToast("清空异常: " + e.message, "error"); 
+    }
+}
+
+function updateNetworkStatus() {
+    const isOnline = navigator.onLine;
+    const titleEl = $('d-date-title');
+
+    if (!isOnline) {
+        showToast("已进入离线模式", "info");
+        if (titleEl && !titleEl.innerText.includes('☁️')) {
+            titleEl.innerHTML = `☁️ 离线 · ${titleEl.innerText}`;
+        }
+    } else {
+        if (titleEl) titleEl.innerText = titleEl.innerText.replace('☁️ 离线 · ', '');
+    }
+}
+
+window.addEventListener('offline', updateNetworkStatus);
+window.addEventListener('online', () => {
+    showToast("网络已恢复", "success");
+    updateNetworkStatus();
+});
+window.addEventListener('DOMContentLoaded', updateNetworkStatus);
 </script>
 </body>
 </html>
