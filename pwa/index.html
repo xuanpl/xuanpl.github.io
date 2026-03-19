@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="system">
 <head>
@@ -32,10 +33,20 @@
 html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(--bg); font-family: -apple-system, system-ui, sans-serif; color: var(--text); overflow-x: hidden; transition: background 0.3s; }
 .page, #d-page { transition: opacity 0.15s ease-out; }
 #d-page { 
-    display: none; position: absolute; inset: 0; width: 100%; min-height: 100vh; 
-    background: var(--bg); z-index: 100; 
-    opacity: 0; /* 初始状态为透明 */
+    display: none; 
+    position: fixed; /* 必须是 fixed，钉死在屏幕上 */
+    inset: 0; 
+    width: 100%; 
+    height: 100vh; /* 必须是固定高度 100vh，而不是 min-height */
+    background: var(--bg); 
+    z-index: 100; 
+    opacity: 0; 
     padding-top: env(safe-area-inset-top); 
+    
+    /* 核心魔法：开启内部独立滚动 */
+    overflow-y: auto; 
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* 开启 iOS 丝滑滚动弹性动效 */
 }
 #d-page.active { opacity: 1; }
 #h-page.fade-out { opacity: 0; pointer-events: none; }
@@ -45,16 +56,16 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 .cal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 8px; gap: 1px; }
 .day { 
-    height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
     border-radius: 12px; cursor: pointer; position: relative;
     transition: background-color 0.15s ease, transform 0.1s cubic-bezier(0.4, 0, 0.2, 1); 
     -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
 }
-.day span:first-child { font-size: 18px; font-weight: 600; }
-.day .l { font-size: 12px; margin-top: 2px; white-space: nowrap; letter-spacing: -0.2px; transform: scale(0.9); }
+.day span:first-child { font-size: 17px; font-weight: 600; }
+.day .l { font-size: 12px; margin-top: 0px; white-space: nowrap; letter-spacing: -0.2px; transform: scale(0.82); }
 .day.recorded { background: var(--mood-bg); }
 .day.is-today { background: var(--primary) !important; color: var(--bg); }
-.day.recorded::after { content: ''; position: absolute; bottom: 5px; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
+.day.recorded::after { content: ''; position: absolute; bottom: 2px; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; }
 .day:active { transform: scale(0.92); background-color: var(--mood-bg); }
 .day.is-today:active { transform: scale(0.92); background-color: var(--primary) !important; opacity: 0.8; }
 .day.recorded:active { background-color: rgba(0,0,0,0.08); }
@@ -70,9 +81,17 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 #btn-voice:active { background-color: var(--mood-bg) !important; transform: scale(0.95); }
 .editor-box { width: 100%; min-height: 30vh; font-size: 18px; line-height: 1.9; color: var(--text); white-space: pre-wrap; outline: none; padding-bottom: 20px; }
 .editor-box:empty:before { content: attr(placeholder); color: var(--sub); opacity: 0.5; }
-.box-header { font-size: 11px; font-weight: 700; margin: 0 0 12px; color: var(--sub); display: flex; justify-content: space-between; }
+.box-header { 
+    font-size: 12px; 
+    font-weight: 700; 
+    margin: 0 0 12px; 
+    color: var(--text); /* 颜色从半透明的 --sub 改为主色，更醒目 */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; /* 确保左右文字绝对垂直居中对齐 */
+}
 .growth-grid { display: flex; flex-wrap: wrap; gap: 4px; }
-.growth-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--mood-bg); transition: 0.3s; }
+.growth-cell { width: 12px; height: 12px; border-radius: 3px; background: var(--mood-bg); transition: 0.3s; }
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: flex-end; }
 .modal-content { background: var(--card); width: 100%; border-radius: 25px 25px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
 #auth-layer { position:fixed; inset:0; background:var(--bg); z-index:400; display:flex; flex-direction:column; align-items:center; justify-content:center; }
@@ -88,7 +107,7 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 .cal-grid.fade { opacity: 0; }
 
 /* 图片九宫格容器样式 */
-.img-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px;}
+.img-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 0px; margin-bottom: 8px;}
 .img-wrap { position: relative; width: 100%; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--mood-bg); border: 1px solid rgba(0,0,0,0.05); }
 .img-item { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.2s; }
 .img-item:active { transform: scale(0.98); }
@@ -119,7 +138,7 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 .voice-interim { font-size: 15px; color: var(--sub); max-width: 80%; text-align: center; min-height: 24px; line-height: 1.6; }
 /* 全局轻提示 (Toast) 系统 */
 #toast-container { position: fixed; top: env(safe-area-inset-top, 20px); left: 0; right: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
-.toast { padding: 12px 24px; border-radius: 14px; background: var(--card); color: var(--text); font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--accent); animation: toast-in 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s ease, transform 0.3s ease; max-width: 90%; text-align: center; word-break: break-word; }
+.toast { padding: 12px 24px; border-radius: 12px; background: var(--card); color: var(--text); font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--accent); animation: toast-in 0.3s cubic-bezier(0.4, 0, 0.2, 1); transition: opacity 0.3s ease, transform 0.3s ease; max-width: 90%; text-align: center; word-break: break-word; }
 .toast.t-error { border-left-color: var(--danger); }
 .toast.t-success { border-left-color: var(--healing); }
 .toast.fade-out { opacity: 0; transform: translateY(-20px) scale(0.95); }
@@ -134,16 +153,185 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
     /* 隐藏所有与阅读无关的 UI 元素 */
     #h-page, .static-nav, #settings-modal, #toast-container { display: none !important; }
     
-    /* 强制显示详情页，并去掉背景色和内边距，适应 A4 纸 */
+    /* 强制显示详情页，适应 A4 纸 */
     #d-page { display: block !important; position: static !important; background: white !important; padding: 0 !important; opacity: 1 !important;}
     body { background: white !important; color: black !important; }
     
-    /* 调整图片排版，防止图片被 PDF 分页生硬切断 */
-    .img-wrap { page-break-inside: avoid; border: none; }
-    #content-v { page-break-inside: auto; color: black !important;}
+    /* ==========================================
+       终极防截断装甲 (双重标准兼容)
+    ========================================== */
+    /* 1. 防止单张图片被拦腰截断 */
+    .img-wrap { 
+        page-break-inside: avoid; 
+        break-inside: avoid; /* 现代浏览器标准 */
+        border: none; 
+    }
+    
+    /* 2. 防止整个九宫格被强行撕裂 (除非图片多到一页放不下) */
+    .img-grid { 
+        page-break-inside: avoid; 
+        break-inside: avoid;
+    }
+
+    /* 3. 极其关键：防止标题在上一页底部，正文在下一页开头！ */
+    #title-v, #meta-v {
+        page-break-after: avoid; 
+        break-after: avoid; 
+    }
+    
+    /* 正文允许自然分页 */
+    #content-v { page-break-inside: auto; break-inside: auto; color: black !important;}
     
     /* 强制去除暗色模式干扰 */
     * { filter: none !important; }
+}
+/* 修复心情标签的高亮联动色彩 */
+.mood-tag.active.f-energy { background: rgb(var(--energy)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-healing { background: rgb(var(--healing)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-thinking { background: rgb(var(--thinking)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-melancholy { background: rgb(var(--melancholy)) !important; color: #fff !important; border:none; }
+.mood-tag.active.f-release { background: rgb(var(--release)) !important; color: #fff !important; border:none; }
+/* 大屏设备（iPad / PC）的桌面级拟物化居中适配 */
+@media (min-width: 768px) {
+    body { background: #eef2f5; display: flex; justify-content: center; }
+    [data-theme="dark"] body { background: #0a0a0a; }
+
+    /* 将整个应用限制在一个居中的“仿真手机壳”内 */
+    .page, #d-page { 
+        position: relative !important; width: 100% !important; max-width: 480px !important; 
+        margin: 20px auto; height: calc(100vh - 40px) !important; 
+        border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); 
+        overflow: hidden; border: 1px solid rgba(0,0,0,0.05);
+    }
+    [data-theme="dark"] .page, [data-theme="dark"] #d-page { border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+
+    /* 修复桌面端的绝对定位模态框 */
+    .modal { position: absolute; border-radius: 30px; }
+    #toast-container { max-width: 480px; margin: 0 auto; top: 40px; }
+}
+/* ==========================================
+   编辑模式：App 图标级精致缩略图
+========================================== */
+/* 覆盖原有的网格，改为横向紧凑排列 */
+#e-img-container { 
+    display: flex !important; 
+    flex-wrap: wrap; 
+    gap: 12px !important; 
+    margin-top: 10px; 
+    margin-bottom: 10px; 
+}
+
+/* 缩略图本体：固定为 iOS App 图标大小与圆角 */
+#e-img-container .img-wrap { 
+    width: 64px !important; 
+    height: 64px !important; 
+    border-radius: 14px; 
+    flex-shrink: 0; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06); /* 增加一点悬浮立体感 */
+    overflow: visible; /* 允许删除按钮突破边界 */
+}
+
+/* 针对骨架屏（压缩中）状态的文字调整 */
+#e-img-container .img-loading {
+    font-size: 10px;
+    border-radius: 14px;
+}
+
+/* 独立优化删除按钮：移到图标右上角外部，防误触 */
+#e-img-container .img-del-btn { 
+    width: 20px; 
+    height: 20px; 
+    font-size: 14px; 
+    top: -6px; 
+    right: -6px; 
+    background: var(--danger); /* 用醒目的红色警示删除操作 */
+    box-shadow: 0 2px 5px rgba(231, 76, 60, 0.4);
+}
+/* ==========================================
+   终极求稳：回归文档流静态排版 (彻底解决 iOS 晃动死症)
+========================================== */
+#md-tools {
+    /* 核心：彻底拔除 fixed 和 sticky，回归原生静态定位 */
+    position: static !important; 
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+    
+    /* 铺平在标题和正文之间 */
+    display: flex; 
+    gap: 8px; 
+    width: 100% !important; 
+    max-width: 100% !important;
+    padding: 8px 0 8px 0 !important; 
+    margin: 0 0 1px 0 !important;
+    
+    /* 彻底剥离毛玻璃、阴影等极其消耗性能的悬浮特效 */
+    background: transparent !important; 
+    backdrop-filter: none !important; 
+    -webkit-backdrop-filter: none !important; 
+    box-shadow: none !important;
+    
+    /* 仅保留一条极简的虚线底边框，作为工具栏和正文的分割 */
+    border: none !important;
+    border-bottom: 1px dashed rgba(0,0,0,0.1) !important;
+    border-radius: 0 !important;
+    z-index: 10;
+}
+
+[data-theme="dark"] #md-tools { 
+    background: transparent !important; 
+    box-shadow: none !important; 
+    border: none !important;
+    border-bottom: 1px dashed rgba(255,255,255,0.1) !important; 
+}
+
+/* 恢复工具栏按钮原本的质感 */
+#md-tools button, #md-tools label {
+    background: var(--card) !important;
+    border: 1px solid var(--mood-bg) !important;
+}
+
+/* 底部防遮挡留白：保证你一直打字到最后一行时，文字依然能被推到键盘上方 */
+#e-box { padding-bottom: 35vh !important; }
+/* ==========================================
+   Android 专属优化：恢复丝滑的底部悬浮工具栏
+========================================== */
+body.android-device #md-tools {
+    position: fixed !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    padding: 10px 15px !important;
+    margin: 0 !important;
+    
+    /* 恢复高级的毛玻璃质感 */
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    
+    border-top: 1px solid rgba(0,0,0,0.08) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05) !important;
+    
+    /* 避开全面屏底部的系统小白条 */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    z-index: 200 !important;
+}
+
+[data-theme="dark"] body.android-device #md-tools {
+    background: rgba(30, 30, 30, 0.85) !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* 确保 Android 悬浮栏不会挡住最后一行文字 */
+body.android-device #e-box { 
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; 
+}
+
+/* 为了让 Android 的按钮在悬浮栏里更好看一点，稍微加点间距 */
+body.android-device #md-tools button, 
+body.android-device #md-tools label {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
 }
 </style>
 </head>
@@ -156,7 +344,7 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 </div>
 
 <div id="h-page" class="page">
-<div style="padding: 15px 20px 10px; display: flex; justify-content: space-between; align-items: center;">
+<div style="padding: calc(15px + env(safe-area-inset-top)) 20px 10px; display: flex; justify-content: space-between; align-items: center;">
 <h1 style="font-size: 22px; font-weight: 200; margin: 0;">拾绪 · 灵感日记</h1>
 <button class="icon-btn" onclick="document.getElementById('settings-modal').style.display='flex'">
 <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.13,5.91,7.62,6.29L5.23,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.72,8.87 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.81,11.68,4.81,12c0,0.32,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.50,0.38,1.03,0.70,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -191,7 +379,7 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
     <input type="text" id="search-input" placeholder="搜索..." oninput="filterIndex()" style="width: 100%; padding: 15px; border-radius: 15px; border: none; background: var(--card); font-size: 14px;">
     <div id="index-list" style="margin-top:10px;"></div>
     
-    <button class="btn-pill btn-save" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onclick="goRandom()">✨ 漫游时光机</button>
+    <button class="btn-pill btn-save" style="width: 100%; margin-top: 15px; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onclick="goRandom()">✨漫游时光机</button>
 </div>
 
 </div><div id="d-page">
@@ -210,23 +398,20 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 
     <div style="max-width: 650px; margin: 0 auto; padding: 15px 20px;">
         <div id="v-box">
-            <h2 id="title-v" style="margin-top: 0; font-size: 26px; line-height: 1.4; margin-bottom: 15px;"></h2>
-            <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; opacity: 0.8;"></div>
+			<div id="v-img-container" class="img-grid"></div>
+			
+            <h2 id="title-v" style="margin-top: 0; font-size: 26px; line-height: 1.4; margin-bottom: 5px;"></h2>
+            <div id="meta-v" style="font-size: 13px; color: var(--sub); margin-bottom: 5px; border-left: 3px solid var(--accent); padding-left: 12px; opacity: 0.8;"></div>
             <div id="content-v" style="font-size: 17px; line-height: 1.8; color: var(--text); white-space: pre-wrap; letter-spacing: 0.5px;"></div>
-            
-            <div id="v-img-container" class="img-grid"></div>
         </div>
 
         <div id="e-box" style="display: none;">
-            <div onclick="openMoodModal()" id="mood-trigger-btn" style="display: inline-block; padding: 6px 14px; background: var(--mood-bg); border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--sub); margin-bottom: 12px; cursor: pointer;">选择心情</div>
-            
-			<div id="e-img-container" class="img-grid" style="margin-top: 5px; margin-bottom: 10px;"></div>
+			<div id="e-img-container" class="img-grid" style="margin-top: 0px; margin-bottom: 4px;"></div>	
+            <input type="text" id="e-title" placeholder="标题..." style="width:100%; border:none; background:none; font-size:24px; font-weight:700; margin-bottom:7px; color:var(--text); outline:none;">
 			
-            <input type="text" id="e-title" placeholder="标题..." style="width:100%; border:none; background:none; font-size:24px; font-weight:700; margin-bottom:5px; color:var(--text); outline:none;">
+			<div onclick="openMoodModal()" id="mood-trigger-btn" style="display: inline-block; padding: 6px 14px; background: var(--mood-bg); border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--sub); margin-bottom: 5px; cursor: pointer;">选择心情...</div>
             
-            <div id="e-content" contenteditable="true" class="editor-box" placeholder="正文..."></div>
-            
-            <div id="md-tools" style="display: flex; gap: 8px; margin-bottom: 15px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1);">
+			<div id="md-tools" style="display: flex; gap: 8px; margin-bottom: 3px; padding-top: 3px; border-top: 1px dashed rgba(0,0,0,0.1);">
                 <button style="flex:1; padding:8px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:10px;" onmousedown="event.preventDefault(); insertMD('**')" ontouchstart="event.preventDefault(); insertMD('**')">B</button>
                 <button style="flex:1; padding:8px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:10px;" onmousedown="event.preventDefault(); insertMD('__')" ontouchstart="event.preventDefault(); insertMD('__')">U</button>
                 <button style="flex:1; padding:8px 0; font-size:13px; font-weight:700; color:var(--text); background:var(--card); border:1px solid var(--mood-bg); border-radius:10px;" onmousedown="event.preventDefault(); insertMD('~~')" ontouchstart="event.preventDefault(); insertMD('~~')">S</button>
@@ -236,9 +421,11 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 				</label>
 				<button id="btn-voice" style="flex:1; padding:8px 0; font-size:15px; background:var(--card); border:1px solid var(--mood-bg); border-radius:10px; touch-action:none; user-select:none; -webkit-user-select:none;">🎤</button>
             </div>
+			
+            <div id="e-content" contenteditable="true" class="editor-box" placeholder="正文..."></div> 
 
-            <div style="font-size: 11px; color: var(--sub); font-weight: 700; padding-bottom: 10vh;">
-                字数：<span id="wc-d">0</span> <span id="save-hint" style="margin-left: 10px; opacity: 0.6;"></span>
+            <div style="font-size: 11px; color: var(--sub); font-weight: 700; padding-top: 20px;">
+                字数：<span id="wc-d">0</span> <span id="save-hint" style="margin-left: 10px; opacity: 0.6;"></span> 
             </div>
         </div>
     </div>
@@ -262,12 +449,12 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
         <span style="font-size: 13px; font-weight: 600; color: var(--sub);">个性化调色</span>
         <input type="color" id="color-picker" value="#d4af37" onchange="setAccentColor(this.value)" style="border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; background:none; padding:0;">
     </div>
-    <button id="btn-install-pwa" class="btn-pill btn-save" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px; display:none; background: var(--accent); color: var(--bg);">✨ 安装到手机桌面</button>
+    <button id="btn-install-pwa" class="btn-pill btn-save" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px; display:none; background: var(--accent); color: var(--bg);">✨安装到手机桌面</button>
     <div id="storage-status" style="font-size: 12px; color: var(--sub); text-align: center; margin-bottom: 15px; display: none;">存储状态：检测中...</div>
     <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="showPwdModal()">修改密码 →</button>
     
-    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportZip()">📦导出图文包(.zip)</button>
-    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">📥恢复图文包(.zip)</button>
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="exportZip()">备份图文包(.zip)</button>
+    <button class="btn-pill" style="width:100%; margin-bottom:12px; text-align:left; padding: 14px;" onclick="document.getElementById('file-i').click()">恢复图文包(.zip)</button>
     
     <input type="file" id="file-i" accept=".zip, .json" style="display:none" onchange="importZip(this)">
     
@@ -278,7 +465,7 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 <div id="mood-modal" class="modal" onclick="this.style.display='none'">
 <div class="modal-content" onclick="event.stopPropagation()">
 <div id="mood-grid-main" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;"></div>
-<div style="display:flex; gap:8px;"><input type="text" id="custom-mood-i" placeholder="临时标签" style="flex:1; border:none; background:var(--mood-bg); padding:12px; border-radius:12px; font-size:13px;"><button class="btn-pill btn-save" onclick="addTransientMood()">添加</button></div>
+<div style="display:flex; gap:8px;"><input type="text" id="custom-mood-i" placeholder="自定义心情..." style="flex:1; border:none; background:var(--mood-bg); padding:12px; border-radius:12px; font-size:13px;"><button class="btn-pill btn-save" onclick="addTransientMood()">添加</button></div>
 <button class="btn-pill" style="width:100%; margin-top: 25px; padding: 12px;" onclick="document.getElementById('mood-modal').style.display='none'">确定</button>
 </div>
 </div>
@@ -293,6 +480,60 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 </div>
 
 <script>
+// ==========================================
+// 系统嗅探引擎：为双轨制 UI 提供底层标识
+// ==========================================
+const isAppleDevice = /ipad|iphone|ipod/i.test(navigator.userAgent) && !window.MSStream;
+document.body.classList.add(isAppleDevice ? 'ios-device' : 'android-device');
+// ==========================================
+// 核心：PWA 离线引擎注册与自动更新机制
+// ==========================================
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.onupdatefound = () => {
+            const worker = reg.installing;
+            worker.onstatechange = () => { 
+                // 发现新版本并在后台安装完成后，强制刷新页面以应用新版本
+                if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('发现新版本，正在自动重载...');
+                    location.reload(); 
+                }
+            };
+        };
+    }).catch(err => console.error('PWA 引擎启动失败:', err));
+}
+
+// ==========================================
+// 稳健型异步 IndexedDB 引擎 (Promise 封装)
+// ==========================================
+const dbSvc = {
+    getAll: () => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readonly").objectStore("notes").getAll();
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    }),
+    get: (key) => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readonly").objectStore("notes").get(key);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    }),
+    put: (data) => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readwrite").objectStore("notes").put(data);
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    }),
+    delete: (key) => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readwrite").objectStore("notes").delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    }),
+    clear: () => new Promise((resolve, reject) => {
+        const req = db.transaction("notes", "readwrite").objectStore("notes").clear();
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    })
+};
+
 // ==========================================
 // 工业级轻提示引擎 (Toast)
 // ==========================================
@@ -335,7 +576,7 @@ syncChannel.onmessage = (event) => {
         sync(); 
         if (curKey === event.data.key) {
             const hint = $('save-hint');
-            hint.innerText = "⚠️ 其他窗口已更新此记录";
+            hint.innerText = "⚠️其他窗口已更新此记录";
             hint.style.color = "var(--danger)"; 
         }
     }
@@ -456,16 +697,16 @@ async function requestPersistentStorage() {
     const statusEl = $('storage-status'); statusEl.style.display = 'block';
     if (navigator.storage && navigator.storage.persist) {
         const isPersisted = await navigator.storage.persisted();
-        if (isPersisted) { statusEl.innerText = "🔒 存储已受系统最高保护"; statusEl.style.color = "var(--healing)"; return; }
+        if (isPersisted) { statusEl.innerText = "🔒存储已受系统最高保护"; statusEl.style.color = "var(--healing)"; return; }
         const granted = await navigator.storage.persist();
-        statusEl.innerText = granted ? "🔒 存储已受系统最高保护" : "⚠️ 浏览器随时可能清理此应用数据";
+        statusEl.innerText = granted ? "🔒存储已受系统最高保护" : "⚠️浏览器随时可能清理此应用数据";
         statusEl.style.color = granted ? "var(--healing)" : "var(--danger)";
-    } else statusEl.innerText = "⚠️ 当前环境不支持持久化存储";
+    } else statusEl.innerText = "⚠️当前环境不支持持久化存储";
 }
 
 function checkIOS() {
     if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) && !window.navigator.standalone) {
-        const btn = $('btn-install-pwa'); btn.style.display = 'block'; btn.innerText = "🍎 点击浏览器[分享] -> [添加到主屏幕]";
+        const btn = $('btn-install-pwa'); btn.style.display = 'block'; btn.innerText = "🍎点击浏览器[分享] -> [添加到主屏幕]";
         btn.onclick = () => showToast("请点击底部 Safari 的『分享』图标，然后选择『添加到主屏幕』，避免数据丢失！");
     }
 }
@@ -478,7 +719,7 @@ async function exportZip() {
     try {
         const hint = $('storage-status'); // 借用设置面板的状态栏显示进度
         hint.style.display = 'block';
-        hint.innerText = "⏳ 正在拉取数据库与图片，请勿关闭页面...";
+        hint.innerText = "⏳正在拉取数据库与图片，请勿关闭页面...";
         hint.style.color = "var(--accent)";
 
         const zip = new JSZip();
@@ -500,7 +741,7 @@ async function exportZip() {
         }
 
         // 3. 异步生成压缩包并触发下载
-        hint.innerText = "📦正在打包中...";
+        hint.innerText = "正在打包中...";
         const blob = await zip.generateAsync({
             type: "blob",
             compression: "DEFLATE", // 开启压缩
@@ -509,7 +750,7 @@ async function exportZip() {
 
         saveAs(blob, `Shixupro_Backup_${new Date().toISOString().split('T')[0]}.zip`);
         
-        hint.innerText = "✅ 导出成功！";
+        hint.innerText = "导出成功！";
         hint.style.color = "var(--healing)";
         setTimeout(() => hint.style.display = 'none', 3000);
     } catch(e) {
@@ -520,46 +761,56 @@ async function exportZip() {
 // ==========================================
 // 时光机漫游算法 (三级漏斗)
 // ==========================================
+let randomHistory = []; // 用于记录最近看过的随机漫游，防重复
+
 function goRandom() {
     const keys = Array.from(dataMap.keys());
-    if (keys.length === 0) {
-        showToast("还没有任何记录可以漫步哦", "info");
-        return;
-    }
-
-    // 过滤掉当前正在查看的日记，避免“随机到了当前这篇”的尴尬
-    const availableKeys = keys.filter(k => k !== curKey);
-    if (availableKeys.length === 0) {
-        showToast("这是你唯一的记录，快去多多书写吧", "info");
-        return;
-    }
+    if (keys.length === 0) { showToast("还没有任何记录可以漫步哦", "info"); return; }
 
     const today = new Date();
+    const currY = today.getFullYear();
     const currM = today.getMonth() + 1;
     const currD = today.getDate();
+    const todayKey = `${currY}/${currM}/${currD}`;
 
-    // 优先级 1：那年今日 (月、日精确相同)
-    const yearlyKeys = availableKeys.filter(k => {
-        const [, m, d] = k.split('/').map(Number);
-        return m === currM && d === currD;
-    });
+    // 1. 过滤掉"今天"写的日记，以及当前正在看的这篇
+    let availableKeys = keys.filter(k => k !== todayKey && k !== curKey);
 
-    // 优先级 2：某月今日 (仅日相同，且避开当月)
-    const monthlyKeys = availableKeys.filter(k => {
-        const [, m, d] = k.split('/').map(Number);
-        return d === currD && m !== currM; 
+    if (availableKeys.length === 0) {
+        showToast("过去还是一片空白，快去创造回忆吧", "info"); return;
+    }
+
+    // 2. 优先级分类
+    const yearlyKeys = [];  // 往年今日 (同月同日，不同年)
+    const monthlyKeys = []; // 某月今日 (同日，不同月不同年)
+
+    availableKeys.forEach(k => {
+        const [y, m, d] = k.split('/').map(Number);
+        if (m === currM && d === currD && y !== currY) yearlyKeys.push(k);
+        else if (d === currD && (m !== currM || y !== currY)) monthlyKeys.push(k);
     });
 
     let targetKey = '';
+
+    // 3. 智能决策树
     if (yearlyKeys.length > 0) {
         targetKey = yearlyKeys[Math.floor(Math.random() * yearlyKeys.length)];
-        showToast("翻开历史上的今天", "success");
+        showToast(`时光机：回到了 ${targetKey.split('/')[0]} 年的今天`, "success");
     } else if (monthlyKeys.length > 0) {
         targetKey = monthlyKeys[Math.floor(Math.random() * monthlyKeys.length)];
-        showToast("某个月的今天，你曾写下这些", "success");
+        const targetMonth = targetKey.split('/')[1];
+		showToast(`时光机：回到了 ${targetMonth} 月的今天`, "success");
     } else {
-        // 优先级 3：完全随机漫步
-        targetKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+        // 防重复纯随机算法
+        let pool = availableKeys.filter(k => !randomHistory.includes(k));
+        if (pool.length === 0) {
+            randomHistory = []; // 如果全都看过了，清空历史记录池
+            pool = availableKeys;
+        }
+        targetKey = pool[Math.floor(Math.random() * pool.length)];
+        randomHistory.push(targetKey);
+        if (randomHistory.length > 10) randomHistory.shift(); // 仅记录最近10次防重
+
         showToast("✨随机坠入某段回忆", "info");
     }
 
@@ -569,35 +820,22 @@ function goRandom() {
 async function importZip(input) {
     const file = input.files[0];
     if (!file) return;
-
-    // 依然保留对旧版纯 JSON 的向下兼容
-    if (file.name.endsWith('.json')) {
-        return importLegacyJSON(file, input);
-    }
-
-    if (!confirm("⚠️恢复操作将覆盖现有冲突记录，并导入新图片。强烈建议先导出当前状态。是否继续？")) {
-        input.value = ''; return;
-    }
+    if (file.name.endsWith('.json')) return importLegacyJSON(file, input);
+    if (!confirm("⚠️恢复操作将覆盖现有冲突记录，并导入新图片。是否继续？")) { input.value = ''; return; }
 
     try {
-        const hint = $('storage-status');
-        hint.style.display = 'block';
-        hint.innerText = "⏳正在解压并写入沙盒，请勿离开...";
-        hint.style.color = "var(--danger)";
+        const hint = $('storage-status'); hint.style.display = 'block';
+        hint.innerText = "⏳正在解压并重建数据，请勿离开..."; hint.style.color = "var(--danger)";
 
         const zip = await JSZip.loadAsync(file);
         
-        // 1. 恢复核心文本数据
-        const jsonFile = zip.file("data.json");
+        // 1. 读取文本数据
+        const jsonFile = zip.file("data.json") || zip.file("ShiXu_Data.json");
         if (!jsonFile) throw new Error("压缩包内缺失核心数据文件 data.json");
+        const notes = JSON.parse(await jsonFile.async("string"));
         
-        const jsonStr = await jsonFile.async("string");
-        const notes = JSON.parse(jsonStr);
-        
-        const tx = db.transaction("notes", "readwrite");
-        notes.forEach(n => tx.objectStore("notes").put(n));
-
-        // 2. 恢复图片到 OPFS
+        // 2. 恢复图片 (带有降级装甲)
+        const fallbackMap = new Map();
         const root = await navigator.storage.getDirectory();
         const imgFolder = zip.folder("images");
         
@@ -605,30 +843,40 @@ async function importZip(input) {
             const promises = [];
             imgFolder.forEach((relativePath, zipEntry) => {
                 if (!zipEntry.dir) {
-                    // 并发将解压出来的 Blob 写回本地物理硬盘
                     promises.push(zipEntry.async("blob").then(async blob => {
-                        const fileHandle = await root.getFileHandle(relativePath, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
+                        try {
+                            const fileHandle = await root.getFileHandle(relativePath, { create: true });
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(blob); await writable.close();
+                        } catch (err) {
+                            // ⚠️ iOS OPFS崩溃，降级转为 Base64 字符串
+                            const b64 = await new Promise(r => { const rd = new FileReader(); rd.onload = () => r(rd.result); rd.readAsDataURL(blob); });
+                            fallbackMap.set(relativePath, b64);
+                        }
                     }));
                 }
             });
-            await Promise.all(promises); // 等待所有图片写盘完毕
+            await Promise.all(promises); // 等待所有图片处理完毕
         }
 
+        // 3. 数据重组与入库 (等待所有异步操作结束后，再开启数据库事务)
+        const tx = db.transaction("notes", "readwrite");
+        notes.forEach(n => {
+            // 如果触发了降级，把数组里的文件名替换成真实的 Base64 数据
+            if (n.images && fallbackMap.size > 0) {
+                n.images = n.images.map(img => fallbackMap.has(img) ? fallbackMap.get(img) : img);
+            }
+            tx.objectStore("notes").put(n);
+        });
+
         tx.oncomplete = () => {
-            showToast("✅ 图文全量包恢复成功！点击确定重载应用。");
-            location.reload();
+            showToast("✅图文全量包恢复成功！点击确定重载应用。", "success");
+            setTimeout(() => location.reload(), 1500);
         };
     } catch(e) {
-        const hint = $('storage-status');
-        hint.innerText = "❌ 导入失败: " + e.message;
-        hint.style.color = "var(--danger)";
-        setTimeout(() => hint.style.display = 'none', 3000);
-    } finally {
-        input.value = '';
-    }
+        $('storage-status').innerText = "❌导入失败: " + e.message;
+        setTimeout(() => $('storage-status').style.display = 'none', 3000);
+    } finally { input.value = ''; }
 }
 
 // 降级兼容：处理纯 JSON 文件的导入
@@ -670,21 +918,26 @@ function start() {
 // ==========================================
 async function sync() {
     if(!db) return;
-    const all = await new Promise(r => db.transaction("notes", "readonly").objectStore("notes").getAll().onsuccess = e => r(e.target.result));
-    dataMap.clear();
-    let tw = 0, mc = 0, yc = 0; const currY = curMonth.getFullYear(), currM = curMonth.getMonth() + 1;
+    try {
+        const all = await dbSvc.getAll();
+        dataMap.clear();
+        let tw = 0, mc = 0, yc = 0; const currY = curMonth.getFullYear(), currM = curMonth.getMonth() + 1;
 
-    all.forEach(n => {
-        dataMap.set(n.date, { d: n.date, m: n.mood, w: n.words || 0 });
-        const [y, m, d] = n.date.split('/').map(Number);
-        tw += (n.words || 0);
-        if(y === currY) { yc++; if(m === currM) mc++; }
-    });
+        all.forEach(n => {
+            dataMap.set(n.date, { d: n.date, m: n.mood, w: n.words || 0 });
+            const [y, m, d] = n.date.split('/').map(Number);
+            tw += (n.words || 0);
+            if(y === currY) { yc++; if(m === currM) mc++; }
+        });
 
-    $('s-total').innerText = all.length; $('s-words').innerText = tw.toLocaleString();
-    $('s-month').innerText = mc; $('days-count').innerText = `${yc} 天`;
-    $('growth-title').innerText = `${currY}年 灵感足迹`;
-    renderCal(); renderGrowth(all, currY);
+        $('s-total').innerText = all.length; $('s-words').innerText = tw.toLocaleString();
+        $('s-month').innerText = mc; $('days-count').innerText = `${yc} 天`;
+        $('growth-title').innerText = `${currY}年 灵感足迹`;
+        renderCal(); renderGrowth(all, currY);
+    } catch (err) {
+        showToast("底层数据流读取受阻", "error");
+        console.error("Sync Error:", err);
+    }
 }
 
 function renderCal() {
@@ -727,26 +980,28 @@ function renderGrowth(all, year) {
 // ==========================================
 // 页面路由与 Fade 转场引擎
 // ==========================================
-function openNote(k) {
-	// 强制当前页面所有聚焦元素失焦，收起软键盘，防止转场抽搐
+async function openNote(k) {
     if (document.activeElement) document.activeElement.blur();
     curKey = k; const dp = $('d-page'), hp = $('h-page');
     $('d-date-title').innerText = k.replace(/\//g, ' . ');
     
-    // 1. 挂载 DOM（此时 opacity 为 0）
     dp.style.display = 'block'; 
-    
-    // 2. 下一帧触发 CSS opacity 动画
     requestAnimationFrame(() => { 
-        dp.classList.add('active');   // 详情页淡入
-        hp.classList.add('fade-out'); // 主页面淡出
-        setTimeout(() => { 
-            hp.style.display = 'none'; // 150ms 动画结束后隐藏主页 DOM
-            window.scrollTo(0,0); 
-        }, 150); 
+        dp.classList.add('active');   
+        hp.classList.add('fade-out'); 
+        setTimeout(() => { hp.style.display = 'none'; window.scrollTo(0,0); }, 150); 
     });
 
-    db.transaction("notes").objectStore("notes").get(k).onsuccess = e => { e.target.result ? showView(e.target.result) : enterEdit(); };
+    try {
+        const d = await dbSvc.get(k);
+        if (d) {
+            await showView(d);
+        } else {
+            await enterEdit();
+        }
+    } catch (err) {
+        showToast("日记状态解析失败", "error");
+    }
 }
 
 function closePage() {
@@ -783,43 +1038,62 @@ async function showView(d) {
 // --- 增加了容错装甲的 enterEdit ---
 async function enterEdit() {
     isEditState = true; 
-    db.transaction("notes").objectStore("notes").get(curKey).onsuccess = async e => {
-        try { // 👈 增加 try 保护块
-            const d = e.target.result;
-            $('v-box').style.display='none'; $('e-box').style.display='block';
-            $('v-tools').style.display='none'; $('e-tools').style.display='block';
-            $('e-title').value = d ? d.title : ''; $('e-content').innerText = d ? d.content : '';
-            activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay();
-            $('wc-d').innerText = getWordCount($('e-content').innerText);
-            
-            currentImages = d && d.images ? [...d.images] : [];
-            // 👈 增加 catch 拦截，防止某张图片损坏导致整个文字日记无法编辑
-            await renderImageGrid('e-img-container', currentImages, true).catch(err => console.warn("图片加载跳过:", err));
-        } catch (err) {
-            console.error("进入编辑模式失败:", err);
-            showToast("界面初始化异常，请重试", "error");
-        }
-    };
+    try {
+        const d = await dbSvc.get(curKey);
+        
+        $('v-box').style.display='none'; $('e-box').style.display='block';
+        $('v-tools').style.display='none'; $('e-tools').style.display='block';
+        $('e-title').value = d ? d.title : ''; $('e-content').innerText = d ? d.content : '';
+        activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay();
+        $('wc-d').innerText = getWordCount($('e-content').innerText);
+        
+        currentImages = d && d.images ? [...d.images] : [];
+        await renderImageGrid('e-img-container', currentImages, true).catch(err => console.warn("图片加载跳过:", err));
+    } catch (err) {
+        console.error("进入编辑模式失败:", err);
+        showToast("界面初始化异常，请重试", "error");
+    }
 }
 
-function save(manual) {
+// --- 4. 自动/手动保存重构 ---
+async function save(manual) {
     const c = $('e-content').innerText;
     const d = { date: curKey, title: $('e-title').value, content: c, mood: activeMoods.join(','), words: getWordCount(c), images: currentImages };
-    db.transaction("notes", "readwrite").objectStore("notes").put(d).onsuccess = () => {
+    
+    try {
+        await dbSvc.put(d);
         syncChannel.postMessage({ action: 'refresh', key: curKey });
         if(manual) showView(d);
-        const hint = $('save-hint'); hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5); setTimeout(() => hint.innerText = "", 2000);
-    };
+        
+        const hint = $('save-hint'); 
+        hint.innerText = "已保存 " + new Date().toLocaleTimeString().slice(0,5); 
+        setTimeout(() => hint.innerText = "", 2000);
+    } catch (err) {
+        showToast("存储失败：设备空间可能不足", "error");
+    }
 }
 
 // 级联删除：拦截 OPFS 孤儿文件
-function doDel() { 
+// --- 5. 级联删除重构（极其关键的异步改造） ---
+async function doDel() { 
     if(!confirm("确定要销毁这篇日记及所有配图吗？(不可恢复)")) return;
-    db.transaction("notes").objectStore("notes").get(curKey).onsuccess = async e => {
-        const d = e.target.result;
-        if (d && d.images) for (const fn of d.images) if (fn.startsWith('img_')) await deleteFromOPFS(fn);
-        db.transaction("notes","readwrite").objectStore("notes").delete(curKey).onsuccess=()=>{ syncChannel.postMessage({ action: 'refresh', key: curKey }); closePage(); }
-    };
+    
+    try {
+        const d = await dbSvc.get(curKey);
+        // 先彻底释放 OPFS 的物理文件
+        if (d && d.images) {
+            for (const fn of d.images) {
+                if (fn.startsWith('img_')) await deleteFromOPFS(fn);
+            }
+        }
+        // 再删除数据库记录
+        await dbSvc.delete(curKey);
+        
+        syncChannel.postMessage({ action: 'refresh', key: curKey }); 
+        closePage(); 
+    } catch (err) {
+        showToast("数据粉碎失败", "error");
+    }
 }
 
 // ==========================================
@@ -847,20 +1121,31 @@ function handleImageUpload(input) {
             
             canvas.toBlob(async (blob) => {
                 if (!blob) {
-                    $('.img-loading').forEach(el => el.remove()); 
+                    document.querySelectorAll('.img-loading').forEach(el => el.remove()); 
                     showToast("图片压缩失败：您的设备底层不支持此操作。"); 
                     return; 
                 }
+                
                 const fileName = await writeToOPFS(blob);
                 if (fileName) { 
+                    // 现代系统 (iOS 17+ / Android / PC)：完美存入物理硬盘
                     currentImages.push(fileName); 
-                    await renderImageGrid('e-img-container', currentImages, true); 
-                    save(false); 
                 } else {
-                    $('.img-loading').forEach(el => el.remove()); 
-                    showToast("写入沙盒失败");
+                    // ⚠️ iOS 16 专属降级防线：转为 Base64 存入数据库
+                    const b64 = await new Promise(r => {
+                        const rd = new FileReader();
+                        rd.onload = () => r(rd.result);
+                        rd.readAsDataURL(blob);
+                    });
+                    currentImages.push(b64);
+                    showToast("底层沙盒受阻，已降级为兼容模式存图", "info"); // 提醒一下
                 }
-            }, 'image/jpeg', 0.8); // ⚠️ 换用 JPEG 并在质量上妥协 (0.8)，保全 iOS 兼容性
+                
+                // 清理加载骨架并渲染
+                document.querySelectorAll('.img-loading').forEach(el => el.remove()); 
+                await renderImageGrid('e-img-container', currentImages, true); 
+                save(false); 
+            }, 'image/webp', 0.8);
         }; img.src = e.target.result;
     }; reader.readAsDataURL(file); input.value = '';
 }
@@ -894,8 +1179,21 @@ async function renderImageGrid(containerId, fileNames, isEdit) {
 
     // 唤醒 Viewer.js (仅在查看模式)
     if (!isEdit && c.children.length > 0) {
-        imageViewer = new Viewer(c, { navbar: false, toolbar: false, title: false, transition: true, movable: true, zoomable: true });
-    }
+        imageViewer = new Viewer(c, { 
+            navbar: false, 
+            toolbar: false, 
+            title: false, 
+            transition: true, 
+            movable: true, 
+            zoomable: true,
+            // 增加隐藏事件的拦截器，完美解决 aria-hidden 焦点冲突警告
+            hide: function () {
+                if (document.activeElement) {
+                    document.activeElement.blur(); // 强行剥夺关闭按钮的焦点
+                }
+            }
+        });
+	}
 }
 
 // ==========================================
@@ -979,26 +1277,71 @@ function stopDictation() {
     if (recognition) recognition.stop();
 }
 
-// 绑定工业级触摸防抖事件
-// 注意：必须绑定在 window 上监听 touchend，防止用户手指滑出按钮区域后无法触发停止
+// ==========================================
+// 智能双轨制语音交互绑定
+// ==========================================
+function toggleDictation() {
+    if (isDictating) {
+        stopDictation();
+    } else {
+        startDictation();
+        // 修改面罩的提示语，引导 iOS 用户点击结束
+        $('voice-title').innerText = '点击屏幕任意处结束识别';
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const btnVoice = $('btn-voice');
-    if (btnVoice) {
-        // 桌面端鼠标支持
+    if (!btnVoice) return;
+
+    // 探测当前操作系统
+    const isIOS = /ipad|iphone|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /android/i.test(navigator.userAgent);
+
+    if (isAndroid || (!isIOS && !isAndroid)) {
+        // -----------------------------------------
+        // 🚀 安卓 / PC 端：开启完美的“按住说话，松开结束”
+        // -----------------------------------------
+        btnVoice.style.webkitTouchCallout = 'none';
+        btnVoice.oncontextmenu = () => false;
+
         btnVoice.addEventListener('mousedown', (e) => { e.preventDefault(); startDictation(); });
-        // 移动端核心触控支持 (passive: false 配合 preventDefault 彻底绞杀系统原生选择菜单)
+        window.addEventListener('mouseup', stopDictation);
+        
         btnVoice.addEventListener('touchstart', (e) => { e.preventDefault(); startDictation(); }, {passive: false});
+        window.addEventListener('touchend', stopDictation);
+        
+    } else if (isIOS) {
+        // -----------------------------------------
+        // 🍎 iOS 端：受限于系统安全沙盒的处理
+        // -----------------------------------------
+        // 彻底禁止长按唤出系统菜单
+        btnVoice.oncontextmenu = () => false;
+        btnVoice.style.webkitTouchCallout = 'none';
+        
+        // 改为点击触发
+        btnVoice.onclick = (e) => { e.preventDefault(); toggleDictation(); };
+        
+        // 点击整个面罩都可以直接停止录音，交互更加自然
+        $('voice-mask').onclick = () => { if (isDictating) stopDictation(); };
     }
 });
+
 window.addEventListener('mouseup', stopDictation);
 window.addEventListener('touchend', stopDictation);
 
-function executeSearch() {
-    const q = $('search-input').value; if (!q) { $('index-list').innerHTML = ''; return; }
-    db.transaction("notes").objectStore("notes").getAll().onsuccess = e => {
-        const docs = e.target.result.map(n => ({ d: n.date, t: n.title||'', c: n.content||'' }));
+async function executeSearch() {
+    const q = $('search-input').value; 
+    if (!q) { $('index-list').innerHTML = ''; return; }
+    
+    try {
+        const allNotes = await dbSvc.getAll();
+        const docs = allNotes.map(n => ({ d: n.date, t: n.title||'', c: n.content||'' }));
         searchWorker.postMessage({ action: 'search', query: q, docs });
-    };
+    } catch (err) {
+        showToast("检索数据失败，请重试", "error");
+        console.error("Search Error:", err);
+    }
 }
 function renderSearchResults(results) {
     const list = $('index-list'); list.innerHTML = ''; const frag = document.createDocumentFragment();
@@ -1022,7 +1365,7 @@ function goToday() {
     setTimeout(() => { curMonth = new Date(); sync(); g.classList.remove('fade'); }, 150); 
 }
 function openMoodModal() { renderMoodModal(); $('mood-modal').style.display='flex'; }
-function updateMoodDisplay() { $('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情'; }
+function updateMoodDisplay() { $('mood-trigger-btn').innerText = activeMoods.length ? activeMoods.join(', ') : '选择心情...'; }
 function showPwdModal() { $('pwd-modal').style.display='flex'; $('settings-modal').style.display='none'; }
 // --- 补回意外丢失的修改密码函数 ---
 async function updatePassword() { 
@@ -1092,9 +1435,14 @@ async function clearAllData() {
     if(!confirm("⚠️ 警告：此操作将同时清空数据库与 OPFS 物理硬盘中的所有图片，不可逆转！是否继续？")) return;
     try {
         const root = await navigator.storage.getDirectory();
-        for await (const [name, handle] of root.entries()) { await root.removeEntry(name, { recursive: true }); }
-        db.transaction("notes","readwrite").objectStore("notes").clear().onsuccess=()=>location.reload();
-    } catch(e) { showToast("清空异常: " + e); }
+        for await (const [name, handle] of root.entries()) { 
+            await root.removeEntry(name, { recursive: true }); 
+        }
+        await dbSvc.clear();
+        location.reload();
+    } catch(e) { 
+        showToast("清空异常: " + e.message, "error"); 
+    }
 }
 // ==========================================
 // 离线状态机 (Offline State Machine)

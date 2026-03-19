@@ -4,7 +4,7 @@
 
 // ⚠️ 每次你修改了 HTML 里的代码，或者更换了 CDN，都必须修改这个版本号！
 // 哪怕只是把 v1.0.0 改成 v1.0.1，否则用户的浏览器永远不会更新。
-const CACHE_NAME = 'shixu-cache-v1.0.1';
+const CACHE_NAME = 'shixu-cache-v1.0.3';
 
 // 必须被硬缓存的静态资源资产清单 (App Shell)
 const ASSETS_TO_CACHE = [
