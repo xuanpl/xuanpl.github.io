@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>拾绪 · 灵感日记</title>
+<title>拾绪</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="shixu.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -99,7 +99,6 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
     color: var(--text); 
     white-space: pre-wrap; 
     outline: none; 
-    padding-bottom: 20vh; 
 }
 .editor-box:empty:before { content: attr(placeholder); color: var(--sub); opacity: 0.5; }
 .box-header { 
@@ -206,37 +205,31 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 [data-theme="dark"] .toast.t-success { border-left-color: var(--healing); }
 @keyframes toast-in { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
-/* 全矢量 MD 工具栏双轨制设计 */
+/* 极限压缩版 MD 工具栏 */
 #md-tools {
     position: static !important; 
     transform: none !important;
     display: flex; 
     gap: 8px; 
     width: 100% !important; 
-    padding: 12px 0 !important; 
-    margin: 2px 0 5px 0 !important;
+    padding: 0 0 10px 0 !important; 
+    margin: 0 !important;
     background: transparent !important; 
-    border-bottom: 1px dashed rgba(0,0,0,0.1) !important;
+    border-bottom: none !important; 
     z-index: 10;
 }
-[data-theme="dark"] #md-tools { border-bottom: 1px dashed rgba(255,255,255,0.1) !important; }
 
 #md-tools button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 0;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 6px 0; 
     background: var(--card) !important;
     border: 1px solid var(--mood-bg) !important;
-    border-radius: 12px !important;
-    color: var(--text);
-    cursor: pointer;
-    transition: 0.15s ease;
+    border-radius: 10px !important; 
+    color: var(--text); cursor: pointer; transition: 0.15s ease;
 }
 #md-tools button:active { transform: scale(0.92); background: var(--mood-bg) !important; }
 #md-tools svg {
-    width: 20px; height: 20px;
+    width: 18px; height: 18px; 
     stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
 }
 #e-box { padding-bottom: 35vh !important; }
@@ -298,6 +291,22 @@ body.android-device #e-box { padding-bottom: calc(90px + env(safe-area-inset-bot
 ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
+}
+/* 隐藏物理滚动条 */
+::-webkit-scrollbar { width: 0px; background: transparent; }
+
+/* 注入心情按钮的物理点击反馈 */
+#mood-trigger-btn { user-select: none; -webkit-tap-highlight-color: transparent; }
+#mood-trigger-btn:active { transform: scale(0.92); opacity: 0.8; }
+
+/* iOS 光标防跳魔法：编辑状态下释放全局滚动权 */
+body.is-editing { overflow: auto !important; }
+body.is-editing #h-page { display: none !important; } 
+body.is-editing #d-page {
+    position: absolute !important; 
+    height: auto !important;
+    min-height: 100dvh;
+    overflow: visible !important; 
 }
 </style>
 </head>
@@ -391,10 +400,12 @@ body.android-device #e-box { padding-bottom: calc(90px + env(safe-area-inset-bot
 
         <div id="e-box" style="display: none;">
             <input type="text" id="e-title" placeholder="无标题" style="width:100%; border:none; background:none; font-size:24px; font-weight:600; line-height:1.3; margin-bottom:8px; margin-top: 5px; color:var(--text); outline:none;">
-
-			<div style="display: flex; gap: 10px; margin-bottom: 2px;">
-				<div onclick="openMoodModal()" id="mood-trigger-btn" style="padding: 4px 12px; background: var(--mood-bg); border-radius: 16px; font-size: 12px; font-weight: 600; color: var(--sub); cursor: pointer;">◌ 记录心情</div>
-			</div>
+			
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px dashed rgba(0,0,0,0.08);">
+                <div onclick="openMoodModal()" id="mood-trigger-btn" style="padding: 4px 12px; background: var(--mood-bg); border-radius: 14px; font-size: 12px; font-weight: 600; color: var(--sub); cursor: pointer; transition: 0.2s;">◌ 选择心情...</div>
+                
+                <div id="save-hint" style="font-size: 11px; color: var(--sub); opacity: 0.6; font-weight: 600;"></div>
+            </div>
             
             <div id="md-tools">
                 <button onmousedown="event.preventDefault(); insertMD('**')" ontouchstart="event.preventDefault(); insertMD('**')">
@@ -407,12 +418,8 @@ body.android-device #e-box { padding-bottom: calc(90px + env(safe-area-inset-bot
                     <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6C16 6 13.58 4 12 4C10.42 4 8 5 8 8C8 11 16 13 16 16C16 19 13.42 20 12 20C10.58 20 8 18 8 18"/></svg>
                 </button>
             </div>
-            
+			
             <div id="e-content" contenteditable="true" class="editor-box" placeholder="开始记录..."></div> 
-
-            <div style="font-size: 11px; color: var(--sub); font-weight: 700; padding-top: 20px;">
-                字数：<span id="wc-d">0</span> <span id="save-hint" style="margin-left: 10px; opacity: 0.6;"></span> 
-            </div>
         </div>
     </div>
 </div>
@@ -908,6 +915,9 @@ async function openNote(k) {
     curKey = k; const dp = $('d-page'), hp = $('h-page');
     $('d-date-title').innerText = k.replace(/\//g, ' . ');
     
+    // 【防御补丁】防止离线状态打开日记时，离线云朵被纯文字覆盖
+    if (!navigator.onLine) updateNetworkStatus(); 
+    
     dp.style.display = 'block'; 
     requestAnimationFrame(() => { 
         dp.classList.add('active');   
@@ -920,11 +930,7 @@ async function openNote(k) {
 
     try {
         const d = await dbSvc.get(k);
-        if (d) {
-            showView(d);
-        } else {
-            enterEdit();
-        }
+        if (d) { showView(d); } else { enterEdit(); }
     } catch (err) {
         showToast("读取日记失败", "error");
     }
@@ -932,6 +938,7 @@ async function openNote(k) {
 
 function closePage() {
     if (document.activeElement) document.activeElement.blur();
+    document.body.classList.remove('is-editing'); // 【补丁】解除编辑状态
     const dp = $('d-page'), hp = $('h-page'); 
     hp.style.display = 'block';
     
@@ -947,6 +954,7 @@ function closePage() {
 
 function showView(d) {
     isEditState = false; 
+    document.body.classList.remove('is-editing'); // 【补丁】解除编辑状态
     $('v-box').style.display='block'; $('e-box').style.display='none';
     $('v-tools').style.display='flex'; $('e-tools').style.display='none';
     $('title-v').innerText = d.title || "无标题";
@@ -954,15 +962,15 @@ function showView(d) {
     $('content-v').innerHTML = renderMD(d.content);
 }
 
-async function enterEdit() {
+aasync function enterEdit() {
     isEditState = true; 
+    document.body.classList.add('is-editing'); // 【补丁】释放系统滚动权
     try {
         const d = await dbSvc.get(curKey);
         $('v-box').style.display='none'; $('e-box').style.display='block';
         $('v-tools').style.display='none'; $('e-tools').style.display='block';
         $('e-title').value = d ? d.title : ''; $('e-content').innerText = d ? d.content : '';
         activeMoods = d && d.mood ? d.mood.split(',') : []; updateMoodDisplay();
-        $('wc-d').innerText = getWordCount($('e-content').innerText);
     } catch (err) {
         console.error("进入编辑模式失败:", err);
         showToast("界面初始化异常，请重试", "error");
@@ -997,7 +1005,10 @@ async function doDel() {
 }
 
 const editor = $('e-content'); let lastRange = null;
-editor.addEventListener('input', () => { $('wc-d').innerText = getWordCount(editor.innerText.trim()); clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); });
+editor.addEventListener('input', () => { 
+    clearTimeout(autoSaveTimer); 
+    autoSaveTimer = setTimeout(() => isEditState && save(false), 3000); 
+});
 document.addEventListener('selectionchange', () => { const sel = window.getSelection(); if (sel.rangeCount > 0 && editor.contains(sel.anchorNode)) lastRange = sel.getRangeAt(0).cloneRange(); });
 
 editor.addEventListener('paste', (e) => {

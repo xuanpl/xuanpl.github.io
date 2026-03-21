@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shixu_v2.1'; // 每次更新代码请修改此版本号
+const CACHE_NAME = 'shixu_v2.2'; // 每次更新代码请修改此版本号
 
 // 需要被缓存的资源列表
 const ASSETS = [
