@@ -35,19 +35,20 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
 .page, #d-page { transition: opacity 0.15s ease-out; }
 #d-page { 
     display: none; 
-    position: fixed; /* 必须是 fixed，钉死在屏幕上 */
+    position: fixed; 
     inset: 0; 
     width: 100%; 
-    height: 100vh; /* 必须是固定高度 100vh，而不是 min-height */
+    /* 核心修复：使用 dvh (Dynamic Viewport Height)，让 iOS 键盘弹起时精准重算高度 */
+    height: 100dvh; 
+    /* 兜底方案 */
+    min-height: -webkit-fill-available;
     background: var(--bg); 
     z-index: 100; 
     opacity: 0; 
     padding-top: env(safe-area-inset-top); 
-    
-    /* 核心魔法：开启内部独立滚动 */
     overflow-y: auto; 
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; /* 开启 iOS 丝滑滚动弹性动效 */
+    -webkit-overflow-scrolling: touch; 
 }
 #d-page.active { opacity: 1; }
 #h-page.fade-out { opacity: 0; pointer-events: none; }
@@ -315,7 +316,7 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
     gap: 8px; 
     width: 100% !important; 
     padding: 12px 0 !important; 
-    margin: 5px 0 10px 0 !important;
+    margin: 2px 0 5px 0 !important;
     background: transparent !important; 
     border-bottom: 1px dashed rgba(0,0,0,0.1) !important;
     z-index: 10;
@@ -415,6 +416,11 @@ body.android-device #e-box { padding-bottom: calc(90px + env(safe-area-inset-bot
 .theme-switch-group .theme-btn {
     padding: 8px 0; /* 内部微调，适应 54px 容器 */
 }
+/* 彻底隐藏全局与容器的物理滚动条，但保留滚动功能 */
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
 </style>
 </head>
 <body>
@@ -510,11 +516,11 @@ body.android-device #e-box { padding-bottom: calc(90px + env(safe-area-inset-bot
         <div id="e-box" style="display: none;">
             <div id="e-img-container" class="img-grid" style="margin-top: 0px; margin-bottom: 4px;"></div>	
             
-            <input type="text" id="e-title" placeholder="无标题" style="width:100%; border:none; background:none; font-size:28px; font-weight:600; line-height:1.35; margin-bottom:12px; margin-top: 15px; color:var(--text); outline:none;">
-			
-            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-			    <div onclick="openMoodModal()" id="mood-trigger-btn" style="padding: 6px 14px; background: var(--mood-bg); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--sub); cursor: pointer; transition: 0.2s;">◌ 记录心情</div>
-            </div>
+            <input type="text" id="e-title" placeholder="无标题" style="width:100%; border:none; background:none; font-size:24px; font-weight:600; line-height:1.3; margin-bottom:8px; margin-top: 5px; color:var(--text); outline:none;">
+
+			<div style="display: flex; gap: 10px; margin-bottom: 2px;">
+				<div onclick="openMoodModal()" id="mood-trigger-btn" style="padding: 4px 12px; background: var(--mood-bg); border-radius: 16px; font-size: 12px; font-weight: 600; color: var(--sub); cursor: pointer;">◌ 记录心情</div>
+			</div>
             
             <div id="md-tools">
                 <button onmousedown="event.preventDefault(); insertMD('**')" ontouchstart="event.preventDefault(); insertMD('**')">
