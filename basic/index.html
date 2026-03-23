@@ -226,7 +226,6 @@ html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: var(-
     width: 18px; height: 18px; 
     stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
 }
-#e-box { padding-bottom: 0vh !important; }
 @media print {
     #h-page, .static-nav, #settings-modal, #more-modal, #toast-container, .modal { display: none !important; }
     html, body, .page, #d-page { height: auto !important; min-height: auto !important; max-height: none !important; position: static !important; background: white !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
@@ -262,7 +261,7 @@ body.is-editing {
     padding-bottom: calc(35vh + env(safe-area-inset-bottom)) !important; 
 }
 .ios-device #e-box { 
-    padding-bottom: calc(15vh + env(safe-area-inset-bottom)) !important; 
+    padding-bottom: calc(250px + env(safe-area-inset-bottom)) !important; 
 }
 .main-container {
     max-width: 650px; 
@@ -274,7 +273,7 @@ body.is-editing {
 html.android-device, 
 body.android-device, 
 .android-device #d-page {
-    overscroll-behavior-y: contain; 
+    overscroll-behavior-y: none !important; 
 }
 </style>
 </head>
