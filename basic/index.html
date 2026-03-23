@@ -258,8 +258,11 @@ body.native-scroll #d-page {
 body.is-editing {
     overflow: auto !important; 
 }
-#e-box { 
+.android-device #e-box { 
     padding-bottom: calc(35vh + env(safe-area-inset-bottom)) !important; 
+}
+.ios-device #e-box { 
+    padding-bottom: calc(15vh + env(safe-area-inset-bottom)) !important; 
 }
 .main-container {
     max-width: 650px; 
@@ -268,7 +271,9 @@ body.is-editing {
 }
 ::selection { background-color: rgba(0, 0, 0, 0.12); }
 [data-theme="dark"] ::selection { background-color: rgba(255, 255, 255, 0.18); }
-html.android-device, body.android-device {
+html.android-device, 
+body.android-device, 
+.android-device #d-page {
     overscroll-behavior-y: contain; 
 }
 </style>
