@@ -5,15 +5,9 @@
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f8f9fa",
-  "theme_color": "#2c3e50",
+  "theme_color": "#f8f9fa",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "shixupro.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
     {
       "src": "shixupro.png",
       "sizes": "512x512",
