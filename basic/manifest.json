@@ -4,7 +4,7 @@
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f8f9fa",
-  "theme_color": "#2c3e50",
+  "theme_color": "#f8f9fa",
   "icons": [
     {
       "src": "shixu.png",
