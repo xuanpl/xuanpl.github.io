@@ -2,7 +2,7 @@
 // 拾绪 PWA Service Worker (动静分离高可靠引擎)
 // ==========================================
 
-const CACHE_NAME = 'shixu-cache-v3.1.1'; // 更新版本号
+const CACHE_NAME = 'shixu-cache-v3.1.3'; // 更新版本号
 
 const ASSETS_TO_CACHE = [
     './', 
