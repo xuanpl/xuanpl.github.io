@@ -1,45 +1,45 @@
 // ==========================================
-// 拾绪 PWA Service Worker (离线高压缓存引擎)
+// 拾绪 (基础版) PWA Service Worker
 // ==========================================
 
-// ⚠️ 每次你修改了 HTML 里的代码，或者更换了 CDN，都必须修改这个版本号！
-// 哪怕只是把 v1.0.0 改成 v1.0.1，否则用户的浏览器永远不会更新。
-const CACHE_NAME = 'shixu-cache-v3.0.5';
+// 每次发布新版本静态资源时，请修改这里的版本号 (如 v1.0.1)
+const CACHE_NAME = 'shixu-basic-cache-v3.0.0'; 
 
-// 必须被硬缓存的静态资源资产清单 (App Shell)
+// 基础版极其轻量，只有 4 个核心资源
 const ASSETS_TO_CACHE = [
-    './', // 缓存根路径 (即你的 HTML 文件)
+    './', 
     './manifest.json',
     './shixu.png',
-    // 将所有依赖的外部 CDN 文件拉入本地缓存
-    'https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'
+    'https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js'
 ];
 
-// 1. 安装阶段 (Install) - 预载所有资源到缓存
 self.addEventListener('install', (event) => {
-    // 强制当前 SW 立即进入 waiting 状态
+    // 强制跳过等待状态，立刻安装新版本
     self.skipWaiting();
     
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
+        caches.open(CACHE_NAME).then(async (cache) => {
             console.log('[SW] 正在写入底层缓存...');
-            return cache.addAll(ASSETS_TO_CACHE);
+            for (let url of ASSETS_TO_CACHE) {
+                try {
+                    await cache.add(url);
+                } catch (e) {
+                    console.warn(`[SW] 预缓存失败 (不影响核心): ${url}`);
+                }
+            }
         })
     );
 });
 
-// 2. 激活阶段 (Activate) - 清理旧版本僵尸缓存
 self.addEventListener('activate', (event) => {
-    // 立即获取控制权，不需要用户刷新第二次才生效
+    // 立即接管所有页面
     event.waitUntil(self.clients.claim());
-
+    // 清理旧版本的缓存垃圾
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    // 如果发现旧版本的缓存，无情销毁
-                    if (cacheName !== CACHE_NAME && cacheName.startsWith('shixu-cache-')) {
+                    if (cacheName !== CACHE_NAME && cacheName.startsWith('shixu-basic-cache-')) {
                         console.log('[SW] 销毁旧版本缓存:', cacheName);
                         return caches.delete(cacheName);
                     }
@@ -49,35 +49,38 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 3. 拦截阶段 (Fetch) - 缓存优先策略 (Cache-First)
 self.addEventListener('fetch', (event) => {
-    // 仅拦截 GET 请求
     if (event.request.method !== 'GET') return;
 
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // 命中缓存：直接从本地返回，实现断网秒开
-            if (cachedResponse) {
-                return cachedResponse;
-            }
+    const requestUrl = new URL(event.request.url);
 
-            // 未命中缓存：向网络发起真实请求，并动态存入当前缓存中
-            return fetch(event.request).then((networkResponse) => {
-                // 如果请求失败或并非跨域/同源的合法响应，则直接返回
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === 'opaque') {
-                    return networkResponse;
-                }
-
-                // 克隆响应流：因为 Response 流只能被消费一次（一次给浏览器，一次存缓存）
+    // 策略 A：对于 HTML 页面，采用 Network-First (网络优先)
+    if (event.request.mode === 'navigate' || requestUrl.pathname === '/') {
+        event.respondWith(
+            fetch(event.request).then((networkResponse) => {
                 const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
-
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
                 return networkResponse;
             }).catch(() => {
-                // 极端情况：断网且本地无缓存，静默失败即可
-                console.error('[SW] 资源抓取失败，当前处于离线状态:', event.request.url);
+                return caches.match(event.request);
+            })
+        );
+        return;
+    }
+
+    // 策略 B：对于静态资源 (JS, 图片)，采用 Cache-First (缓存优先)
+    event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+
+            return fetch(event.request).then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200 && networkResponse.type !== 'opaque') {
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+                }
+                return networkResponse;
+            }).catch(() => {
+                console.error('[SW] 资源抓取失败，离线状态:', event.request.url);
             });
         })
     );
