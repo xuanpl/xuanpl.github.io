@@ -2,7 +2,7 @@
 // 拾绪·内观 PWA 核心驱动引擎 (Service Worker)
 // ==========================================
 
-const CACHE_NAME = 'shixu-cache-v1.0'; // 缓存版本号，修改代码后提升此版本号可强制用户更新
+const CACHE_NAME = 'shixu-cache-v1.1'; // 缓存版本号，修改代码后提升此版本号可强制用户更新
 
 // 核心资产清单：这些是让 App 离线也能点亮屏幕的必需品
 const CACHE_NAME = 'shixu-cache-v1.1'; // 🌟 必须修改版本号，触发系统重新缓存
