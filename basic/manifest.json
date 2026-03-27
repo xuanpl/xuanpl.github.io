@@ -1,7 +1,7 @@
 {
   "name": "拾绪",
   "short_name": "拾绪",
-  "description": "本地优先的极简日记本",
+  "description": "本地优先的私密日记本，AES-256 加密",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f8f9fa",
