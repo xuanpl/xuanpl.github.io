@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shixu-cache-v4.0.2'; 
+const CACHE_NAME = 'shixu-cache-v4.0.3'; 
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
